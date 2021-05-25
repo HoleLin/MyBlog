@@ -22,13 +22,13 @@ categories:
 >
 > 另外,HashMap是非线程安全的,也就是说多线程同时对HashMap中的某个元素进行增删改操作时,是不能保证数据的一致性的.
 
-![image-20210417194922322](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210417194922322.png)
+![image-20210417194922322](http://www.chenjunlin.vip/img/hashmap/image-20210417194922322.png)
 
 > 在JDK1.7中,首先是吧元素放在一个个数组里面,后来存放的数据元素越来越多,于是就出现了链表,对数组中的每个元素,都可以有一条链表来存储元素.这就是有名的"拉链式"存储方法
 >
 > 后来存储的元素越来越多,链表也越来越长,查找一个元素的时候效率不仅没有提高(链表不适合查找,适合增删),反而下降了不少,于是在JDK1.8中对这条链表进行了改进--使用红黑树. 将链表结构编程红黑树,原来JDK1.7的优点是增删效率提高,在JDK1.8中不仅增删的效率提高了,查找的效率也提升了.
 
-![image-20210417195442294](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210417195442294.png)
+![image-20210417195442294](http://www.chenjunlin.vip/img/hashmap/image-20210417195442294.png)
 
 * **链表变成红黑树的条件:只有链表的长度不小于8,而且数组的长度不小于64的时候才会将链表转化为红黑树.**
 
@@ -62,13 +62,13 @@ public class Main {
   >（8）第八步：插入之后大于8了，就要先调整为红黑树，在插入
   >（9）第九步：插入之后不大于8，那么就直接插入到链表尾部即可。
 
-![image-20210417201703380](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210417201703380.png)
+![image-20210417201703380](http://www.chenjunlin.vip/img/hashmap/image-20210417201703380.png)
 
 ##### 扩容
 
 > HashMap扩容就是先计算,新的hash表容量和新的容量阀值,然后初始化新的hash表,将旧的键值对重新映射到新的hash表里面.若在就的hash表里面涉及到红黑树,那么在映射到新的hash表中还涉及红黑树的拆分.
 
-![image-20210417204637243](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210417204637243.png)
+![image-20210417204637243](http://www.chenjunlin.vip/img/hashmap/image-20210417204637243.png)
 #####  HashMap初始容量
 
 * initialCapacity初始容量
