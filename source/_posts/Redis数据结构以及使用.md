@@ -155,8 +155,6 @@ categories: Redis
 
 #### 哈希
 
-* 键值对 value= {{field1,value},....{fieldN,valueN}}
-
 * **命令**
 
   * **设置值:** `hset key field value`
