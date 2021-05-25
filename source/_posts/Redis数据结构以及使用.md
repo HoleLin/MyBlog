@@ -17,7 +17,7 @@ categories: Redis
   * **list(列表)**
   * **set(集合)**
   * **zset(有序集合)**
-* 查看内部编码:**`object encoding key`
+* **查看内部编码:**`object encoding key`
 
   | 数据结构 | 内部编码   |
   | -------- | ---------- |
