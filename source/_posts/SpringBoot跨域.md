@@ -43,7 +43,7 @@ categories:
   | `https://store.company.com/secure.html`           | 失败 | 协议不同                           |
   | `http://store.company.com:81/dir/etc.html`        | 失败 | 端口不同 ( `http://` 默认端口是80) |
   | `http://news.company.com/dir/other.html`          | 失败 | 主机不同                           |
-###  跨域问题解决方法
+### 跨域问题解决方法
 
 #### 前端处理方法
 
