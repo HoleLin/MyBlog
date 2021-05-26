@@ -7,6 +7,7 @@ tags:
 categories: 
 - Java
 - Kafka
+mermaid: true
 ---
 ## Kafka架构原理
 

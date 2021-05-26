@@ -5,6 +5,7 @@ tags:
 - Redis
 - 数据结构
 categories: Redis
+mermaid: true
 ---
 ### Redis数据结构以及使用场景
 

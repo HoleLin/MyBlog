@@ -5,6 +5,7 @@ tags:
 - Redis
 - 复制
 categories: Redis
+mermaid: true
 ---
 
 ### Redis复制

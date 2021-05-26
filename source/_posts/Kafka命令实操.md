@@ -7,6 +7,7 @@ tags:
 categories: 
 - Java
 - Kafka
+mermaid: true
 ---
 ### Kafka命令实操
 
