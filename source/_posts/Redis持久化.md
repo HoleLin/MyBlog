@@ -5,6 +5,7 @@ tags:
 - Redis
 - 持久化
 categories: Redis
+mermaid: true
 ---
 
 ### Redis持久化
