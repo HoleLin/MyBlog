@@ -1,6 +1,7 @@
 ---
 title: Elasticsearch--字段类型
 date: 2021-05-24 22:25:50
+index_img: /img/cover/Elasticsearch.jpg
 tags: elasticsearch
 categories: Elasticsearch
 ---

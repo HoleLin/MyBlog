@@ -1,6 +1,7 @@
 ---
 title: Redis持久化
 date: 2021-05-24 23:33:33
+index_img: /img/cover/Redis.jpg
 tags: 
 - Redis
 - 持久化

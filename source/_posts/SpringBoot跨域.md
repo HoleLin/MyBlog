@@ -1,6 +1,7 @@
 ---
 title: SpringBoot中的跨域问题
 date: 2021-05-26 22:14:33
+index_img: /img/cover/Spring.jpg
 tags: 
 - SpringBoot
 - 跨域

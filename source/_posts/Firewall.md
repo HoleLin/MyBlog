@@ -1,6 +1,7 @@
 ---
 title: Firewall
 date: 2021-05-25 22:02:17
+index_img: /img/cover/Linux.jpg
 tags:
 - Linux
 - 防火墙

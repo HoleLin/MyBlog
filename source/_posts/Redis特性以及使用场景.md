@@ -1,6 +1,7 @@
 ---
 title:  Redis特性以及使用场景
 date: 2021-05-24 23:33:33
+index_img: /img/cover/Redis.jpg
 tags: 
 - Redis
 - 数据结构
