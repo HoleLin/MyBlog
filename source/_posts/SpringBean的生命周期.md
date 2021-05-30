@@ -15,6 +15,7 @@ categories:
 
 * [深究Spring中Bean的生命周期](https://mp.weixin.qq.com/s/GczkZHJ2DdI7cf9g0e6t_w)
 * [小马哥讲Spring核心编程思想](https://time.geekbang.org/course/intro/100042601)
+   <img src="http://www.chenjunlin.vip/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" alt="小马哥Spring核心编程思想" style="zoom: 25%;" />
 
 #### Bean的完整生命周期
 
@@ -44,13 +45,13 @@ categories:
 >      * See the License for the specific language governing permissions and
 >      * limitations under the License.
 >      */
->         
+>                 
 >     package org.springframework.beans.factory.support;
->         
+>                 
 >     import org.springframework.beans.factory.BeanDefinitionStoreException;
 >     import org.springframework.core.io.Resource;
 >     import org.springframework.core.io.ResourceLoader;
->         
+>                 
 >     /**
 >      * Simple interface for bean definition readers.
 >      * Specifies load methods with Resource and String location parameters.
@@ -68,14 +69,14 @@ categories:
 >      * @see org.springframework.core.io.Resource
 >      */
 >     public interface BeanDefinitionReader {
->         
+>                 
 >     	/**
 >     	 * Return the bean factory to register the bean definitions with.
 >     	 * <p>The factory is exposed through the BeanDefinitionRegistry interface,
 >     	 * encapsulating the methods that are relevant for bean definition handling.
 >     	 */
 >     	BeanDefinitionRegistry getRegistry();
->         
+>                 
 >     	/**
 >     	 * Return the resource loader to use for resource locations.
 >     	 * Can be checked for the <b>ResourcePatternResolver</b> interface and cast
@@ -94,7 +95,7 @@ categories:
 >     	 * @see org.springframework.core.io.support.ResourcePatternResolver
 >     	 */
 >     	ResourceLoader getResourceLoader();
->         
+>                 
 >     	/**
 >     	 * Return the class loader to use for bean classes.
 >     	 * <p>{@code null} suggests to not load bean classes eagerly
@@ -102,7 +103,7 @@ categories:
 >     	 * with the corresponding Classes to be resolved later (or never).
 >     	 */
 >     	ClassLoader getBeanClassLoader();
->         
+>                 
 >     	/**
 >     	 * Return the BeanNameGenerator to use for anonymous beans
 >     	 * (without explicit bean name specified).
@@ -117,7 +118,7 @@ categories:
 >     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 >     	 */
 >     	int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException;
->         
+>                 
 >     	/**
 >     	 * Load bean definitions from the specified resources.
 >     	 * @param resources the resource descriptors
@@ -125,7 +126,7 @@ categories:
 >     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 >     	 */
 >     	int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException;
->         
+>                 
 >     	/**
 >     	 * Load bean definitions from the specified resource location.
 >     	 * <p>The location can also be a location pattern, provided that the
@@ -139,7 +140,7 @@ categories:
 >     	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
 >     	 */
 >     	int loadBeanDefinitions(String location) throws BeanDefinitionStoreException;
->         
+>                 
 >     	/**
 >     	 * Load bean definitions from the specified resource locations.
 >     	 * @param locations the resource locations, to be loaded with the ResourceLoader
@@ -148,12 +149,12 @@ categories:
 >     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
 >     	 */
 >     	int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException;
->         
+>                 
 >     }
 >     
 >     
 >     * XML配置: XMLBeanDefinitionReader
->       
+>               
 >       ```java
 >       // org.springframework.context.support.AbstractApplicationContext#obtainFreshBeanFactory
 >       // 路径: org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)
@@ -168,14 +169,14 @@ categories:
 >       		//  为指定beanFactory创建XmlBeanDefinitionReader
 >       		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
 >       		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
->           
+>                   
 >       		// 对BeanDefinitionReader进行环境变量的设置
 >       		// Configure the bean definition reader with this context's
 >       		// resource loading environment.
 >       		beanDefinitionReader.setEnvironment(this.getEnvironment());
 >       		beanDefinitionReader.setResourceLoader(this);
 >       		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
->           
+>                   
 >       		// 对BeanDefinitionReader进行设置值,可以覆盖
 >       		// Allow a subclass to provide custom initialization of the reader,
 >       		// then proceed with actually loading the bean definitions.
@@ -215,9 +216,9 @@ categories:
 >       		return counter;
 >       	}
 >       ```
->       
+>               
 >     * Properties配置: PropertiesBeanDefinitionReader
->       
+>               
 >       ```java
 >       	/**
 >       	 * Load bean definitions from the specified properties file.
@@ -230,11 +231,11 @@ categories:
 >       	 */
 >       	public int loadBeanDefinitions(EncodedResource encodedResource, @Nullable String prefix)
 >       			throws BeanDefinitionStoreException {
->           
+>                   
 >       		if (logger.isTraceEnabled()) {
 >       			logger.trace("Loading properties bean definitions from " + encodedResource);
 >       		}
->           
+>                   
 >       		Properties props = new Properties();
 >       		try {
 >       			try (InputStream is = encodedResource.getResource().getInputStream()) {
@@ -245,7 +246,7 @@ categories:
 >       					getPropertiesPersister().load(props, is);
 >       				}
 >       			}
->           
+>                   
 >       			int count = registerBeanDefinitions(props, prefix, encodedResource.getResource().getDescription());
 >       			if (logger.isDebugEnabled()) {
 >       				logger.debug("Loaded " + count + " bean definitions from " + encodedResource);
@@ -552,7 +553,7 @@ categories:
 >      * @see AbstractBeanDefinitionParser
 >      */
 >     public interface BeanDefinitionParser {
->     
+>         
 >     	/**
 >     	 * Parse the specified {@link Element} and register the resulting
 >     	 * {@link BeanDefinition BeanDefinition(s)} with the
@@ -569,7 +570,7 @@ categories:
 >     	 */
 >     	@Nullable
 >     	BeanDefinition parse(Element element, ParserContext parserContext);
->     
+>         
 >     }
 >     ==> 实现类
 >     public abstract class AbstractBeanDefinitionParser implements BeanDefinitionParser {
@@ -619,10 +620,10 @@ categories:
 >
 >   ```java
 >   package com.holelin.readsource;
->     
+>         
 >   import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 >   import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
->     
+>         
 >   public class AnnotatedBeanDefinitionReaderDemo {
 >   	public static void main(String[] args) {
 >   		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
@@ -659,14 +660,14 @@ categories:
 >    * See the License for the specific language governing permissions and
 >    * limitations under the License.
 >    */
->     
+>         
 >   package org.springframework.beans.factory.support;
->     
+>         
 >   import org.springframework.beans.factory.BeanDefinitionStoreException;
 >   import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 >   import org.springframework.beans.factory.config.BeanDefinition;
 >   import org.springframework.core.AliasRegistry;
->     
+>         
 >   /**
 >    * Interface for registries that hold bean definitions, for example RootBeanDefinition
 >    * and ChildBeanDefinition instances. Typically implemented by BeanFactories that
@@ -692,7 +693,7 @@ categories:
 >    * @see PropertiesBeanDefinitionReader
 >    */
 >   public interface BeanDefinitionRegistry extends AliasRegistry {
->     
+>         
 >   	/**
 >   	 * Register a new bean definition with this registry.
 >   	 * Must support RootBeanDefinition and ChildBeanDefinition.
@@ -707,14 +708,14 @@ categories:
 >   	 */
 >   	void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 >   			throws BeanDefinitionStoreException;
->     
+>         
 >   	/**
 >   	 * Remove the BeanDefinition for the given name.
 >   	 * @param beanName the name of the bean instance to register
 >   	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
 >   	 */
 >   	void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
->     
+>         
 >   	/**
 >   	 * Return the BeanDefinition for the given bean name.
 >   	 * @param beanName name of the bean to find a definition for
@@ -722,27 +723,27 @@ categories:
 >   	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
 >   	 */
 >   	BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
->     
+>         
 >   	/**
 >   	 * Check if this registry contains a bean definition with the given name.
 >   	 * @param beanName the name of the bean to look for
 >   	 * @return if this registry contains a bean definition with the given name
 >   	 */
 >   	boolean containsBeanDefinition(String beanName);
->     
+>         
 >   	/**
 >   	 * Return the names of all beans defined in this registry.
 >   	 * @return the names of all beans defined in this registry,
 >   	 * or an empty array if none defined
 >   	 */
 >   	String[] getBeanDefinitionNames();
->     
+>         
 >   	/**
 >   	 * Return the number of beans defined in the registry.
 >   	 * @return the number of beans defined in the registry
 >   	 */
 >   	int getBeanDefinitionCount();
->     
+>         
 >   	/**
 >   	 * Determine whether the given bean name is already in use within this registry,
 >   	 * i.e. whether there is a local bean or alias registered under this name.
@@ -750,7 +751,7 @@ categories:
 >   	 * @return whether the given bean name is already in use
 >   	 */
 >   	boolean isBeanNameInUse(String beanName);
->     
+>         
 >   }
 >   ```
 >   
@@ -758,13 +759,13 @@ categories:
 >   	//---------------------------------------------------------------------
 >   	// Implementation of BeanDefinitionRegistry interface
 >   	//---------------------------------------------------------------------
->     
+>         
 >   	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
 >   			throws BeanDefinitionStoreException {
->     
+>         
 >   		Assert.hasText(beanName, "Bean name must not be empty");
 >   		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
->     
+>         
 >   		if (beanDefinition instanceof AbstractBeanDefinition) {
 >   			try {
 >   				/**
@@ -779,9 +780,9 @@ categories:
 >   						"Validation of bean definition failed", ex);
 >   			}
 >   		}
->     
+>         
 >   		BeanDefinition oldBeanDefinition;
->     
+>         
 >   		// 因为beanDefinitionMap是全局变量,这里定会存在并发访问的情况
 >   		synchronized (this.beanDefinitionMap) {
 >   			oldBeanDefinition = this.beanDefinitionMap.get(beanName);
@@ -810,7 +811,7 @@ categories:
 >   			// 注册beanDefinition
 >   			this.beanDefinitionMap.put(beanName, beanDefinition);
 >   		}
->     
+>         
 >   		if (oldBeanDefinition != null || containsSingleton(beanName)) {
 >   			// 重置所有beanName对应的缓存
 >   			resetBeanDefinition(beanName);
@@ -2442,4 +2443,8 @@ categories:
 > * Bean 初始化完成阶段: `preInstantiateSingletons`
 > * Bean 销毁前阶段: `destoryBean`
 > * Bean 销毁阶段: `destoryBean`
+
+
+
+
 
