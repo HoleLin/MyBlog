@@ -17,7 +17,7 @@ categories:
 
 * [小马哥讲Spring核心编程思想](https://time.geekbang.org/course/intro/100042601)
 
-<img src="http://www.chenjunlin.vip/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" alt="小马哥Spring核心编程思想" style="zoom: 25%;" />
+<img src="http://www.chenjunlin.vip/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" style="zoom: 25%;" />
 
 #### Bean的完整生命周期
 
