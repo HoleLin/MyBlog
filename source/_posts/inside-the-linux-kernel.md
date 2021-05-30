@@ -11,3 +11,4 @@ categories:
 * [inside the linux kerne](http://turnoff.us/geek/inside-the-linux-kernel/)
 
 ![inside-the-linux-kernel](http://www.chenjunlin.vip/img/linux/inside-the-linux-kernel.png)
+![linux-kernel-map](http://www.chenjunlin.vip/img/linux/linux-kernel-map.png)
