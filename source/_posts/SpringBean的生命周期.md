@@ -1,6 +1,7 @@
 ---
 title: SpringBean生命周期
 date: 2021-05-30 15:50:33
+index_img: /img/cover/Spring.jpg
 tags: 
 - Bean生命周期
 - Java
