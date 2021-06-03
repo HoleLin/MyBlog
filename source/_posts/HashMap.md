@@ -659,13 +659,22 @@ public class Main {
     }
 ```
 
+### LinkedHashMap,HashMap,TreeMap的区别
 
+![img](http://www.chenjunlin.vip/img/hashmap/Map类图.png)
 
-
-
-
-
-
+> 实现方式:
+>
+> - LinkedHashMap是继承于HashMap，是基于HashMap和双向链表来实现的;
+> - TreeMap基于SortedMap实现,
+>
+> 元素顺序性:
+>
+> - HashMap无序；LinkedHashMap有序，TreeMap有序(主要用于Map的排序,能够把它保存的记录根据键排序。默认是按键值的升序排序，也可以指定排序的比较器，当用Iterator 遍历TreeMap时，得到的记录是排过序的)
+>
+> 线程安全性:
+>
+> * LinkedHashMap,HashMap,TreeMap都是线程不安全的;
 
 
 
