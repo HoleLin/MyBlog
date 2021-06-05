@@ -44,25 +44,25 @@ mermaid: true
 
 * **除了执行命令手动触发外,Redis内部还存在自动触发的RDB的持久化机制:**
 
-  * 使用save相关配置,如"save m n",表示m秒内数据集存在n次修改时,自动触发bgsave;
+  * 使用save相关配置,如"save m n",表示m秒内数据集存在n次修改时,自动触发`bgsave`;
   * 若从节点执行全量复制操作,主节点自动执行bgsave生成RDB文件并发送给从节点;
-  * 执行debug reload命令重新加载Redis,也会自动触发bgsave操作;
-  * 默认情况下执行shutdown命令,若没有开启AOF持久化则自动执行bgsave;
+  * 执行`debug reload`命令重新加载Redis,也会自动触发`bgsave`操作;
+  * 默认情况下执行`shutdown`命令,若没有开启AOF持久化则自动执行`bgsave`;
 
 * **bgsave是主流的触发RDB持久化方式**
 
-  * 执行bgsave命令,Redis父进程判断当前是否存在正在执行的子进程,如RDB/AOF子进程,若存在bgsave命令直接返回;
-  * 父进程执行fork操作创建子进程,fork操作过程中父进程会阻塞,通过info stats命令查看latest_fork_usec选项,可以获取最近一个fork操作的耗时,单位为微妙;
+  * 执行`bgsave`命令,Redis父进程判断当前是否存在正在执行的子进程,如RDB/AOF子进程,若存在`bgsave`命令直接返回;
+  * 父进程执行fork操作创建子进程,fork操作过程中父进程会阻塞,通过`info stats`命令查看`latest_fork_usec`选项,可以获取最近一个fork操作的耗时,单位为微妙;
   * 父进程fork完成后,bgsave命令返回"Backgroud saving started"信息并不再阻塞父进程,可以继续响应其他命令;
-  * 子进程创建RDB文件,根据父进程内存生成临时快照文件,完成后对原有文件进行原子替换.执行lastsave命令可以获取最后一次生成RDB的时间,对应info统计的rdb_last_time选项;
-  * 进程发送信号给父进程表示完成,父进程更新统计信息,具体见 info Persistence下rdb_*相关选项.
+  * 子进程创建RDB文件,根据父进程内存生成临时快照文件,完成后对原有文件进行原子替换.执行`lastsave`命令可以获取最后一次生成RDB的时间,对应info统计的`rdb_last_time`选项;
+  * 进程发送信号给父进程表示完成,父进程更新统计信息,具体见`info Persistence`下rdb_*相关选项.
 
 * **RDB文件的处理**
 
   * **保存**
 
     * RDB文件保存在dir配置指定的目录下,文件名通过dbfilename配置指定.可以通过执行`config set dir {newDir}`和`config set dbfilename {newFileName}`运行期动态执行,当下次运行是RDB文件会保存到新的目录中
-    * 当遇到坏盘或磁盘写满等情况,可以通过`config set dir {newDir}`在线修改文件路径到可用磁盘路径,之后执行bgsave进行磁盘切换,同样试用于AOF持久化文件.
+    * 当遇到坏盘或磁盘写满等情况,可以通过`config set dir {newDir}`在线修改文件路径到可用磁盘路径,之后执行`bgsave`进行磁盘切换,同样试用于AOF持久化文件.
 
   * **压缩**
 
@@ -82,7 +82,7 @@ mermaid: true
 * **RDB的优缺点**
 
   * **优点**
-    * RDB是一个紧凑压缩的二进制文件,代表Redis在某个时间点上的数据快照,非常使用与备份,全量复制等场景,比如每6个小时bgsave备份,并把EDB文件拷贝到远程机器或者文件系统中hdfs,用于灾难恢复.
+    * RDB是一个紧凑压缩的二进制文件,代表Redis在某个时间点上的数据快照,非常使用与备份,全量复制等场景,比如每6个小时bgsave备份,并把RDB文件拷贝到远程机器或者文件系统中hdfs,用于灾难恢复.
     * Redis加载RDB恢复数据远远快于AOF的方式
   * **缺点**
     * RDB方式数据没办法做到实时持久化/秒级持久化,因为bgsave每次运行都要执行fork操作创建子进程,属于重量级操作,频繁执行成本过高.
@@ -177,9 +177,9 @@ mermaid: true
 
       * 4-子进程根据内存快照,按照命令合并规则写入新的AOF文件.每次批量写入硬盘数据量由配置`aof-rewrite-incremental-fsync`控制,默认为32MB,单次刷盘数据过多造成硬盘阻塞.
 
-      * 5.1-新AOF文件写入万抽,子进程发送信号给父进程,父进程更新统计信息,具体见`info persistence`下aof_*相关统计.
+      * 5.1-新AOF文件写入完成后,子进程发送信号给父进程,父进程更新统计信息,具体见`info persistence`下aof_*相关统计.
 
-      * 5.2-父进程吧AOF重写缓冲区的数据写入到新的AOF文件.
+      * 5.2-父进程把AOF重写缓冲区的数据写入到新的AOF文件.
 
       * 5.3-使用新AOF文件替换老文件,完成AOF重写;
 
@@ -236,7 +236,7 @@ mermaid: true
 
 * **AOF追加阻塞**
 
-  * 当开启AOF持久化时,常用的同步硬盘的策略是everysec,用于平衡性能和数据安全性.对于这种方式,Redis使用另一条线程每秒fsync同步硬盘,当系统硬盘资源繁忙时,会造成Redis主线程阻塞.
+  * 当开启AOF持久化时,常用的同步硬盘的策略是`everysec`,用于平衡性能和数据安全性.对于这种方式,Redis使用另一条线程每秒fsync同步硬盘,当系统硬盘资源繁忙时,会造成Redis主线程阻塞.
 
     ``` mermaid
     graph TB

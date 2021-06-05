@@ -21,805 +21,769 @@ categories:
 
 #### Bean的完整生命周期
 
-##### Spring Bean元信息配置阶段
+```java
+public class XmlDependencyConstructorInjectionDemo {
 
-> BeanDefinition配置
+    public static void main(String[] args) {
+
+        DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
+        String xmlResourcePath = "classpath:/META-INF/dependency-constructor-injection.xml";
+        // 加载 XML 资源，解析并且生成 BeanDefinition
+        beanDefinitionReader.loadBeanDefinitions(xmlResourcePath);
+        // 依赖查找并且创建 Bean
+        UserHolder userHolder = beanFactory.getBean(UserHolder.class);
+        System.out.println(userHolder);
+
+    }
+}
+```
+
+##### Spring Bean BeanDefinition配置阶段
+
+* 面向资源 **BeanDefinitionReader** 
+
+  ![BeanDefinitionReader](http://www.chenjunlin.vip/img/spring/BeanDefinitionReader类图.png)
+
+  ```java
+  /*
+   * Copyright 2002-2013 the original author or authors.
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *      https://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+  
+  package org.springframework.beans.factory.support;
+  
+  import org.springframework.beans.factory.BeanDefinitionStoreException;
+  import org.springframework.core.io.Resource;
+  import org.springframework.core.io.ResourceLoader;
+  
+  /**
+   * Simple interface for bean definition readers.
+   * Specifies load methods with Resource and String location parameters.
+   *
+   * <p>Concrete bean definition readers can of course add additional
+   * load and register methods for bean definitions, specific to
+   * their bean definition format.
+   *
+   * <p>Note that a bean definition reader does not have to implement
+   * this interface. It only serves as suggestion for bean definition
+   * readers that want to follow standard naming conventions.
+   *
+   * @author Juergen Hoeller
+   * @since 1.1
+   * @see org.springframework.core.io.Resource
+   */
+  public interface BeanDefinitionReader {
+  
+  	/**
+  	 * Return the bean factory to register the bean definitions with.
+  	 * <p>The factory is exposed through the BeanDefinitionRegistry interface,
+  	 * encapsulating the methods that are relevant for bean definition handling.
+  	 */
+  	BeanDefinitionRegistry getRegistry();
+  
+  	/**
+  	 * Return the resource loader to use for resource locations.
+  	 * Can be checked for the <b>ResourcePatternResolver</b> interface and cast
+  	 * accordingly, for loading multiple resources for a given resource pattern.
+  	 * <p>Null suggests that absolute resource loading is not available
+  	 * for this bean definition reader.
+  	 * <p>This is mainly meant to be used for importing further resources
+  	 * from within a bean definition resource, for example via the "import"
+  	 * tag in XML bean definitions. It is recommended, however, to apply
+  	 * such imports relative to the defining resource; only explicit full
+  	 * resource locations will trigger absolute resource loading.
+  	 * <p>There is also a {@code loadBeanDefinitions(String)} method available,
+  	 * for loading bean definitions from a resource location (or location pattern).
+  	 * This is a convenience to avoid explicit ResourceLoader handling.
+  	 * @see #loadBeanDefinitions(String)
+  	 * @see org.springframework.core.io.support.ResourcePatternResolver
+  	 */
+  	ResourceLoader getResourceLoader();
+  
+  	/**
+  	 * Return the class loader to use for bean classes.
+  	 * <p>{@code null} suggests to not load bean classes eagerly
+  	 * but rather to just register bean definitions with class names,
+  	 * with the corresponding Classes to be resolved later (or never).
+  	 */
+  	ClassLoader getBeanClassLoader();
+  
+  	/**
+  	 * Return the BeanNameGenerator to use for anonymous beans
+  	 * (without explicit bean name specified).
+  	 */
+  	BeanNameGenerator getBeanNameGenerator();
+      	/**
+  	 * Load bean definitions from the specified resource.
+  	 * @param resource the resource descriptor
+  	 * @return the number of bean definitions found
+  	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+  	 */
+  	int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException;
+  
+  	/**
+  	 * Load bean definitions from the specified resources.
+  	 * @param resources the resource descriptors
+  	 * @return the number of bean definitions found
+  	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+  	 */
+  	int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException;
+  
+  	/**
+  	 * Load bean definitions from the specified resource location.
+  	 * <p>The location can also be a location pattern, provided that the
+  	 * ResourceLoader of this bean definition reader is a ResourcePatternResolver.
+  	 * @param location the resource location, to be loaded with the ResourceLoader
+  	 * (or ResourcePatternResolver) of this bean definition reader
+  	 * @return the number of bean definitions found
+  	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+  	 * @see #getResourceLoader()
+  	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource)
+  	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
+  	 */
+  	int loadBeanDefinitions(String location) throws BeanDefinitionStoreException;
+  
+  	/**
+  	 * Load bean definitions from the specified resource locations.
+  	 * @param locations the resource locations, to be loaded with the ResourceLoader
+  	 * (or ResourcePatternResolver) of this bean definition reader
+  	 * @return the number of bean definitions found
+  	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+  	 */
+  	int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException;
+  
+  }
+  ```
+
+  * **XML配置: XMLBeanDefinitionReader**
+
+    ```java
+    // org.springframework.context.support.AbstractApplicationContext#obtainFreshBeanFactory
+      // 路径: org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)
+      	/**
+      	 * Loads the bean definitions via an XmlBeanDefinitionReader.
+      	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
+      	 * @see #initBeanDefinitionReader
+      	 * @see #loadBeanDefinitions
+      	 */
+      	@Override
+      	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
+      	//  为指定beanFactory创建XmlBeanDefinitionReader
+      	// Create a new XmlBeanDefinitionReader for the given BeanFactory.
+      	XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);	
+    	// 对BeanDefinitionReader进行环境变量的设置
+    	// Configure the bean definition reader with this context's
+    	// resource loading environment.
+    	beanDefinitionReader.setEnvironment(this.getEnvironment());
+    	beanDefinitionReader.setResourceLoader(this);
+    	beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
+    
+    	// 对BeanDefinitionReader进行设置值,可以覆盖
+    	// Allow a subclass to provide custom initialization of the reader,
+    	// then proceed with actually loading the bean definitions.
+    	initBeanDefinitionReader(beanDefinitionReader);
+    	loadBeanDefinitions(beanDefinitionReader);
+    }
+    // ==> org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.xml.XmlBeanDefinitionReader)
+    /**
+     * Load the bean definitions with the given XmlBeanDefinitionReader.
+     * <p>The lifecycle of the bean factory is handled by the {@link #refreshBeanFactory}
+     * method; hence this method is just supposed to load and/or register bean definitions.
+     * @param reader the XmlBeanDefinitionReader to use
+     * @throws BeansException in case of bean registration errors
+     * @throws IOException if the required XML document isn't found
+     * @see #refreshBeanFactory
+     * @see #getConfigLocations
+     * @see #getResources
+     * @see #getResourcePatternResolver
+     */
+    protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
+    	Resource[] configResources = getConfigResources();
+    	if (configResources != null) {
+    		reader.loadBeanDefinitions(configResources);
+    	}
+    	String[] configLocations = getConfigLocations();
+    	if (configLocations != null) {
+    		reader.loadBeanDefinitions(configLocations);
+    	}
+    }
+    // ==> org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.Resource...)
+    public int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException {
+    	Assert.notNull(resources, "Resource array must not be null");
+    	int counter = 0;
+    	for (Resource resource : resources) {
+    		counter += loadBeanDefinitions(resource);
+    	}
+    	return counter;
+    }
+    // 路径: org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.Resource)
+    	/**
+    	 * Load bean definitions from the specified XML file.
+    	 * @param resource the resource descriptor for the XML file
+    	 * @return the number of bean definitions found
+    	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+    	 */
+    	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+    		return loadBeanDefinitions(new EncodedResource(resource));
+    	}
+    // ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.support.EncodedResource)
+    	/**
+    	 * Load bean definitions from the specified XML file.
+    	 * @param encodedResource the resource descriptor for the XML file,
+    	 * allowing to specify an encoding to use for parsing the file
+    	 * @return the number of bean definitions found
+    	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+    	 */
+    	public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
+    		Assert.notNull(encodedResource, "EncodedResource must not be null");
+    		if (logger.isInfoEnabled()) {
+    			logger.info("Loading XML bean definitions from " + encodedResource.getResource());
+    		}
+    
+    		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
+    		if (currentResources == null) {
+    			currentResources = new HashSet<EncodedResource>(4);
+    			this.resourcesCurrentlyBeingLoaded.set(currentResources);
+    		}
+    		if (!currentResources.add(encodedResource)) {
+    			throw new BeanDefinitionStoreException(
+    					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
+    		}
+    		try {
+    			InputStream inputStream = encodedResource.getResource().getInputStream();
+    			try {
+    				InputSource inputSource = new InputSource(inputStream);
+    				if (encodedResource.getEncoding() != null) {
+    					inputSource.setEncoding(encodedResource.getEncoding());
+    				}
+                    // 核心方法
+    				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
+    			}
+    			finally {
+    				inputStream.close();
+    			}
+    		}
+    		catch (IOException ex) {
+    			throw new BeanDefinitionStoreException(
+    					"IOException parsing XML document from " + encodedResource.getResource(), ex);
+    		}
+    		finally {
+    			currentResources.remove(encodedResource);
+    			if (currentResources.isEmpty()) {
+    				this.resourcesCurrentlyBeingLoaded.remove();
+    			}
+    		}
+    	}
+    // ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#doLoadBeanDefinitions
+    	/**
+    	 * Actually load bean definitions from the specified XML file.
+    	 * @param inputSource the SAX InputSource to read from
+    	 * @param resource the resource descriptor for the XML file
+    	 * @return the number of bean definitions found
+    	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+    	 */
+    	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
+    			throws BeanDefinitionStoreException {
+    		try {
+    			int validationMode = getValidationModeForResource(resource);
+    			Document doc = this.documentLoader.loadDocument(
+    					inputSource, getEntityResolver(), this.errorHandler, validationMode, isNamespaceAware());
+                // 入口
+    			return registerBeanDefinitions(doc, resource);
+    		}
+    		catch (BeanDefinitionStoreException ex) {
+    			throw ex;
+    		}
+    		catch (SAXParseException ex) {
+    			throw new XmlBeanDefinitionStoreException(resource.getDescription(),
+    					"Line " + ex.getLineNumber() + " in XML document from " + resource + " is invalid", ex);
+    		}
+    		catch (SAXException ex) {
+    			throw new XmlBeanDefinitionStoreException(resource.getDescription(),
+    					"XML document from " + resource + " is invalid", ex);
+    		}
+    		catch (ParserConfigurationException ex) {
+    			throw new BeanDefinitionStoreException(resource.getDescription(),
+    					"Parser configuration exception parsing XML from " + resource, ex);
+    		}
+    		catch (IOException ex) {
+    			throw new BeanDefinitionStoreException(resource.getDescription(),
+    					"IOException parsing XML document from " + resource, ex);
+    		}
+    		catch (Throwable ex) {
+    			throw new BeanDefinitionStoreException(resource.getDescription(),
+    					"Unexpected exception parsing XML document from " + resource, ex);
+    		}
+    	}
+    ```
+
+  * **Properties配置: PropertiesBeanDefinitionReader**
+
+    ```java
+     	/**
+      	 * Load bean definitions from the specified properties file.
+      	 * @param encodedResource the resource descriptor for the properties file,
+      	 * allowing to specify an encoding to use for parsing the file
+      	 * @param prefix a filter within the keys in the map: e.g. 'beans.'
+      	 * (can be empty or {@code null})
+      	 * @return the number of bean definitions found
+      	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+      	 */
+      	public int loadBeanDefinitions(EncodedResource encodedResource, @Nullable String prefix)
+      			throws BeanDefinitionStoreException {
+    
+      		if (logger.isTraceEnabled()) {
+      			logger.trace("Loading properties bean definitions from " + encodedResource);
+      		}
+    
+      		Properties props = new Properties();
+      		try {
+      			try (InputStream is = encodedResource.getResource().getInputStream()) {
+      				if (encodedResource.getEncoding() != null) {
+      					getPropertiesPersister().load(props, new InputStreamReader(is, encodedResource.getEncoding()));
+      				}
+      				else {
+      					getPropertiesPersister().load(props, is);
+      				}
+      			}
+    
+      			int count = registerBeanDefinitions(props, prefix, encodedResource.getResource().getDescription());
+      			if (logger.isDebugEnabled()) {
+      				logger.debug("Loaded " + count + " bean definitions from " + encodedResource);
+      			}
+      			return count;
+      		}
+      		catch (IOException ex) {
+      			throw new BeanDefinitionStoreException("Could not parse properties from " + encodedResource.getResource(), ex);
+      		}
+      	}
+    ```
+
+* 面向注解
+
+  * @Configuration
+  * @Bean
+  * @Componet
+
+* 面向API: 
+
+  * BeanDefinitionBuilder
+
+##### Spring BeanDefinition注册阶段
+
+```java
+// ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#doLoadBeanDefinitions
+	/**
+	 * Actually load bean definitions from the specified XML file.
+	 * @param inputSource the SAX InputSource to read from
+	 * @param resource the resource descriptor for the XML file
+	 * @return the number of bean definitions found
+	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+	 */
+	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
+			throws BeanDefinitionStoreException {
+		try {
+			int validationMode = getValidationModeForResource(resource);
+			Document doc = this.documentLoader.loadDocument(
+					inputSource, getEntityResolver(), this.errorHandler, validationMode, isNamespaceAware());
+            // 入口
+			return registerBeanDefinitions(doc, resource);
+		}
+		// ...省略
+	}
+```
+
+```java
+// ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#registerBeanDefinitions
+	/**
+	 * Register the bean definitions contained in the given DOM document.
+	 * Called by {@code loadBeanDefinitions}.
+	 * <p>Creates a new instance of the parser class and invokes
+	 * {@code registerBeanDefinitions} on it.
+	 * @param doc the DOM document
+	 * @param resource the resource descriptor (for context information)
+	 * @return the number of bean definitions found
+	 * @throws BeanDefinitionStoreException in case of parsing errors
+	 * @see #loadBeanDefinitions
+	 * @see #setDocumentReaderClass
+	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
+	 */
+	@SuppressWarnings("deprecation")
+	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		// 使用DefaultBeanDefinitionDocument实例化BeanDefinitionDocumentReader
+		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 将环境变量设置其中
+		documentReader.setEnvironment(getEnvironment());
+		// 在实例化BeanDefinitionReader时候会将BeanDefinitionRegistry传入,默认使用继承自DefaultListableBeanFactory
+		// 记录统计前BeanDefinition的加载个数
+		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 加载及注册bean
+		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 记录本次加载的BeanDefinition个数
+		return getRegistry().getBeanDefinitionCount() - countBefore;
+	}
+```
+
+```java
+// ==> org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader#registerBeanDefinitions
+	/**
+	 * This implementation parses bean definitions according to the "spring-beans" XSD
+	 * (or DTD, historically).
+	 * <p>Opens a DOM Document; then initializes the default settings
+	 * specified at the {@code <beans/>} level; then parses the contained bean definitions.
+	 */
+	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
+		this.readerContext = readerContext;
+		logger.debug("Loading bean definitions");
+		Element root = doc.getDocumentElement();
+		doRegisterBeanDefinitions(root);
+	}
+// ==> 
+	/**
+	 * Register each bean definition within the given root {@code <beans/>} element.
+	 */
+	protected void doRegisterBeanDefinitions(Element root) {
+		// 处理profile属性
+		String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
+		if (StringUtils.hasText(profileSpec)) {
+			String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
+					profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
+			if (!getEnvironment().acceptsProfiles(specifiedProfiles)) {
+				return;
+			}
+		}
+
+		// Any nested <beans> elements will cause recursion in this method. In
+		// order to propagate and preserve <beans> default-* attributes correctly,
+		// keep track of the current (parent) delegate, which may be null. Create
+		// the new (child) delegate with a reference to the parent for fallback purposes,
+		// then ultimately reset this.delegate back to its original (parent) reference.
+		// this behavior emulates a stack of delegates without actually necessitating one.
+		// 专门处理解析
+		BeanDefinitionParserDelegate parent = this.delegate;
+		this.delegate = createDelegate(this.readerContext, root, parent);
+
+		// 解析前处理,留给子类实现
+		preProcessXml(root);
+		// 入口
+		parseBeanDefinitions(root, this.delegate);
+		// 解析后处理,留给子类实现
+		postProcessXml(root);
+
+		this.delegate = parent;
+	}
+```
+
+##### Spring BeanDefinition解析阶段
+
+* 面向资源BeanDefinition解析
+
+  * XML解析器: **BeanDefinitionParser**
+
+    ![BeanDefinitionParser类图](http://www.chenjunlin.vip/img/spring/BeanDefinitionParser类图.png)
+
+    ```java
+    
+    // org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader#parseBeanDefinitions
+    	/**
+    	 * Parse the elements at the root level in the document:
+    	 * "import", "alias", "bean".
+    	 * @param root the DOM root element of the document
+    	 */
+    	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
+    		if (delegate.isDefaultNamespace(root)) {
+    			NodeList nl = root.getChildNodes();
+    			for (int i = 0; i < nl.getLength(); i++) {
+    				Node node = nl.item(i);
+    				if (node instanceof Element) {
+    					Element ele = (Element) node;
+    					if (delegate.isDefaultNamespace(ele)) {
+    						// 解析默认标签
+    						parseDefaultElement(ele, delegate);
+    					}
+    					else {
+    						// 解析自定义标签
+    						delegate.parseCustomElement(ele);
+    					}
+    				}
+    			}
+    		}
+    		else {
+    			// 解析自定义标签
+    			delegate.parseCustomElement(root);
+    		}
+    	}
+    // org.springframework.beans.factory.xml.BeanDefinitionParserDelegate#parseCustomElement(org.w3c.dom.Element)
+    	public BeanDefinition parseCustomElement(Element ele) {
+    		return parseCustomElement(ele, null);
+    	}
+    
+    	/**
+    	 * 1. 创建一个需要扩展的组件
+    	 * 2. 定义一个XSD文件描述组件内容
+    	 * 3. 创建一个文件,实现BeanDefinitionParser接口,用来解析XSD文件中定义和组件定义
+    	 * 4. 创建一个Handler文件,扩展自NamespaceHandlerSupport,目的是将组件注册到Spring容器
+    	 * 5. 编写Spring.handlers和Spring.schemas文件
+    	 * @param containingBd 父类bean,对顶层元素的解析设置为null
+    	 */
+    	public BeanDefinition parseCustomElement(Element ele, BeanDefinition containingBd) {
+    		// 获取对应命名空间
+    		String namespaceUri = getNamespaceURI(ele);
+    		// 根据命名空间找到对应的NamespaceHandler
+    		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
+    		if (handler == null) {
+    			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
+    			return null;
+    		}
+    		// 调用自定义的NamespaceHandler进行解析
+    		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
+    	}
+    //  org.springframework.beans.factory.xml.NamespaceHandlerSupport#parse
+    	/**
+    	 * Parses the supplied {@link Element} by delegating to the {@link BeanDefinitionParser} that is
+    	 * registered for that {@link Element}.
+    	 */
+    	public BeanDefinition parse(Element element, ParserContext parserContext) {
+    		// 寻找解析器并进行解析操作 BeanDefinitionParser#parse
+    		return findParserForElement(element, parserContext).parse(element, parserContext);
+    	}
+    
+    	/**
+    	 * Locates the {@link BeanDefinitionParser} from the register implementations using
+    	 * the local name of the supplied {@link Element}.
+    	 */
+    	private BeanDefinitionParser findParserForElement(Element element, ParserContext parserContext) {
+    		// 获取元素名称,也就是<myname:user中的user,若在示例中,此时localName为user
+    		String localName = parserContext.getDelegate().getLocalName(element);
+    		// 根据user找到对应的解析器,也就是在
+    		// registerBeanDefinitionParser("user",new UserBeanDefinitionParser());
+    		// 注册的解析器
+    		BeanDefinitionParser parser = this.parsers.get(localName);
+    		if (parser == null) {
+    			parserContext.getReaderContext().fatal(
+    					"Cannot locate BeanDefinitionParser for element [" + localName + "]", element);
+    		}
+    		return parser;
+    	}
+    ```
+
+    ```java
+    /**
+     * Interface used by the {@link DefaultBeanDefinitionDocumentReader} to handle custom,
+     * top-level (directly under {@code <beans/>}) tags.
+     *
+     * <p>Implementations are free to turn the metadata in the custom tag into as many
+     * {@link BeanDefinition BeanDefinitions} as required.
+     *
+     * <p>The parser locates a {@link BeanDefinitionParser} from the associated
+     * {@link NamespaceHandler} for the namespace in which the custom tag resides.
+     *
+     * @author Rob Harrop
+     * @since 2.0
+     * @see NamespaceHandler
+     * @see AbstractBeanDefinitionParser
+     */
+    public interface BeanDefinitionParser {
+    
+    	/**
+    	 * Parse the specified {@link Element} and register the resulting
+    	 * {@link BeanDefinition BeanDefinition(s)} with the
+    	 * {@link org.springframework.beans.factory.xml.ParserContext#getRegistry() BeanDefinitionRegistry}
+    	 * embedded in the supplied {@link ParserContext}.
+    	 * <p>Implementations must return the primary {@link BeanDefinition} that results
+    	 * from the parse if they will ever be used in a nested fashion (for example as
+    	 * an inner tag in a {@code <property/>} tag). Implementations may return
+    	 * {@code null} if they will <strong>not</strong> be used in a nested fashion.
+    	 * @param element the element that is to be parsed into one or more {@link BeanDefinition BeanDefinitions}
+    	 * @param parserContext the object encapsulating the current state of the parsing process;
+    	 * provides access to a {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
+    	 * @return the primary {@link BeanDefinition}
+    	 */
+    	@Nullable
+    	BeanDefinition parse(Element element, ParserContext parserContext);
+    
+    }
+    ==> 实现类
+    public abstract class AbstractBeanDefinitionParser implements BeanDefinitionParser {
+    	...
+    	@Override
+    	@Nullable
+    	public final BeanDefinition parse(Element element, ParserContext parserContext) {
+    		AbstractBeanDefinition definition = parseInternal(element, parserContext);
+    		if (definition != null && !parserContext.isNested()) {
+    			try {
+    				String id = resolveId(element, definition, parserContext);
+    				if (!StringUtils.hasText(id)) {
+    					parserContext.getReaderContext().error(
+    							"Id is required for element '" + parserContext.getDelegate().getLocalName(element)
+    									+ "' when used as a top-level tag", element);
+    				}
+    				String[] aliases = null;
+    				if (shouldParseNameAsAliases()) {
+    					String name = element.getAttribute(NAME_ATTRIBUTE);
+    					if (StringUtils.hasLength(name)) {
+    						aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
+    					}
+    				}
+    				// 将AbstractBeanDefinition转换为BeanDefinitionHolder并注册
+    				BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, id, aliases);
+    				registerBeanDefinition(holder, parserContext.getRegistry());
+    				if (shouldFireEvents()) {
+    					// 需要通知监听器进行处理
+    					BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
+    					postProcessComponentDefinition(componentDefinition);
+    					parserContext.registerComponent(componentDefinition);
+    				}
+    			}
+    			catch (BeanDefinitionStoreException ex) {
+    				String msg = ex.getMessage();
+    				parserContext.getReaderContext().error((msg != null ? msg : ex.toString()), element);
+    				return null;
+    			}
+    		}
+    		return definition;
+    	}
+        ...
+    }
+    ```
+
+* 面向注解BeanDefinition解析: **AnnotatedBeanDefinitionReader**
+
+  ```
+  package com.holelin.readsource;
+  
+  import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+  import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+  
+  public class AnnotatedBeanDefinitionReaderDemo {
+  	public static void main(String[] args) {
+  		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+  		AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(beanFactory);
+  		int beanDefinitionCountBefore = beanFactory.getBeanDefinitionCount();
+  		beanDefinitionReader.register(AnnotatedBeanDefinitionReaderDemo.class);
+  		int beanDefinitionCountAfter = beanFactory.getBeanDefinitionCount();
+  		System.out.println("已加载 BeanDefinition 数量: " + (beanDefinitionCountAfter - beanDefinitionCountBefore));
+  		AnnotatedBeanDefinitionReaderDemo demo = beanFactory.getBean("annotatedBeanDefinitionReaderDemo", AnnotatedBeanDefinitionReaderDemo.class);
+  		System.out.println(demo);
+  	}
+  }
+  ```
+
+##### Spring Bean Class 加载阶段
+
+> ClassLoader 类加载
 >
-> * 面向资源
+> ```java
+> // org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])
+> 	/**
+> 	 * Central method of this class: creates a bean instance,
+> 	 * populates the bean instance, applies post-processors, etc.
+> 	 * @see #doCreateBean
+> 	 */
+> 	@Override
+> 	protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+> 			throws BeanCreationException {
+> 
+> 		if (logger.isTraceEnabled()) {
+> 			logger.trace("Creating instance of bean '" + beanName + "'");
+> 		}
+> 		RootBeanDefinition mbdToUse = mbd;
+> 
+> 		// 锁定class,根据设置的class属性或者根据className来解析Class
+> 		// Make sure bean class is actually resolved at this point, and
+> 		// clone the bean definition in case of a dynamically resolved Class
+> 		// which cannot be stored in the shared merged bean definition.
+> 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
+> 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
+> 			mbdToUse = new RootBeanDefinition(mbd);
+> 			mbdToUse.setBeanClass(resolvedClass);
+> 		}
+> 		// 验证以及准备覆盖的方法
+> 		// Prepare method overrides.
+> 		try {
+> 			// 对override属性进行标记以及验证,针对lookup-method和replace-method
+> 			mbdToUse.prepareMethodOverrides();
+> 		}
+> 		catch (BeanDefinitionValidationException ex) {
+> 			throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),
+> 					beanName, "Validation of method overrides failed", ex);
+> 		}
+> 		// ... 省略
+> 	}
+> 
+> // ==> org.springframework.beans.factory.support.AbstractBeanFactory#resolveBeanClass
+> 	/**
+> 	 * Resolve the bean class for the specified bean definition,
+> 	 * resolving a bean class name into a Class reference (if necessary)
+> 	 * and storing the resolved Class in the bean definition for further use.
+> 	 * @param mbd the merged bean definition to determine the class for
+> 	 * @param beanName the name of the bean (for error handling purposes)
+> 	 * @param typesToMatch the types to match in case of internal type matching purposes
+> 	 * (also signals that the returned {@code Class} will never be exposed to application code)
+> 	 * @return the resolved bean class (or {@code null} if none)
+> 	 * @throws CannotLoadBeanClassException if we failed to load the class
+> 	 */
+> 	protected Class<?> resolveBeanClass(final RootBeanDefinition mbd, String beanName, final Class<?>... typesToMatch)
+> 			throws CannotLoadBeanClassException {
+> 		try {
+> 			if (mbd.hasBeanClass()) {
+> 				return mbd.getBeanClass();
+> 			}
+> 			if (System.getSecurityManager() != null) {
+> 				return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
+> 					public Class<?> run() throws Exception {
+> 						return doResolveBeanClass(mbd, typesToMatch);
+> 					}
+> 				}, getAccessControlContext());
+> 			}
+> 			else {
+> 				return doResolveBeanClass(mbd, typesToMatch);
+> 			}
+> 		}
+> 		catch (PrivilegedActionException pae) {
+> 			ClassNotFoundException ex = (ClassNotFoundException) pae.getException();
+> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), ex);
+> 		}
+> 		catch (ClassNotFoundException ex) {
+> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), ex);
+> 		}
+> 		catch (LinkageError err) {
+> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), err);
+> 		}
+> 	}
+> ```
 >
->   * BeanDefinitionReader 
+> Java Security安全控制
 >
->     ![img](http://www.chenjunlin.vip/img/spring/BeanDefinitionReader类图.png)
->
->     ```java
->     /*
->      * Copyright 2002-2013 the original author or authors.
->      *
->      * Licensed under the Apache License, Version 2.0 (the "License");
->      * you may not use this file except in compliance with the License.
->      * You may obtain a copy of the License at
->      *
->      *      https://www.apache.org/licenses/LICENSE-2.0
->      *
->      * Unless required by applicable law or agreed to in writing, software
->      * distributed under the License is distributed on an "AS IS" BASIS,
->      * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
->      * See the License for the specific language governing permissions and
->      * limitations under the License.
->      */
->                         
->     package org.springframework.beans.factory.support;
->                         
->     import org.springframework.beans.factory.BeanDefinitionStoreException;
->     import org.springframework.core.io.Resource;
->     import org.springframework.core.io.ResourceLoader;
->                         
->     /**
->      * Simple interface for bean definition readers.
->      * Specifies load methods with Resource and String location parameters.
->      *
->      * <p>Concrete bean definition readers can of course add additional
->      * load and register methods for bean definitions, specific to
->      * their bean definition format.
->      *
->      * <p>Note that a bean definition reader does not have to implement
->      * this interface. It only serves as suggestion for bean definition
->      * readers that want to follow standard naming conventions.
->      *
->      * @author Juergen Hoeller
->      * @since 1.1
->      * @see org.springframework.core.io.Resource
->      */
->     public interface BeanDefinitionReader {
->                         
->     	/**
->     	 * Return the bean factory to register the bean definitions with.
->     	 * <p>The factory is exposed through the BeanDefinitionRegistry interface,
->     	 * encapsulating the methods that are relevant for bean definition handling.
->     	 */
->     	BeanDefinitionRegistry getRegistry();
->                         
->     	/**
->     	 * Return the resource loader to use for resource locations.
->     	 * Can be checked for the <b>ResourcePatternResolver</b> interface and cast
->     	 * accordingly, for loading multiple resources for a given resource pattern.
->     	 * <p>Null suggests that absolute resource loading is not available
->     	 * for this bean definition reader.
->     	 * <p>This is mainly meant to be used for importing further resources
->     	 * from within a bean definition resource, for example via the "import"
->     	 * tag in XML bean definitions. It is recommended, however, to apply
->     	 * such imports relative to the defining resource; only explicit full
->     	 * resource locations will trigger absolute resource loading.
->     	 * <p>There is also a {@code loadBeanDefinitions(String)} method available,
->     	 * for loading bean definitions from a resource location (or location pattern).
->     	 * This is a convenience to avoid explicit ResourceLoader handling.
->     	 * @see #loadBeanDefinitions(String)
->     	 * @see org.springframework.core.io.support.ResourcePatternResolver
->     	 */
->     	ResourceLoader getResourceLoader();
->                         
->     	/**
->     	 * Return the class loader to use for bean classes.
->     	 * <p>{@code null} suggests to not load bean classes eagerly
->     	 * but rather to just register bean definitions with class names,
->     	 * with the corresponding Classes to be resolved later (or never).
->     	 */
->     	ClassLoader getBeanClassLoader();
->                         
->     	/**
->     	 * Return the BeanNameGenerator to use for anonymous beans
->     	 * (without explicit bean name specified).
->     	 */
->     	BeanNameGenerator getBeanNameGenerator();
->     
->     
->     	/**
->     	 * Load bean definitions from the specified resource.
->     	 * @param resource the resource descriptor
->     	 * @return the number of bean definitions found
->     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->     	 */
->     	int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException;
->                         
->     	/**
->     	 * Load bean definitions from the specified resources.
->     	 * @param resources the resource descriptors
->     	 * @return the number of bean definitions found
->     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->     	 */
->     	int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException;
->                         
->     	/**
->     	 * Load bean definitions from the specified resource location.
->     	 * <p>The location can also be a location pattern, provided that the
->     	 * ResourceLoader of this bean definition reader is a ResourcePatternResolver.
->     	 * @param location the resource location, to be loaded with the ResourceLoader
->     	 * (or ResourcePatternResolver) of this bean definition reader
->     	 * @return the number of bean definitions found
->     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->     	 * @see #getResourceLoader()
->     	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource)
->     	 * @see #loadBeanDefinitions(org.springframework.core.io.Resource[])
->     	 */
->     	int loadBeanDefinitions(String location) throws BeanDefinitionStoreException;
->                         
->     	/**
->     	 * Load bean definitions from the specified resource locations.
->     	 * @param locations the resource locations, to be loaded with the ResourceLoader
->     	 * (or ResourcePatternResolver) of this bean definition reader
->     	 * @return the number of bean definitions found
->     	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->     	 */
->     	int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException;
->                         
+> ```java
+>     @CallerSensitive
+>     public static ClassLoader getSystemClassLoader() {
+>         initSystemClassLoader();
+>         if (scl == null) {
+>             return null;
+>         }
+>         SecurityManager sm = System.getSecurityManager();
+>         if (sm != null) {
+>             checkClassLoaderPermission(scl, Reflection.getCallerClass());
+>         }
+>         return scl;
 >     }
->     
->     
->     * XML配置: XMLBeanDefinitionReader
->                       
->       ```java
->       // org.springframework.context.support.AbstractApplicationContext#obtainFreshBeanFactory
->       // 路径: org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.support.DefaultListableBeanFactory)
->       	/**
->       	 * Loads the bean definitions via an XmlBeanDefinitionReader.
->       	 * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
->       	 * @see #initBeanDefinitionReader
->       	 * @see #loadBeanDefinitions
->       	 */
->       	@Override
->       	protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) throws BeansException, IOException {
->       		//  为指定beanFactory创建XmlBeanDefinitionReader
->       		// Create a new XmlBeanDefinitionReader for the given BeanFactory.
->       		XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
->                           
->       		// 对BeanDefinitionReader进行环境变量的设置
->       		// Configure the bean definition reader with this context's
->       		// resource loading environment.
->       		beanDefinitionReader.setEnvironment(this.getEnvironment());
->       		beanDefinitionReader.setResourceLoader(this);
->       		beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
->                           
->       		// 对BeanDefinitionReader进行设置值,可以覆盖
->       		// Allow a subclass to provide custom initialization of the reader,
->       		// then proceed with actually loading the bean definitions.
->       		initBeanDefinitionReader(beanDefinitionReader);
->       		loadBeanDefinitions(beanDefinitionReader);
->       	}
->       	// ==> org.springframework.context.support.AbstractXmlApplicationContext#loadBeanDefinitions(org.springframework.beans.factory.xml.XmlBeanDefinitionReader)
->       	/**
->       	 * Load the bean definitions with the given XmlBeanDefinitionReader.
->       	 * <p>The lifecycle of the bean factory is handled by the {@link #refreshBeanFactory}
->       	 * method; hence this method is just supposed to load and/or register bean definitions.
->       	 * @param reader the XmlBeanDefinitionReader to use
->       	 * @throws BeansException in case of bean registration errors
->       	 * @throws IOException if the required XML document isn't found
->       	 * @see #refreshBeanFactory
->       	 * @see #getConfigLocations
->       	 * @see #getResources
->       	 * @see #getResourcePatternResolver
->       	 */
->       	protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
->       		Resource[] configResources = getConfigResources();
->       		if (configResources != null) {
->       			reader.loadBeanDefinitions(configResources);
->       		}
->       		String[] configLocations = getConfigLocations();
->       		if (configLocations != null) {
->       			reader.loadBeanDefinitions(configLocations);
->       		}
->       	}
->       	// ==> org.springframework.beans.factory.support.AbstractBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.Resource...)
->       	public int loadBeanDefinitions(Resource... resources) throws BeanDefinitionStoreException {
->       		Assert.notNull(resources, "Resource array must not be null");
->       		int counter = 0;
->       		for (Resource resource : resources) {
->       			counter += loadBeanDefinitions(resource);
->       		}
->       		return counter;
->       	}
->       ```
->                       
->     * Properties配置: PropertiesBeanDefinitionReader
->                       
->       ```java
->       	/**
->       	 * Load bean definitions from the specified properties file.
->       	 * @param encodedResource the resource descriptor for the properties file,
->       	 * allowing to specify an encoding to use for parsing the file
->       	 * @param prefix a filter within the keys in the map: e.g. 'beans.'
->       	 * (can be empty or {@code null})
->       	 * @return the number of bean definitions found
->       	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->       	 */
->       	public int loadBeanDefinitions(EncodedResource encodedResource, @Nullable String prefix)
->       			throws BeanDefinitionStoreException {
->                           
->       		if (logger.isTraceEnabled()) {
->       			logger.trace("Loading properties bean definitions from " + encodedResource);
->       		}
->                           
->       		Properties props = new Properties();
->       		try {
->       			try (InputStream is = encodedResource.getResource().getInputStream()) {
->       				if (encodedResource.getEncoding() != null) {
->       					getPropertiesPersister().load(props, new InputStreamReader(is, encodedResource.getEncoding()));
->       				}
->       				else {
->       					getPropertiesPersister().load(props, is);
->       				}
->       			}
->                           
->       			int count = registerBeanDefinitions(props, prefix, encodedResource.getResource().getDescription());
->       			if (logger.isDebugEnabled()) {
->       				logger.debug("Loaded " + count + " bean definitions from " + encodedResource);
->       			}
->       			return count;
->       		}
->       		catch (IOException ex) {
->       			throw new BeanDefinitionStoreException("Could not parse properties from " + encodedResource.getResource(), ex);
->       		}
->       	}
->       ```
->   
-> * 面向注解
+> 
+> ```
 >
->   * @Configuration
->   * @Bean
->   * @Componet
->
-> * 面向API: BeanDefinitionBuilder
-
-##### Spring Bean元信息解析阶段
-
-> * 面向资源BeanDefinition解析
->
->   ```java
->   // 路径: org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.Resource)
->   	/**
->   	 * Load bean definitions from the specified XML file.
->   	 * @param resource the resource descriptor for the XML file
->   	 * @return the number of bean definitions found
->   	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->   	 */
->   	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
->   		return loadBeanDefinitions(new EncodedResource(resource));
->   	}
->   // ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#loadBeanDefinitions(org.springframework.core.io.support.EncodedResource)
->   	/**
->   	 * Load bean definitions from the specified XML file.
->   	 * @param encodedResource the resource descriptor for the XML file,
->   	 * allowing to specify an encoding to use for parsing the file
->   	 * @return the number of bean definitions found
->   	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->   	 */
->   	public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
->   		Assert.notNull(encodedResource, "EncodedResource must not be null");
->   		if (logger.isInfoEnabled()) {
->   			logger.info("Loading XML bean definitions from " + encodedResource.getResource());
->   		}
->
->   		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
->   		if (currentResources == null) {
->   			currentResources = new HashSet<EncodedResource>(4);
->   			this.resourcesCurrentlyBeingLoaded.set(currentResources);
->   		}
->   		if (!currentResources.add(encodedResource)) {
->   			throw new BeanDefinitionStoreException(
->   					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
->   		}
->   		try {
->   			InputStream inputStream = encodedResource.getResource().getInputStream();
->   			try {
->   				InputSource inputSource = new InputSource(inputStream);
->   				if (encodedResource.getEncoding() != null) {
->   					inputSource.setEncoding(encodedResource.getEncoding());
->   				}
->                   // 核心方法
->   				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
->   			}
->   			finally {
->   				inputStream.close();
->   			}
->   		}
->   		catch (IOException ex) {
->   			throw new BeanDefinitionStoreException(
->   					"IOException parsing XML document from " + encodedResource.getResource(), ex);
->   		}
->   		finally {
->   			currentResources.remove(encodedResource);
->   			if (currentResources.isEmpty()) {
->   				this.resourcesCurrentlyBeingLoaded.remove();
->   			}
->   		}
->   	}
->   // ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#doLoadBeanDefinitions
->   	/**
->   	 * Actually load bean definitions from the specified XML file.
->   	 * @param inputSource the SAX InputSource to read from
->   	 * @param resource the resource descriptor for the XML file
->   	 * @return the number of bean definitions found
->   	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
->   	 */
->   	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
->   			throws BeanDefinitionStoreException {
->   		try {
->   			int validationMode = getValidationModeForResource(resource);
->   			Document doc = this.documentLoader.loadDocument(
->   					inputSource, getEntityResolver(), this.errorHandler, validationMode, isNamespaceAware());
->               // 入口
->   			return registerBeanDefinitions(doc, resource);
->   		}
->   		catch (BeanDefinitionStoreException ex) {
->   			throw ex;
->   		}
->   		catch (SAXParseException ex) {
->   			throw new XmlBeanDefinitionStoreException(resource.getDescription(),
->   					"Line " + ex.getLineNumber() + " in XML document from " + resource + " is invalid", ex);
->   		}
->   		catch (SAXException ex) {
->   			throw new XmlBeanDefinitionStoreException(resource.getDescription(),
->   					"XML document from " + resource + " is invalid", ex);
->   		}
->   		catch (ParserConfigurationException ex) {
->   			throw new BeanDefinitionStoreException(resource.getDescription(),
->   					"Parser configuration exception parsing XML from " + resource, ex);
->   		}
->   		catch (IOException ex) {
->   			throw new BeanDefinitionStoreException(resource.getDescription(),
->   					"IOException parsing XML document from " + resource, ex);
->   		}
->   		catch (Throwable ex) {
->   			throw new BeanDefinitionStoreException(resource.getDescription(),
->   					"Unexpected exception parsing XML document from " + resource, ex);
->   		}
->   	}
->   // ==> org.springframework.beans.factory.xml.XmlBeanDefinitionReader#registerBeanDefinitions
->   	/**
->   	 * Register the bean definitions contained in the given DOM document.
->   	 * Called by {@code loadBeanDefinitions}.
->   	 * <p>Creates a new instance of the parser class and invokes
->   	 * {@code registerBeanDefinitions} on it.
->   	 * @param doc the DOM document
->   	 * @param resource the resource descriptor (for context information)
->   	 * @return the number of bean definitions found
->   	 * @throws BeanDefinitionStoreException in case of parsing errors
->   	 * @see #loadBeanDefinitions
->   	 * @see #setDocumentReaderClass
->   	 * @see BeanDefinitionDocumentReader#registerBeanDefinitions
->   	 */
->   	@SuppressWarnings("deprecation")
->   	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
->   		// 使用DefaultBeanDefinitionDocument实例化BeanDefinitionDocumentReader
->   		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
->   		// 将环境变量设置其中
->   		documentReader.setEnvironment(getEnvironment());
->   		// 在实例化BeanDefinitionReader时候会将BeanDefinitionRegistry传入,默认使用继承自DefaultListableBeanFactory
->   		// 记录统计前BeanDefinition的加载个数
->   		int countBefore = getRegistry().getBeanDefinitionCount();
->   		// 加载及注册bean
->   		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
->   		// 记录本次加载的BeanDefinition个数
->   		return getRegistry().getBeanDefinitionCount() - countBefore;
->   	}
->   ```
->
->   ```java
->   // ==> org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader#registerBeanDefinitions
->   	/**
->   	 * This implementation parses bean definitions according to the "spring-beans" XSD
->   	 * (or DTD, historically).
->   	 * <p>Opens a DOM Document; then initializes the default settings
->   	 * specified at the {@code <beans/>} level; then parses the contained bean definitions.
->   	 */
->   	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
->   		this.readerContext = readerContext;
->   		logger.debug("Loading bean definitions");
->   		Element root = doc.getDocumentElement();
->   		doRegisterBeanDefinitions(root);
->   	}
->   // ==> 
->   	/**
->   	 * Register each bean definition within the given root {@code <beans/>} element.
->   	 */
->   	protected void doRegisterBeanDefinitions(Element root) {
->   		// 处理profile属性
->   		String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
->   		if (StringUtils.hasText(profileSpec)) {
->   			String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
->   					profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
->   			if (!getEnvironment().acceptsProfiles(specifiedProfiles)) {
->   				return;
->   			}
->   		}
->
->   		// Any nested <beans> elements will cause recursion in this method. In
->   		// order to propagate and preserve <beans> default-* attributes correctly,
->   		// keep track of the current (parent) delegate, which may be null. Create
->   		// the new (child) delegate with a reference to the parent for fallback purposes,
->   		// then ultimately reset this.delegate back to its original (parent) reference.
->   		// this behavior emulates a stack of delegates without actually necessitating one.
->   		// 专门处理解析
->   		BeanDefinitionParserDelegate parent = this.delegate;
->   		this.delegate = createDelegate(this.readerContext, root, parent);
->
->   		// 解析前处理,留给子类实现
->   		preProcessXml(root);
->   		// 入口
->   		parseBeanDefinitions(root, this.delegate);
->   		// 解析后处理,留给子类实现
->   		postProcessXml(root);
->
->   		this.delegate = parent;
->   	}
->   // org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader#parseBeanDefinitions
->   	/**
->   	 * Parse the elements at the root level in the document:
->   	 * "import", "alias", "bean".
->   	 * @param root the DOM root element of the document
->   	 */
->   	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
->   		if (delegate.isDefaultNamespace(root)) {
->   			NodeList nl = root.getChildNodes();
->   			for (int i = 0; i < nl.getLength(); i++) {
->   				Node node = nl.item(i);
->   				if (node instanceof Element) {
->   					Element ele = (Element) node;
->   					if (delegate.isDefaultNamespace(ele)) {
->   						// 解析默认标签
->   						parseDefaultElement(ele, delegate);
->   					}
->   					else {
->   						// 解析自定义标签
->   						delegate.parseCustomElement(ele);
->   					}
->   				}
->   			}
->   		}
->   		else {
->   			// 解析自定义标签
->   			delegate.parseCustomElement(root);
->   		}
->   	}
->   // org.springframework.beans.factory.xml.BeanDefinitionParserDelegate#parseCustomElement(org.w3c.dom.Element)
->   	public BeanDefinition parseCustomElement(Element ele) {
->   		return parseCustomElement(ele, null);
->   	}
->
->   	/**
->   	 * 1. 创建一个需要扩展的组件
->   	 * 2. 定义一个XSD文件描述组件内容
->   	 * 3. 创建一个文件,实现BeanDefinitionParser接口,用来解析XSD文件中定义和组件定义
->   	 * 4. 创建一个Handler文件,扩展自NamespaceHandlerSupport,目的是将组件注册到Spring容器
->   	 * 5. 编写Spring.handlers和Spring.schemas文件
->   	 * @param containingBd 父类bean,对顶层元素的解析设置为null
->   	 */
->   	public BeanDefinition parseCustomElement(Element ele, BeanDefinition containingBd) {
->   		// 获取对应命名空间
->   		String namespaceUri = getNamespaceURI(ele);
->   		// 根据命名空间找到对应的NamespaceHandler
->   		NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
->   		if (handler == null) {
->   			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
->   			return null;
->   		}
->   		// 调用自定义的NamespaceHandler进行解析
->   		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
->   	}
->   //  org.springframework.beans.factory.xml.NamespaceHandlerSupport#parse
->   	/**
->   	 * Parses the supplied {@link Element} by delegating to the {@link BeanDefinitionParser} that is
->   	 * registered for that {@link Element}.
->   	 */
->   	public BeanDefinition parse(Element element, ParserContext parserContext) {
->   		// 寻找解析器并进行解析操作 BeanDefinitionParser#parse
->   		return findParserForElement(element, parserContext).parse(element, parserContext);
->   	}
->
->   	/**
->   	 * Locates the {@link BeanDefinitionParser} from the register implementations using
->   	 * the local name of the supplied {@link Element}.
->   	 */
->   	private BeanDefinitionParser findParserForElement(Element element, ParserContext parserContext) {
->   		// 获取元素名称,也就是<myname:user中的user,若在示例中,此时localName为user
->   		String localName = parserContext.getDelegate().getLocalName(element);
->   		// 根据user找到对应的解析器,也就是在
->   		// registerBeanDefinitionParser("user",new UserBeanDefinitionParser());
->   		// 注册的解析器
->   		BeanDefinitionParser parser = this.parsers.get(localName);
->   		if (parser == null) {
->   			parserContext.getReaderContext().fatal(
->   					"Cannot locate BeanDefinitionParser for element [" + localName + "]", element);
->   		}
->   		return parser;
->   	}
->   ```
->
->   * XML解析器: **BeanDefinitionParser**
->
->     ![img](http://www.chenjunlin.vip/img/spring/BeanDefinitionParser类图.png)
->
->     ```java
->     /**
->      * Interface used by the {@link DefaultBeanDefinitionDocumentReader} to handle custom,
->      * top-level (directly under {@code <beans/>}) tags.
->      *
->      * <p>Implementations are free to turn the metadata in the custom tag into as many
->      * {@link BeanDefinition BeanDefinitions} as required.
->      *
->      * <p>The parser locates a {@link BeanDefinitionParser} from the associated
->      * {@link NamespaceHandler} for the namespace in which the custom tag resides.
->      *
->      * @author Rob Harrop
->      * @since 2.0
->      * @see NamespaceHandler
->      * @see AbstractBeanDefinitionParser
->      */
->     public interface BeanDefinitionParser {
->             
->     	/**
->     	 * Parse the specified {@link Element} and register the resulting
->     	 * {@link BeanDefinition BeanDefinition(s)} with the
->     	 * {@link org.springframework.beans.factory.xml.ParserContext#getRegistry() BeanDefinitionRegistry}
->     	 * embedded in the supplied {@link ParserContext}.
->     	 * <p>Implementations must return the primary {@link BeanDefinition} that results
->     	 * from the parse if they will ever be used in a nested fashion (for example as
->     	 * an inner tag in a {@code <property/>} tag). Implementations may return
->     	 * {@code null} if they will <strong>not</strong> be used in a nested fashion.
->     	 * @param element the element that is to be parsed into one or more {@link BeanDefinition BeanDefinitions}
->     	 * @param parserContext the object encapsulating the current state of the parsing process;
->     	 * provides access to a {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
->     	 * @return the primary {@link BeanDefinition}
->     	 */
->     	@Nullable
->     	BeanDefinition parse(Element element, ParserContext parserContext);
->             
->     }
->     ==> 实现类
->     public abstract class AbstractBeanDefinitionParser implements BeanDefinitionParser {
->     	...
->     	@Override
->     	@Nullable
->     	public final BeanDefinition parse(Element element, ParserContext parserContext) {
->     		AbstractBeanDefinition definition = parseInternal(element, parserContext);
->     		if (definition != null && !parserContext.isNested()) {
->     			try {
->     				String id = resolveId(element, definition, parserContext);
->     				if (!StringUtils.hasText(id)) {
->     					parserContext.getReaderContext().error(
->     							"Id is required for element '" + parserContext.getDelegate().getLocalName(element)
->     									+ "' when used as a top-level tag", element);
->     				}
->     				String[] aliases = null;
->     				if (shouldParseNameAsAliases()) {
->     					String name = element.getAttribute(NAME_ATTRIBUTE);
->     					if (StringUtils.hasLength(name)) {
->     						aliases = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(name));
->     					}
->     				}
->     				// 将AbstractBeanDefinition转换为BeanDefinitionHolder并注册
->     				BeanDefinitionHolder holder = new BeanDefinitionHolder(definition, id, aliases);
->     				registerBeanDefinition(holder, parserContext.getRegistry());
->     				if (shouldFireEvents()) {
->     					// 需要通知监听器进行处理
->     					BeanComponentDefinition componentDefinition = new BeanComponentDefinition(holder);
->     					postProcessComponentDefinition(componentDefinition);
->     					parserContext.registerComponent(componentDefinition);
->     				}
->     			}
->     			catch (BeanDefinitionStoreException ex) {
->     				String msg = ex.getMessage();
->     				parserContext.getReaderContext().error((msg != null ? msg : ex.toString()), element);
->     				return null;
->     			}
->     		}
->     		return definition;
->     	}
->         ...
->     }
->     ```
->
-> * 面向注解BeanDefinition解析: **AnnotatedBeanDefinitionReader**
->
->   ```java
->   package com.holelin.readsource;
->             
->   import org.springframework.beans.factory.support.DefaultListableBeanFactory;
->   import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
->             
->   public class AnnotatedBeanDefinitionReaderDemo {
->   	public static void main(String[] args) {
->   		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
->   		AnnotatedBeanDefinitionReader beanDefinitionReader = new AnnotatedBeanDefinitionReader(beanFactory);
->   		int beanDefinitionCountBefore = beanFactory.getBeanDefinitionCount();
->   		beanDefinitionReader.register(AnnotatedBeanDefinitionReaderDemo.class);
->   		int beanDefinitionCountAfter = beanFactory.getBeanDefinitionCount();
->   		System.out.println("已加载 BeanDefinition 数量: " + (beanDefinitionCountAfter - beanDefinitionCountBefore));
->   		AnnotatedBeanDefinitionReaderDemo demo = beanFactory.getBean("annotatedBeanDefinitionReaderDemo", AnnotatedBeanDefinitionReaderDemo.class);
->   		System.out.println(demo);
->   	}
->   }
->   ```
-
-##### Spring Bean注册阶段
-
-> BeanDefinition注册接口
->
-> * **BeanDefinitionRegistry**
->
->   ```java
->   /*
->    * Copyright 2002-2018 the original author or authors.
->    *
->    * Licensed under the Apache License, Version 2.0 (the "License");
->    * you may not use this file except in compliance with the License.
->    * You may obtain a copy of the License at
->    *
->    *      https://www.apache.org/licenses/LICENSE-2.0
->    *
->    * Unless required by applicable law or agreed to in writing, software
->    * distributed under the License is distributed on an "AS IS" BASIS,
->    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
->    * See the License for the specific language governing permissions and
->    * limitations under the License.
->    */
->             
->   package org.springframework.beans.factory.support;
->             
->   import org.springframework.beans.factory.BeanDefinitionStoreException;
->   import org.springframework.beans.factory.NoSuchBeanDefinitionException;
->   import org.springframework.beans.factory.config.BeanDefinition;
->   import org.springframework.core.AliasRegistry;
->             
->   /**
->    * Interface for registries that hold bean definitions, for example RootBeanDefinition
->    * and ChildBeanDefinition instances. Typically implemented by BeanFactories that
->    * internally work with the AbstractBeanDefinition hierarchy.
->    *
->    * <p>This is the only interface in Spring's bean factory packages that encapsulates
->    * <i>registration</i> of bean definitions. The standard BeanFactory interfaces
->    * only cover access to a <i>fully configured factory instance</i>.
->    *
->    * <p>Spring's bean definition readers expect to work on an implementation of this
->    * interface. Known implementors within the Spring core are DefaultListableBeanFactory
->    * and GenericApplicationContext.
->    *
->    * @author Juergen Hoeller
->    * @since 26.11.2003
->    * @see org.springframework.beans.factory.config.BeanDefinition
->    * @see AbstractBeanDefinition
->    * @see RootBeanDefinition
->    * @see ChildBeanDefinition
->    * @see DefaultListableBeanFactory
->    * @see org.springframework.context.support.GenericApplicationContext
->    * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
->    * @see PropertiesBeanDefinitionReader
->    */
->   public interface BeanDefinitionRegistry extends AliasRegistry {
->             
->   	/**
->   	 * Register a new bean definition with this registry.
->   	 * Must support RootBeanDefinition and ChildBeanDefinition.
->   	 * @param beanName the name of the bean instance to register
->   	 * @param beanDefinition definition of the bean instance to register
->   	 * @throws BeanDefinitionStoreException if the BeanDefinition is invalid
->   	 * @throws BeanDefinitionOverrideException if there is already a BeanDefinition
->   	 * for the specified bean name and we are not allowed to override it
->   	 * @see GenericBeanDefinition
->   	 * @see RootBeanDefinition
->   	 * @see ChildBeanDefinition
->   	 */
->   	void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
->   			throws BeanDefinitionStoreException;
->             
->   	/**
->   	 * Remove the BeanDefinition for the given name.
->   	 * @param beanName the name of the bean instance to register
->   	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
->   	 */
->   	void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
->             
->   	/**
->   	 * Return the BeanDefinition for the given bean name.
->   	 * @param beanName name of the bean to find a definition for
->   	 * @return the BeanDefinition for the given name (never {@code null})
->   	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
->   	 */
->   	BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
->             
->   	/**
->   	 * Check if this registry contains a bean definition with the given name.
->   	 * @param beanName the name of the bean to look for
->   	 * @return if this registry contains a bean definition with the given name
->   	 */
->   	boolean containsBeanDefinition(String beanName);
->             
->   	/**
->   	 * Return the names of all beans defined in this registry.
->   	 * @return the names of all beans defined in this registry,
->   	 * or an empty array if none defined
->   	 */
->   	String[] getBeanDefinitionNames();
->             
->   	/**
->   	 * Return the number of beans defined in the registry.
->   	 * @return the number of beans defined in the registry
->   	 */
->   	int getBeanDefinitionCount();
->             
->   	/**
->   	 * Determine whether the given bean name is already in use within this registry,
->   	 * i.e. whether there is a local bean or alias registered under this name.
->   	 * @param beanName the name to check
->   	 * @return whether the given bean name is already in use
->   	 */
->   	boolean isBeanNameInUse(String beanName);
->             
->   }
->   ```
->   
->   ```java
->   	//---------------------------------------------------------------------
->   	// Implementation of BeanDefinitionRegistry interface
->   	//---------------------------------------------------------------------
->             
->   	public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
->   			throws BeanDefinitionStoreException {
->             
->   		Assert.hasText(beanName, "Bean name must not be empty");
->   		Assert.notNull(beanDefinition, "BeanDefinition must not be null");
->             
->   		if (beanDefinition instanceof AbstractBeanDefinition) {
->   			try {
->   				/**
->   				 * 注册前的最后一次校验,这里的校验不同于之前的XML文件校验
->   				 * 主要是对于AbstractBeanDefinition属性中的methodOverrides校验
->   				 * 校验methodOverrides是否与工厂方法并存或者methodOverrides对应的方法根本不存在
->   				 */
->   				((AbstractBeanDefinition) beanDefinition).validate();
->   			}
->   			catch (BeanDefinitionValidationException ex) {
->   				throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
->   						"Validation of bean definition failed", ex);
->   			}
->   		}
->             
->   		BeanDefinition oldBeanDefinition;
->             
->   		// 因为beanDefinitionMap是全局变量,这里定会存在并发访问的情况
->   		synchronized (this.beanDefinitionMap) {
->   			oldBeanDefinition = this.beanDefinitionMap.get(beanName);
->   			// 处理注册已经注册的beanName情况
->   			if (oldBeanDefinition != null) {
->   				// 如果对应的BeanName已经注册且在配置中配置了bean不允许被覆盖,则抛出异常
->   				if (!this.allowBeanDefinitionOverriding) {
->   					throw new BeanDefinitionStoreException(beanDefinition.getResourceDescription(), beanName,
->   							"Cannot register bean definition [" + beanDefinition + "] for bean '" + beanName +
->   							"': There is already [" + oldBeanDefinition + "] bound.");
->   				}
->   				else {
->   					if (this.logger.isInfoEnabled()) {
->   						this.logger.info("Overriding bean definition for bean '" + beanName +
->   								"': replacing [" + oldBeanDefinition + "] with [" + beanDefinition + "]");
->   					}
->   				}
->   			}
->   			else {
->   				// 记录beanName 用List保证注册顺序
->                  	/** List of bean definition names, in registration order */ 
->   				// private final List<String> beanDefinitionNames = new ArrayList<String>(64);
->   				this.beanDefinitionNames.add(beanName);
->   				this.frozenBeanDefinitionNames = null;
->   			}
->   			// 注册beanDefinition
->   			this.beanDefinitionMap.put(beanName, beanDefinition);
->   		}
->             
->   		if (oldBeanDefinition != null || containsSingleton(beanName)) {
->   			// 重置所有beanName对应的缓存
->   			resetBeanDefinition(beanName);
->   		}
->   	}
->   ```
+> ConfigurableBeanFactory 临时ClassLoader
 
 ##### Spring BeanDefinition合并阶段
 
@@ -1173,113 +1137,13 @@ categories:
 	}
 ```
 
-##### Spring Bean Class 加载阶段
+##### 
 
-> ClassLoader 类加载
->
-> ```java
-> // org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])
-> 	/**
-> 	 * Central method of this class: creates a bean instance,
-> 	 * populates the bean instance, applies post-processors, etc.
-> 	 * @see #doCreateBean
-> 	 */
-> 	@Override
-> 	protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
-> 			throws BeanCreationException {
-> 
-> 		if (logger.isTraceEnabled()) {
-> 			logger.trace("Creating instance of bean '" + beanName + "'");
-> 		}
-> 		RootBeanDefinition mbdToUse = mbd;
-> 
-> 		// 锁定class,根据设置的class属性或者根据className来解析Class
-> 		// Make sure bean class is actually resolved at this point, and
-> 		// clone the bean definition in case of a dynamically resolved Class
-> 		// which cannot be stored in the shared merged bean definition.
-> 		Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
-> 		if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
-> 			mbdToUse = new RootBeanDefinition(mbd);
-> 			mbdToUse.setBeanClass(resolvedClass);
-> 		}
-> 		// 验证以及准备覆盖的方法
-> 		// Prepare method overrides.
-> 		try {
-> 			// 对override属性进行标记以及验证,针对lookup-method和replace-method
-> 			mbdToUse.prepareMethodOverrides();
-> 		}
-> 		catch (BeanDefinitionValidationException ex) {
-> 			throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),
-> 					beanName, "Validation of method overrides failed", ex);
-> 		}
-> 		// ... 省略
-> 	}
-> 
-> // ==> org.springframework.beans.factory.support.AbstractBeanFactory#resolveBeanClass
-> 	/**
-> 	 * Resolve the bean class for the specified bean definition,
-> 	 * resolving a bean class name into a Class reference (if necessary)
-> 	 * and storing the resolved Class in the bean definition for further use.
-> 	 * @param mbd the merged bean definition to determine the class for
-> 	 * @param beanName the name of the bean (for error handling purposes)
-> 	 * @param typesToMatch the types to match in case of internal type matching purposes
-> 	 * (also signals that the returned {@code Class} will never be exposed to application code)
-> 	 * @return the resolved bean class (or {@code null} if none)
-> 	 * @throws CannotLoadBeanClassException if we failed to load the class
-> 	 */
-> 	protected Class<?> resolveBeanClass(final RootBeanDefinition mbd, String beanName, final Class<?>... typesToMatch)
-> 			throws CannotLoadBeanClassException {
-> 		try {
-> 			if (mbd.hasBeanClass()) {
-> 				return mbd.getBeanClass();
-> 			}
-> 			if (System.getSecurityManager() != null) {
-> 				return AccessController.doPrivileged(new PrivilegedExceptionAction<Class<?>>() {
-> 					public Class<?> run() throws Exception {
-> 						return doResolveBeanClass(mbd, typesToMatch);
-> 					}
-> 				}, getAccessControlContext());
-> 			}
-> 			else {
-> 				return doResolveBeanClass(mbd, typesToMatch);
-> 			}
-> 		}
-> 		catch (PrivilegedActionException pae) {
-> 			ClassNotFoundException ex = (ClassNotFoundException) pae.getException();
-> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), ex);
-> 		}
-> 		catch (ClassNotFoundException ex) {
-> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), ex);
-> 		}
-> 		catch (LinkageError err) {
-> 			throw new CannotLoadBeanClassException(mbd.getResourceDescription(), beanName, mbd.getBeanClassName(), err);
-> 		}
-> 	}
-> ```
->
-> Java Security安全控制
->
-> ```java
->     @CallerSensitive
->     public static ClassLoader getSystemClassLoader() {
->         initSystemClassLoader();
->         if (scl == null) {
->             return null;
->         }
->         SecurityManager sm = System.getSecurityManager();
->         if (sm != null) {
->             checkClassLoaderPermission(scl, Reflection.getCallerClass());
->         }
->         return scl;
->     }
-> 
-> ```
->
-> ConfigurableBeanFactory 临时ClassLoader
+
 
 ##### Spring Bean 实例化阶段
 
-###### 前阶段: 非主流生命周期
+###### 前阶段
 
 > org.springframework.beans.factory.config.**InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation**
 
@@ -2312,7 +2176,7 @@ categories:
 
 > 方法回调: 
 >
-> * Spring 4.1+ : org.springframework.beans.factory.**SmartInitializingSingleton#afterSingletonsInstantiated**
+> * Spring 4.1+ : org.springframework.beans.factory.**SmartInitializingSingleton#afterSingletonsInstantiated()**
 >   * 通常在Spring ApplicationContext使用 org.springframework.beans.factory.config.**ConfigurableListableBeanFactory#preInstantiateSingletons()**
 >
 > ```java
@@ -2412,6 +2276,8 @@ categories:
 > * 关闭Spring容器(应用上下文)
 > * 执行GC
 > * SpringBean覆盖finalize()方法被回调
+
+![img](http://www.chenjunlin.vip/img/spring/SpringBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
 
 #### 补充描述
 
