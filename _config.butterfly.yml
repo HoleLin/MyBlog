@@ -80,11 +80,11 @@ katex:
 # --------------------------------------
 
 # Favicon（網站圖標）
-favicon: /img/favicon.jpg
+favicon: http://www.chenjunlin.vip/img/favicon.jpg
 
 # Avatar (頭像)
 avatar:
-  img: /img/avater.jpg
+  img: http://www.chenjunlin.vip/img/avater.jpg
   effect: true
 
 # Disable all banner image
