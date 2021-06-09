@@ -2,6 +2,7 @@
 title: Git学习笔记(待补充)
 date: 2021-06-02 20:13:10
 index_img: /img/cover/Git.jpg
+cover: /img/cover/Git.jpg
 tags: 
 - git
 categories: 

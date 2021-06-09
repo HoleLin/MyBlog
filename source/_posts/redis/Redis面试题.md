@@ -2,6 +2,7 @@
 title:  Redis 面试题
 date: 2021-05-30 16:33:33
 index_img: /img/cover/Redis.jpg
+cover: /img/cover/Redis.jpg
 tags: 
 - Redis
 - 面试题

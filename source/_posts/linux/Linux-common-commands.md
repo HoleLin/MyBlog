@@ -2,6 +2,8 @@
 title: Linux常用命令
 date: 2021-05-30 16:52:41
 index_img: /img/cover/Linux.jpg
+cover: /img/cover/Linux.jpg
+
 tags:
 - linux
 - 常用命令

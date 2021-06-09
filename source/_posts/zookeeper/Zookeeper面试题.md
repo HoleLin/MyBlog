@@ -2,6 +2,7 @@
 title: Zookeeper面试题-Kafka相关(待重新整理)
 date: 2021-06-03 23:37:06
 index_img: /img/cover/Zookeeper.jpg
+cover: /img/cover/Zookeeper.jpg
 tags:
 - 中间件
 - 面试题

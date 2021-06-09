@@ -2,6 +2,7 @@
 title: pm2
 date: 2021-05-25 22:33:12
 index_img: /img/cover/Node.jpg
+cover: /img/cover/Node.jpg
 tags:
 - pm2 
 - node

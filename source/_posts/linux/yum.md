@@ -1,6 +1,7 @@
 ---
 title: yum配置
 date: 2021-05-30 16:25:54
+cover: /img/cover/Linux.jpg
 tags: 
 - yum
 categories:

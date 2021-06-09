@@ -2,11 +2,11 @@
 title: Kafka架构原理
 date: 2021-05-25 22:46:55
 index_img: /img/cover/Kafka.jpg
+cover: /img/cover/Kafka.jpg
 tags:
 - 中间件
 - Kafka
 categories: 
-- Java
 - Kafka
 mermaid: true
 ---

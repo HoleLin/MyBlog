@@ -2,6 +2,7 @@
 title: Kafka面试题(收集未整理)
 date: 2021-06-03 22:56:20
 index_img: /img/cover/Kafka.jpg
+cover: /img/cover/Kafka.jpg
 tags:
 - 中间件
 - 面试题
