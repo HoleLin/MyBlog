@@ -412,7 +412,7 @@ footer:
   owner:
     enable: true
     since: 2021
-  custom_text:  <a href="icp鏈接"><img class="icp-icon" src="/img/police_beian.png"><span>苏ICP备18063010号-2</span></a>
+  custom_text: <a href="icp鏈接"><img class="icp-icon" src="/img/police_beian.png"><span>苏ICP备18063010号-2</span></a>
   copyright: true # Copyright of theme and framework
 
 # Analysis
