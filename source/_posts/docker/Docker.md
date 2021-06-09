@@ -2,6 +2,7 @@
 title: Docker常用命令
 date: 2021-05-24 22:33:33
 index_img: /img/cover/Docker.jpg
+cover: /img/cover/Docker.jpg
 tags: docker
 categories: Docker
 ---
