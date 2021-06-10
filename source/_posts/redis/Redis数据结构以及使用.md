@@ -57,14 +57,22 @@ mermaid: true
     * ex seconds: 为键设置秒级过期时间;
     * px milliseconds: 为键设置毫秒级过期时间;
     * nx: 键必须不存在,才可以设置成功,用于添加.
-    * xx: 与nx相反,键必须存在,才可以设置成功,用于更新.
 
   * **setex,setnx,setxx**
 
-    * `setex key seconds value`
+    * `setex key seconds value `设置指定 key 的值为 value，并将 key 的过期时间设为 seconds (以秒为单位)。
+
     * `setnx key value`
+
+      > * 设置指定 key 的值为 value，只有在 key 不存在时设置 key 的值。
+      >
+      > * setnx（SET if Not eXists） 命令在指定的 key 不存在时，为 key 设置指定的值。
+      >
+      > * 设置成功，返回 1 。 设置失败，返回 0 。
+
     * `setxx key value`
-    * `setnx`和`setxx`使用场景: 如果有多个客户端同事执行`setnx key value`,根据`setnx`的特性只有一个客户端能设置成功,`setnx`可以作为分布式锁的一种实现方案.Redis官方给出了使用`setnx`实现分布式锁的方法:https://redis.io/topics/distlock
+
+    * `setnx`使用场景: 如果有多个客户端同时执行`setnx key value`,根据`setnx`的特性只有一个客户端能设置成功,`setnx`可以作为分布式锁的一种实现方案.Redis官方给出了使用`setnx`实现分布式锁的方法:https://redis.io/topics/distlock
 
   * **获取值**: `get key`
 
