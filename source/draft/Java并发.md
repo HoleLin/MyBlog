@@ -2,6 +2,7 @@
 title: Java并发
 date: 2021-06-07 23:11:45
 index_img: /img/cover/Java.jpg
+cover: /img/cover/Java.jpg
 tags:
 - 多线程
 categories:
