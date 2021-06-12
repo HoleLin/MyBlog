@@ -110,10 +110,7 @@ highlight_shrink:
 
 ### **分库分表工具**
 
-* sharding-sphere：jar，前身是sharding-jdbc；
-
-* TDDL：jar，Taobao Distribute Data Layer；
-* Mycat：中间件。
+![img](http://www.chenjunlin.vip/img/mysql/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8.jpg)
 
 ### **分库分表步骤**
 
