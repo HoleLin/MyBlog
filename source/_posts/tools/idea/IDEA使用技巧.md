@@ -1,0 +1,25 @@
+---
+title: IDEA使用技巧
+date: 2021-05-26 22:51:33
+tags: 
+- IDEA
+categories: 
+- 工具
+---
+
+#### idea 方法模板
+
+```
+ ccmt
+/**
+    * @Description:    
+    * @Author:         HoleLin
+    * @CreateDate:     $DATE$ $TIME$
+    * @UpdateUser:     HoleLin
+    * @UpdateDate:     $DATE$ $TIME$
+    * @UpdateRemark:   修改内容
+
+    * @Version:        1.0
+    */
+```
+
