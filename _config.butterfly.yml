@@ -42,7 +42,7 @@ copy:
 # formal:
 #   icon: link || the description
 social:
-  fas fa-envelope: HoleLin@163.com || Email
+  fas fa-envelope: mailto:HoleLin@163.com || Email
 
 # search (搜索)
 # --------------------------------------
