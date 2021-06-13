@@ -310,6 +310,220 @@ mysql> explain select * from innodb1 where id_card like '123%';
 * 实操的难度：在于前缀截取的长度。
 * 我们可以利用`select count(*)/count(distinct left(password,prefixLen));`，通过从调整`prefixLen`的值（从1自增）查看不同前缀长度的一个平均匹配度，接近1时就可以了（表示一个密码的前`prefixLen`个字符几乎能确定唯一一条记录）
 
+#### 单表查询优化
+
+* 全值匹配很快捷
+
+  ```sql
+  --建立复合索引（age, deptId, name）
+  CREATE INDEX idx_emp_ade ON t_emp(age, deptId, NAME);
+  
+  --查找
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90;
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
+  
+  --和上一条SQL语句中WHERE后字段的顺序不同，但是不影响查询结果
+  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬' AND age = 90;
+  ```
+
+  * **全职匹配我最爱指的是，查询的字段按照顺序在索引中都可以匹配到**
+
+* 最佳左前缀法则
+
+  ```sql
+  --先删除之前创建的单值索引
+  DROP INDEX idx_dept_id ON t_emp; 
+  
+  --查询，未按照最佳左前缀法则
+  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1;
+  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬';
+  
+  --查询，部分按照最佳左前缀法则（age字段和复合索引匹配，但name没有）
+  EXPLAIN SELECT empno FROM t_emp WHERE  age = 90 AND name = '风清扬';
+  
+  --查询，完全按照最佳左前缀法则
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
+  ```
+
+  * **过滤条件要使用索引必须按照索引建立时的顺序，依次满足，一旦跳过某个字段，索引后面的字段都无法被使用**
+
+* 索引列上不计算
+
+  > 不在索引列上做任何操作（计算、函数、(自动 or 手动)类型转换），**可能会导致索引失效而转向全表扫描**
+
+  ```sql
+  --直接查询
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND NAME = '风清扬';
+  
+  --使用MySQL函数查询
+  EXPLAIN SELECT empno FROM t_emp WHERE LEFT(age,2) = 90 AND deptId = 1 AND name = '风清扬';
+  ```
+
+* 范围之后全失效
+
+  ```sql
+  --范围查询
+  EXPLAIN SELECT empno FROM t_emp WHERE age > 50 AND deptId = 1 AND name = '风清扬';
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId > 1 AND NAME = '风清扬';
+  
+  --未使用范围查询
+  EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId = 1 AND name = '风清扬';
+  ```
+
+  * **建议：**将可能做范围查询的字段的索引顺序**放在最后**
+  * **结论：使用范围查询后，如果范围内的记录过多，会导致索引失效**，因为从自定义索引映射到主键索引需要耗费太多的时间，反而不如全表扫描来得快
+
+* 覆盖索引多使用
+
+  ```sql
+  --查询所有字段
+  EXPLAIN SELECT * FROM t_dept WHERE id = 1;
+  
+  --查询索引字段
+  EXPLAIN SELECT id FROM t_dept WHERE id = 1;
+  ```
+
+  * **结论：使用覆盖索引（Using index）会提高检索效率**
+
+* 使用不等会失效
+
+  > 在使用**不等于(!= 或者<>)时**，有时会无法使用索引会导致全表扫描
+
+  ```sql
+  --SQL语句中有不等于
+  EXPLAIN SELECT * FROM t_emp WHERE age != 90;
+  EXPLAIN SELECT * FROM t_emp WHERE age <> 90;
+  
+  --SQL语句中没有不等于
+  EXPLAIN SELECT * FROM t_emp WHERE age = 90;
+  ```
+
+* 使用NULL值要小心
+
+  > 在使用`IS NULL` 或者 `IS NOT NULL`时，可能会导致索引失效,但是如果**允许字段为空**，则
+  >
+  > * IS NULL 不会导致索引失效
+  > * IS NOT NULL 会导致索引失效
+
+  ```sql
+  EXPLAIN SELECT * FROM t_emp WHERE age IS NULL;
+  
+  EXPLAIN SELECT * FROM t_emp WHERE age IS NOT NULL;
+  ```
+
+* 模糊查询加右边
+
+  > 要使用模糊查询时，**百分号最好加在右边，而且进行模糊查询的字段必须是单值索引**
+
+  ```sql
+  --创建单值索引
+  CREATE INDEX idx_emp_name ON t_emp(NAME);
+  
+  --进行模糊查询
+  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风';
+  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '风%';
+  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风%';
+  ```
+
+  ```sql
+  -- 有时必须使用其他类型的模糊查询，这时就需要用覆盖索引来解决索引失效的问题
+  EXPLAIN SELECT name FROM t_emp WHERE name LIKE '%风';
+  EXPLAIN SELECT name FROM t_emp WHERE name LIKE '风%';
+  
+  EXPLAIN SELECT NAME FROM t_emp WHERE name LIKE '%风%';
+  ```
+
+  * **结论：对索引进行模糊查询时，最好在右边加百分号。必须在左边或左右加百分号时，需要用到覆盖索引来提升查询效率**
+
+* 字符串加单引号
+
+  > 当字段为字符串时，查询时必须带上单引号。否则**会发生自动的类型转换**，从而发生全表扫描
+
+  ```sql
+  --使用了单引号
+  EXPLAIN SELECT card_id FROM person WHERE card_id = '1';
+  
+  --未使用单引号，发生自动类型转换
+  EXPLAIN SELECT card_id FROM person WHERE card_id = 1;
+  ```
+
+* 尽量不用or查询
+
+  > 如果使用or，可能导致索引失效。所以要减少or的使用，可以**使用 union all 或者 union 来替代**
+
+  ```sql
+  --使用or进行查询
+  EXPLAIN SELECT * FROM t_emp WHERE age = 90 OR NAME = '风清扬';
+  ```
+
+* 口诀
+
+  > 全职匹配我最爱，最左前缀要遵守
+  >
+  > 带头大哥不能死，中间兄弟不能断
+  >
+  > 索引列上少计算，范围之后全失效
+  >
+  > LIKE 百分写最右，覆盖索引不写*
+  >
+  > 不等空值还有 OR，索引影响要注意
+  >
+  > VARCHAR 引号不可丢，SQL 优化有诀窍
+
+#### 关联查询优化
+
+* LEFT JOIN优化
+
+  * 在优化关联查询时，只有在**被驱动表上建立索引才有效**
+  * left join 时，左侧的为驱动表，**右侧为被驱动表**
+
+* INNER JOIN优化
+
+  * **结论**：inner join 时，**mysql 会把小结果集的表选为驱动表**（小表驱动大表）
+
+    **所以最好把索引建立在大表（数据较多的表）上**
+
+* RIGHT JOIN优化
+
+  * 优化类型和LEFT JOIN类似，只不过被驱动表变成了左表
+
+#### 排序分组优化
+
+> 在查询中难免会对查询结果进行排序操作。进行排序操作时要**避免出现 Using filesort**，应使用索引给排序带来的方便
+
+* ORDER BY 优化
+
+  * **结论**：
+
+    要想在排序时使用索引，避免 Using filesort，首先需要发生**索引覆盖**，其次
+
+    - ORDER BY 后面字段的顺序要和复合索引的**顺序完全一致**
+    - ORDER BY 后面的索引必须按照顺序出现，**排在后面的可以不出现**
+    - 要进行升序或者降序时，**字段的排序顺序必须一致**。不能一部分升序，一部分降序，可以都升序或者都降序
+    - 如果复合索引前面的**字段作为常量**出现在过滤条件中，**排序字段可以为紧跟其后的字段**
+
+#### MySQL的排序算法
+
+当发生 Using filesort 时，MySQL会根据自己的算法对查询结果进行排序
+
+- 双路排序
+  - MySQL 4.1 之前是使用双路排序,字面意思就是**两次扫描磁盘**，最终得到数据，读取行指针和 order by 列，对他们进行排序，然后扫描已经排序好的列表，按照列表中的值重新从列表中读取对应的数据输出
+  - 从磁盘取排序字段，在 buffer 进行排序，再从磁盘取其他字段
+  - 简单来说，**取一批数据，要对磁盘进行了两次扫描**，众所周知，I\O 是很耗时的，所以在 mysql4.1 之后，出现了第二种改进的算法，就是单路排序
+- 单路排序
+  - 从磁盘读取查询需要的所有列，按照 order by 列**在 buffer 对它们进行排序**，然后扫描排序后的列表进行输出， 它的效率更快一些，避免了第二次读取数据。并且把随机 IO 变成了顺序 IO,但是它会使用更多的空间， 因为它把每一行都保存在内存中了
+  - **存在的问题**：在 sort_buffer 中，方法 B 比方法 A 要多占用很多空间，因为方法 B 是把所有字段都取出, 所以有可能**取出的数据的总大小超出了 sort_buffer 的容量**，导致每次只能取 sort_buffer 容量大小的数据，进行排序（创建 tmp 文件，多 路合并），排完再取取 sort_buffer 容量大小，再排……从而多次 I/O。也就是**本来想省一次 I/O 操作，反而导致了大量的 I/O 操作，反而得不偿失**
+- 优化Using filesort
+  - 增大 sort_butter_size 参数的设置
+    - 不管用哪种算法，提高这个参数都会提高效率，当然，要根据系统的能力去提高，因为这个参数是针对**每个进程的 1M-8M 之间调整**
+  - 增大 max_length_for_sort_data 参数的设置
+    - mysql 使用单路排序的前提是**排序的字段大小要小于 max_length_for_sort_data**
+    - 提高这个参数，会增加用改进算法的概率。但是如果设的太高，数据总容量超出 sort_buffer_size 的概率就增大， 明显症状是高的磁盘 I/O 活动和低的处理器使用率。（1024-8192 之间调整）
+  - 减少 select 后面的查询的字段
+    - 查询的字段减少了，缓冲里就能容纳更多的内容了，**间接增大了sort_buffer_size**
+
 ### 查询缓存
 
 > 缓存`select`语句的查询结果
