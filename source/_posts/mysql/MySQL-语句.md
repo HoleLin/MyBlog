@@ -199,6 +199,11 @@ CREATE TABLE [IF NOT EXISTS] table_name(
 	column_name data_type;
 	....
 );
+-- CREATE/SELECT
+CREATE TABLE [IF NOT EXISTS] table_name(
+	column_name data_type;
+	....
+) SELECT ...;
 ```
 
 #### 查看数据库中数据表列表
@@ -330,15 +335,27 @@ INSERT [INTO] table_name [column_name,....] SELECT ...
 #### 更新数据
 
 ```sql
+-- 单表更新
 -- 不加WHERE即对整个表进行操作
-UPDATE [LOW_PRIORITY][IGNORE] table_reference SET column_name ={expr|DEFAULT}[,column_name2 ={expr|DEFAULT}..] 
+UPDATE [LOW_PRIORITY][IGNORE] table_name SET column_name ={expr|DEFAULT}[,column_name2 ={expr|DEFAULT}..] 
 [WHERE where_condition]
+
+-- 多表更新
+UPDATE [LOW_PRIORITY][IGNORE] table_name SET column_name ={expr|DEFAULT}[,column_name2 ={expr|DEFAULT}..] 
+[WHERE where_condition]
+{[INNER|CROSS] JOIN | {LEFT|RIGHT} {OUTER} JOIN}
+table_reference ON conditional_expr
+
 ```
 
 #### 删除记录
 
 ```sql
-DELETE FROM table_name [WHERE where_condition]
+DELETE FROM table_name 
+[WHERE where_condition]
+-- 多表删除
+DELETE FROM table_name[.*],[,table_name[.*]] 
+[WHERE where_condition]
 ```
 
 ### 查询
@@ -361,7 +378,7 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
 ]
 ```
 
-
+<img src="http://www.chenjunlin.vip/img/mysql/MySQL%E5%AD%90%E5%8F%A5%E8%A7%A3%E6%9E%90%E9%A1%BA%E5%BA%8F.png" alt="img" style="zoom:80%;" />
 
 * **ORDER BY子句**
 
@@ -436,7 +453,33 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
 
 #### 子查询
 
+> 子查询指嵌套在查询内部且必须始终在圆括号内;
+>
+> 子查询可以包含多个关键字或条件,如DISTINCT,GROUP BY,ORDER BY ,函数等;
+>
+> 子查询的外层查询可以是:SELECT,INSERT,UPDATE,SET或DO
+>
+> 子查询的返回值可以是标量,一行,一列,或子查询
 
+##### 使用比较运算符的子查询
+
+> =,>,<,>=,<=,<>,!=,<=>
+
+* 语法 `operand comparison_operator (subQuery)`
+
+|       | ANY    | SOME   | ALL    |
+| ----- | ------ | ------ | ------ |
+| >,>=  | 最小值 | 最小值 | 最大值 |
+| <,<=  | 最大值 | 最大值 | 最小值 |
+| =     | 任意值 | 任意值 |        |
+| <>,!= |        |        | 任意值 |
+
+* 使用`[NOT] IN`的子查询
+  * 语法: `operand comparison_operator [not] IN (subQuery)` 
+  * `= ANY` 运算符与`IN`等效
+  * `!=ALL`运算符与`NOT IN`等效
+* 使用`[NOT] EXISTS`子查询
+  * 如果子查询返回任何行,EXISTS将会返回TRUE;否则为FALSE;
 
 ### 索引
 
