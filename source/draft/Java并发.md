@@ -14,6 +14,7 @@ categories:
 * [并发与并行的区别是什么?](https://www.zhihu.com/question/33515481)
 * Java并发编程实战
 * [Java 8系列之重新认识HashMap](https://tech.meituan.com/2016/06/24/java-hashmap.html)
+* 极客时间:Java并发编程实战
 
 ### 进程与线程
 
@@ -613,23 +614,115 @@ categories:
 t.setDaemon(true);
 ```
 
-### happens-before规则
+### Happens-Before规则
 
 > happens-before规则规定了**对共享变量的写操作对其他线程可见**,它是可见性与有序性的一套规则总结,抛开happens-before规则,JVM并不能保证一个线程对共享变量的写,可让其他线程对该共享变量的读可见;
+>
+> 真正要表达的是：**前面一个操作的结果对后续操作是可见的**
 
-#### 线程解锁m之前对变量的写,对接下来对m加锁的其他线程对该变量的读可见
+#### 程序的顺序性规则
 
-#### 线程对`volatile`变量的写,对接下来其他线程对该变量读可见
+> 这条规则是指在一个线程中，按照程序顺序，前面的操作 Happens-Before 于后续的任意操作。这还是比较容易理解的，比如刚才那段示例代码，按照程序的顺序，第 6 行代码 “x = 42;” Happens-Before 于第 7 行代码 “v = true;”，这就是规则 1 的内容，也比较符合单线程里面的思维：**程序前面对某个变量的修改一定是对后续操作可见的。**
 
-#### 线程`start`前对变量的写,对该线程开始后对该变量的读可见
+```java
+// 以下代码来源于【参考1】
+class VolatileExample {
+  int x = 0;
+  volatile boolean v = false;
+  public void writer() {
+    x = 42;
+    v = true;
+  }
+  public void reader() {
+    if (v == true) {
+      // 这里x会是多少呢？
+    }
+  }
+}
+```
 
-#### 线程结束前对变量的写,对其他线程得之它结束后的读可见
+#### volatile 变量规则
 
-> 比如其他线程调用t1.isAlive()或t1.join()等待它结束
+> 这条规则是指对一个 volatile 变量的写操作， Happens-Before 于后续对这个 volatile 变量的读操作。
 
-#### 线程t1打断t2(interrupt)前对变量的写,对于其他线程得知t2被打断后对变量的读可见
+#### 传递性
 
-> 通过t2.interrupted()或t2.isinterrupted()
+> 这条规则是指如果 A Happens-Before B，且 B Happens-Before C，那么 A Happens-Before C。
+>
+> <img src="http://www.chenjunlin.vip/img/thread/Happens-Before%E4%BC%A0%E9%80%92%E6%80%A7.png" alt="img" style="zoom:80%;" />
+>
+> 从图中，我们可以看到：
+>
+> * “x=42” Happens-Before 写变量 “v=true” ，这是规则 1 的内容；
+>
+> * 写变量“v=true” Happens-Before 读变量 “v=true”，这是规则 2 的内容 。
+>
+> 再根据这个传递性规则，我们得到结果：“x=42” Happens-Before 读变量“v=true”。
+>
+> 如果线程 B 读到了“v=true”，那么线程 A 设置的“x=42”对线程 B 是可见的。也就是说，线程 B 能看到 “x == 42” .这就是 1.5 版本对 volatile 语义的增强，这个增强意义重大，1.5 版本的并发工具包（java.util.concurrent）就是靠 volatile 语义来搞定可见性的
+
+#### 管程中锁的规则
+
+> 这条规则是指对一个锁的解锁 Happens-Before 于后续对这个锁的加锁。
+
+* **管程**是一种通用的同步原语，在 Java 中指的就是 synchronized，synchronized 是 Java 里对管程的实现;
+
+* 管程中的锁在 Java 里是隐式实现的，例如下面的代码，在进入同步块之前，会自动加锁，而在代码块执行完会自动释放锁，加锁以及释放锁都是编译器帮我们实现的。
+
+  ```java
+  synchronized (this) { //此处自动加锁
+    // x是共享变量,初始值=10
+    if (this.x < 12) {
+      this.x = 12; 
+    }  
+  } //此处自动解锁
+  ```
+
+* 所以结合规则 4——管程中锁的规则，可以这样理解：假设 x 的初始值是 10，线程 A 执行完代码块后 x 的值会变成 12（执行完自动释放锁），线程 B 进入代码块时，能够看到线程 A 对 x 的写操作，也就是线程 B 能够看到 x==12。
+
+#### 线程 start() 规则
+
+> 这条是关于线程启动的。它是指主线程 A 启动子线程 B 后，子线程 B 能够看到主线程在启动子线程 B 前的操作。
+
+* 换句话说就是，如果线程 A 调用线程 B 的 start() 方法（即在线程 A 中启动线程 B），那么该 start() 操作 Happens-Before 于线程 B 中的任意操作。具体可参考下面示例代码。
+
+  ```java
+  Thread B = new Thread(()->{
+    // 主线程调用B.start()之前
+    // 所有对共享变量的修改，此处皆可见
+    // 此例中，var==77
+  });
+  // 此处对共享变量var修改
+  var = 77;
+  // 主线程启动子线程
+  B.start();
+  ```
+
+####  线程 join() 规则
+
+> 这条是关于线程等待的。它是指主线程 A 等待子线程 B 完成（主线程 A 通过调用子线程 B 的 join() 方法实现），当子线程 B 完成后（主线程 A 中 join() 方法返回），主线程能够看到子线程的操作。当然所谓的“看到”，指的是对**共享变量**的操作。
+
+* 换句话说就是，如果在线程 A 中，调用线程 B 的 join() 并成功返回，那么线程 B 中的任意操作 Happens-Before 于该 join() 操作的返回。具体可参考下面示例代码。
+
+  ```java
+  
+  Thread B = new Thread(()->{
+    // 此处对共享变量var修改
+    var = 66;
+  });
+  // 例如此处对共享变量修改，
+  // 则这个修改结果对线程B可见
+  // 主线程启动子线程
+  B.start();
+  B.join()
+  // 子线程所有对共享变量的修改
+  // 在主线程调用B.join()之后皆可见
+  // 此例中，var==66
+  ```
+
+#### 程序中断规则
+
+> 对线程interrupted()方法的调用先行于被中断线程的代码检测到中断时间的发生。
 
 ### 锁
 
@@ -817,10 +910,61 @@ atomicInteger.incrementAndGet();
 
 #### volatile
 
-* 获取共享变量时,为了保证变量的可见性,需求使用`volatile`修饰;
-* 它可以用来修饰成员变量和静态变量,可以避免线程从自己的工作缓存中查找变量的值,必须到主存中获取他的值,线程操作`volatile`变量都是直接操作主存,即一个线程对`volatile`变量的修改,对另一个线程可见;
-  * `volatile`仅仅保证了共享变量的可见性,让其他线程能够看到最新值,但不能解决指令交错问题(不能保证原子性);
-* CAS必须借助`volatile`才能读取共享变量的最新值来实现比较-交换的效果;
+> * 获取共享变量时,为了保证变量的可见性,需求使用`volatile`修饰;
+> * 它可以用来修饰**成员变量**和**静态变量**,可以避免线程从自己的工作缓存中查找变量的值,必须到主存中获取他的值,线程操作`volatile`变量都是直接操作主存,即一个线程对`volatile`变量的修改,对另一个线程可见;
+>   * `volatile`仅仅保证了共享变量的可见性,让其他线程能够看到最新值,但不能解决指令交错问题(不能保证原子性);
+> * CAS必须借助`volatile`才能读取共享变量的最新值来实现比较-交换的效果;
+
+##### 内存配置
+
+* 可见性
+  * 写屏障(Sfence)保证在该屏障之前的,对共享变量的改动,都同步到主存中.
+  * 读屏障(Ifence)保证在该屏障之后,对共享变量的读取,加载的是主存中最新的数据
+* 有序性
+  * 写屏障会保证指令重排序时,不会将写屏障之前的代码排在写屏障之后;
+  * 读屏障会保证指令重排序时,不会将读屏障之后的代码排在读屏障之前;
+
+##### volatile原理
+
+* volatile的底层原理是内存屏障Memory Bairrier(Memory Fence)
+
+  * 对volatile变量的写指令后加写屏障;
+  * 对volatile变量的读指令前加读屏障;
+
+###### 如何保证可见性
+
+* 写屏障(Sfence)保证在该屏障之前的,对共享变量的改动,都同步到主存中.
+
+  ```java
+  public void actor2(I_Result r){
+  	num = 2;
+  	// ready 是volatile赋值带写屏障
+  	ready = true;
+  	// 写屏障
+  }
+  ```
+
+* 读屏障(Ifence)保证在该屏障之后,对共享变量的读取,加载的是主存中最新的数据
+
+  ```java
+  public void actor1(I_Result r){
+  	// 读屏障
+  	// ready 是volatile读取值带读屏障
+  	if(ready){
+  		r.r1 = num+num;
+  	} else{
+  		r.r1 = 1;
+  	}
+  }
+  ```
+
+  <img src="http://www.chenjunlin.vip/img/thread/volatile%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C.png" alt="img" style="zoom: 67%;" />
+
+##### volatile不能解决指令交错的问题
+
+* 写屏障仅仅是保证之后的读能读到最新的结果,但不能保证读跑到它前面去;
+* 而有序性的保证也是保证了本线程内相关代码不能被重排序;
+
 
 #### CAS
 
@@ -876,8 +1020,6 @@ CAS虽然很高效，但是它也存在三大问题，这里也简单说一下�
 #### 自旋锁和适应性自旋锁
 
 ##### 自旋锁
-
-
 
 ##### 适应性自选锁
 

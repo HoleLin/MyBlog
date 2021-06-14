@@ -22,7 +22,7 @@ highlight_shrink:
 
 ### MySQL基本框架
 
-<img src="http://www.chenjunlin.vip/img/mysql/MySQL%E5%9F%BA%E6%9C%AC%E6%A1%86%E6%9E%B6%E5%9B%BE.png" alt="img" style="zoom:80%;" />
+<img src="http://www.chenjunlin.vip/img/mysql/MySQL%E5%9F%BA%E6%9C%AC%E6%A1%86%E6%9E%B6%E5%9B%BE.png" alt="img" style="zoom: 67%;" />
 
 #### 连接器
 
