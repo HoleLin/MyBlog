@@ -1,7 +1,7 @@
 ---
 title: Java集合类
 mermaid: true
-date: 2021-06-12 00:21:17
+date: 2021-06-14 00:21:17
 cover: /img/cover/Java.jpg
 tags:
 - 集合类
@@ -53,6 +53,28 @@ public interface Iterable<T> {
     }
 }
 ```
+
+##### `Iterator `与` ListIterator`详解
+
+###### `Iterator`
+
+* Iterator是一个接口，它是集合的迭代器。集合可以通过Iterator去遍历集合中的元素。
+
+* Iterator提供的API接口如下：
+  * `boolean hasNext()`：判断集合里是否存在下一个元素。如果有，`hasNext()`方法返回 true。	
+  * `Object next()`：返回集合里下一个元素。
+  * `void remove()`：删除集合里上一次next方法返回的元素。
+* `Iterator`只能单向移动。
+* `Iterator.remove()`是唯一安全的方式来在迭代过程中修改集合；如果在迭代过程中以任何其它的方式修改了基本集合将会产生未知的行为。而且每调用一次`next()`方法，`remove()`方法只能被调用一次，如果违反这个规则将抛出一个异常。
+
+###### `ListIterator`
+
+* **`ListIterator`是一个功能更加强大的迭代器, 它继承于Iterator接口，**只能用于各种List类型的访问。可以通过调用`listIterator()`方法产生一个指向List开始处的`ListIterator`, 还可以调用`listIterator(n)`方法创建一个一开始就指向列表索引为n的元素处的`ListIterator`。
+* 由以上定义我们可以推出`ListIterator`可以:
+  - 双向移动（向前/向后遍历）.
+  - 产生相对于迭代器在列表中指向的当前位置的前一个和后一个元素的索引.
+  - 可以使用`set()`方法替换它访问过的最后一个元素.
+  - 可以使用`add()`方法在`next()`方法返回的元素之前或`previous()`方法返回的元素之后插入一个元素.
 
 #### `Collection`
 
@@ -124,6 +146,12 @@ public interface Collection<E> extends Iterable<E> {
 }
 
 ```
+
+#### Set、List和Map可以看做集合的三大类
+
+- List集合是有序集合，集合中的元素可以重复，访问集合中的元素可以根据元素的索引来访问。
+- Set集合是无序集合，集合中的元素不可以重复，访问集合中的元素只能根据元素本身来访问（也是集合里元素不允许重复的原因）。
+- Map集合中保存Key-value对形式的元素，访问时只能根据每项元素的key来访问其value。
 
 ### `List`
 
@@ -690,7 +718,15 @@ public interface List<E> extends Collection<E> {
       }
   ```
 
+##### `ArrayList`和`LinkedList`
+
+- ArrayList是实现了基于动态数组的数据结构，LinkedList基于链表的数据结构。
+- 对于随机访问get和set，ArrayList绝对优于LinkedList，因为LinkedList要移动指针。
+- 对于新增和删除操作add和remove，`LinedList`比较占优势，因为`ArrayList`要移动数据。
+
 #### **Vector**
+
+> **Vector是线程安全的动态数组**
 
 <img src="http://www.chenjunlin.vip/img/java/collection/Vector.png" alt="img" style="zoom:80%;" />
 
@@ -1221,5 +1257,112 @@ public interface Queue<E> extends Collection<E> {
 
 ##### `ArrayDeque`
 
+### `Set`
 
+> Set是一种不包括重复元素的Collection。它维持它自己的内部排序，所以随机访问没有任何意义。与List一样，它同样允许null的存在但是仅有一个。由于Set接口的特殊性，**所有传入Set集合中的元素都必须不同**，同时要注意任何可变对象，如果在对集合中元素进行操作时，导致`e1.equals(e2)==true`，则必定会产生某些问题。Set接口有三个具体实现类，分别是散列集`HashSet`、链式散列集`LinkedHashSet`和树形集`TreeSet`。
+>
+> **Set是一种不包含重复的元素的Collection，无序，即任意的两个元素e1和e2都有e1.equals(e2)=false，Set最多有一个null元素。**
+>
+> 需要注意的是：虽然Set中元素没有顺序，但是元素在set中的位置是由该元素的hashCode决定的，其具体位置其实是固定的。
 
+#### `HashSet`
+
+> `HashSet` 是一个没有重复元素的集合。它是由`HashMap`实现的，不保证元素的顺序(这里所说的没有顺序是指：元素插入的顺序与输出的顺序不一致)，而且`HashSet`允许使用null 元素。`HashSet`是非同步的，如果多个线程同时访问一个哈希set，而其中至少一个线程修改了该set，那么它必须保持外部同步。 **`HashSet`按Hash算法来存储集合的元素，因此具有很好的存取和查找性能。**
+
+##### **`HashSet`使用和理解中容易出现的误区**
+
+* **`HashSet`中存放null值。**`HashSet`中是允许存入null值的，但是在`HashSet`中仅仅能够存入一个null值。
+
+* **`HashSet`中存储元素的位置是固定的。**`HashSet`中存储的元素的是无序的，这个没什么好说的，但是由于`HashSet`底层是基于Hash算法实现的，使用了`hashCode`，所以`HashSet`中相应的元素的位置是固定的。
+
+* **必须小心操作可变对象**（`Mutable Object`）。如果一个Set中的可变元素改变了自身状态导致`Object.equals(Object)=true`将导致一些问题。
+
+#### `LinkedHashSet`
+
+> `LinkedHashSet`继承自`HashSet`，其底层是**基于`LinkedHashMap`来实现的**，有序，非同步。`LinkedHashSet`集合同样是根据元素的`hashCode`值来决定元素的存储位置，但是它同时使用链表维护元素的次序。这样使得元素看起来像是以插入顺序保存的，也就是说，当遍历该集合时候，**`LinkedHashSet`将会以元素的添加顺序访问集合的元素。**
+
+#### `TreeSet`
+
+> `TreeSet`是一个有序集合，其底层是基于`TreeMap`实现的，非线程安全。`TreeSet`可以确保集合元素处于排序状态。**`TreeSet`支持两种排序方式，自然排序和定制排序，其中自然排序为默认的排序方式。**当我们构造`TreeSet`时，若使用不带参数的构造函数，则`TreeSet`的使用自然比较器；若用户需要使用自定义的比较器，则需要使用带比较器的参数。
+
+> 注意：`TreeSet`集合不是通过`hashCode`和equals函数来比较元素的.它是通过`compare`或者`comparaeTo`函数来判断元素是否相等.`compare`函数通过判断两个对象的id，相同的id判断为重复元素，不会被加入到集合中。
+
+### Map
+
+> Map与List、Set接口不同，它是由一系列键值对组成的集合，提供了key到Value的映射。同时它也没有继承Collection。在Map中它保证了key与value之间的一一对应关系。也就是说一个key对应一个value，所以它**不能存在相同的key值，当然value值可以相同**。
+
+#### `HashMap` 
+
+> [HashMap分析](http://www.chenjunlin.vip/2021/05/25/java/HashMap/)
+
+#### `LinkedHashMap`
+
+> `LinkedHashMap`是`HashMap`的一个子类，它保留插入的顺序，如果需要输出的顺序和输入时的相同，那么就选用`LinkedHashMap`。
+>
+> **`LinkedHashMap`是Map接口的哈希表和链接列表实现，具有可预知的迭代顺序。**此实现提供所有可选的映射操作，并允许使用null值和null键。此类不保证映射的顺序，特别是它不保证该顺序恒久不变。
+>
+> `LinkedHashMap`实现与`HashMap`的不同之处在于，后者维护着一个运行于所有条目的双重链接列表。此链接列表定义了迭代顺序，该迭代顺序可以是插入顺序或者是访问顺序。
+>
+> 根据链表中元素的顺序可以分为：按插入顺序的链表，和按访问顺序(调用get方法)的链表。默认是按插入顺序排序，如果指定按访问顺序排序，那么调用get方法后，会将这次访问的元素移至链表尾部，不断访问可以形成按访问顺序排序的链表。
+
+> 注意，此实现不是同步的。如果多个线程同时访问链接的哈希映射，而其中至少一个线程从结构上修改了该映射，则它必须保持外部同步。由于`LinkedHashMap`需要维护元素的插入顺序，因此性能略低于`HashMap`的性能，但在迭代访问Map里的全部元素时将有很好的性能，因为它以链表来维护内部顺序。
+
+#### `TreeMap`
+
+> **`TreeMap`是一个有序的key-value集合，非同步，基于红黑树（Red-Black tree）实现，每一个key-value节点作为红黑树的一个节点。**`TreeMap`存储时会进行排序的，会根据key来对key-value键值对进行排序，其中排序方式也是分为两种，一种是自然排序，一种是定制排序，具体取决于使用的构造方法。
+>
+> **自然排序：**`TreeMap`中所有的key必须实现Comparable接口，并且所有的key都应该是同一个类的对象，否则会报`ClassCastException`异常。
+>
+> **定制排序：**定义`TreeMap`时，创建一个comparator对象，该对象对所有的`TreeMap`中所有的key值进行排序，采用定制排序的时候不需要`TreeMap`中所有的key必须实现Comparable接口。
+>
+> `TreeMap`判断两个元素相等的标准：两个key通过`compareTo()`方法返回0，则认为这两个key相等。
+
+### 常见问题
+
+#### `HashTable与HashMap`
+
+* **相同点**：
+  * 都实现了`Map、Cloneable、java.io.Serializable`接口。
+  * 都是存储"键值对(key-value)"的散列表，而且都是采用拉链法实现的。
+
+* **不同点**：
+
+  * **历史原因：**`HashTable`是基于陈旧的Dictionary类的，`HashMap`是Java 1.2引进的Map接口的一个实现 。
+
+  * **同步性：**`HashTable`是线程安全的，也就是说是同步的，而`HashMap`是线程序不安全的，不是同步的 。
+
+  * **对null值的处理：**`HashMap`的key、value都可为null，`HashTable`的key、value都不可为null 。
+
+  * **基类不同：**`HashMap`继承于`AbstractMap`，而`Hashtable`继承于Dictionary。
+  * **支持的遍历种类不同：**`HashMap`只支持Iterator(迭代器)遍历。而`Hashtable`支持Iterator(迭代器)和Enumeration(枚举器)两种方式遍历。
+  * `HashMap`提供对key的Set进行遍历，因此它是fail-fast的，但`HashTable`提供对key的Enumeration进行遍历，它不支持fail-fast。
+
+#### `Fail-Fast`与`Fail-Safe`有什么区别?
+
+* `Iterator`的`Fail-Fast`属性与当前的集合共同起作用，因此它不会受到集合中任何改动的影响。
+* `Java.util`包中的所有集合类都被设计为`Fail-Fast`的，而`java.util.concurrent`中的集合类都为`Fail-Safe`的。
+
+* `Fall-fast`迭代器抛出`ConcurrentModificationException`;
+
+* `Fall-safe`迭代器从不抛出`ConcurrentModificationException`。
+
+#### `ArrayList`和`Vector`有何异同点?
+
+* **相同点:**
+  * 两者都是基于索引的，内部由一个数组支持。
+  * 两者维护插入的顺序，我们可以根据插入顺序来获取元素。
+  * `ArrayList`和`Vector`的迭代器实现都是fail-fast的。
+  * `ArrayList`和`Vector`两者允许null值，也可以使用索引值对元素进行随机访问。
+* **不同点:**
+  * `Vector`是同步的，而`ArrayList`不是。然而，如果你寻求在迭代的时候对列表进行改变，你应该使用`CopyOnWriteArrayList`。
+  * `ArrayList`比Vector快，它因为没有同步，不会过载。
+  * `ArrayList`更加通用，因为我们可以使用Collections工具类轻易地获取同步列表和只读列表。
+
+#### `Array`和`ArrayList`有何区别？什么时候更适合用`Array`？
+
+* Array可以容纳基本类型和对象，而`ArrayList`只能容纳对象;
+* Array是指定大小的，而`ArrayList`大小是固定的;
+* Array没有提供`ArrayList`那么多功能，比如`addAll`、`removeAll`和`Iterator`等;
+* 如果列表的大小已经指定，大部分情况下是存储和遍历它们。
+* 对于遍历基本数据类型，尽管Collections使用自动装箱来减轻编码任务，在指定大小的基本类型的列表上工作也会变得很慢。
+* 如果你要使用多维数组，使用[][]比List<List<>>更容易。
