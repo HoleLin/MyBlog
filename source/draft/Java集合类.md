@@ -692,3 +692,493 @@ public interface List<E> extends Collection<E> {
 
 #### **Vector**
 
+##### `Vector`常量
+
+```java
+    /**
+     * The array buffer into which the components of the vector are
+     * stored. The capacity of the vector is the length of this array buffer,
+     * and is at least large enough to contain all the vector's elements.
+     * 存放元素的数组
+     * <p>Any array elements following the last element in the Vector are null.
+     *
+     * @serial
+     */
+    protected Object[] elementData;
+
+    /**
+     * The number of valid components in this {@code Vector} object.
+     * Components {@code elementData[0]} through
+     * {@code elementData[elementCount-1]} are the actual items.
+     * 有效元素数量，小于等于数组长度
+     * @serial
+     */
+    protected int elementCount;
+
+    /**
+     * The amount by which the capacity of the vector is automatically
+     * incremented when its size becomes greater than its capacity.  If
+     * the capacity increment is less than or equal to zero, the capacity
+     * of the vector is doubled each time it needs to grow.
+     * 容量增加量，和扩容相关
+     * @serial
+     */
+    protected int capacityIncrement;
+```
+
+##### `Vector`构造函数
+
+```java
+/**
+     * Constructs an empty vector with the specified initial capacity and
+     * capacity increment.
+     *
+     * @param   initialCapacity     the initial capacity of the vector
+     * @param   capacityIncrement   the amount by which the capacity is
+     *                              increased when the vector overflows
+     * @throws IllegalArgumentException if the specified initial capacity
+     *         is negative
+     */
+    public Vector(int initialCapacity, int capacityIncrement) {
+        super();
+        if (initialCapacity < 0)
+            throw new IllegalArgumentException("Illegal Capacity: "+
+                                               initialCapacity);
+        this.elementData = new Object[initialCapacity];
+        this.capacityIncrement = capacityIncrement;
+    }
+
+    /**
+     * Constructs an empty vector with the specified initial capacity and
+     * with its capacity increment equal to zero.
+     *
+     * @param   initialCapacity   the initial capacity of the vector
+     * @throws IllegalArgumentException if the specified initial capacity
+     *         is negative
+     */
+    public Vector(int initialCapacity) {
+        this(initialCapacity, 0);
+    }
+
+    /**
+     * Constructs an empty vector so that its internal data array
+     * has size {@code 10} and its standard capacity increment is
+     * zero.
+     */
+    public Vector() {
+        this(10);
+    }
+
+    /**
+     * Constructs a vector containing the elements of the specified
+     * collection, in the order they are returned by the collection's
+     * iterator.
+     *
+     * @param c the collection whose elements are to be placed into this
+     *       vector
+     * @throws NullPointerException if the specified collection is null
+     * @since   1.2
+     */
+    public Vector(Collection<? extends E> c) {
+        Object[] a = c.toArray();
+        elementCount = a.length;
+        if (c.getClass() == ArrayList.class) {
+            elementData = a;
+        } else {
+            elementData = Arrays.copyOf(a, elementCount, Object[].class);
+        }
+    }
+```
+
+##### `Vector`扩容
+
+```java
+    /**
+     * This implements the unsynchronized semantics of ensureCapacity.
+     * Synchronized methods in this class can internally call this
+     * method for ensuring capacity without incurring the cost of an
+     * extra synchronization.
+     *
+     * @see #ensureCapacity(int)
+     */
+    private void ensureCapacityHelper(int minCapacity) {
+        // overflow-conscious code
+        if (minCapacity - elementData.length > 0)
+            grow(minCapacity);
+    }
+
+    /**
+     * The maximum size of array to allocate.
+     * Some VMs reserve some header words in an array.
+     * Attempts to allocate larger arrays may result in
+     * OutOfMemoryError: Requested array size exceeds VM limit
+     */
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    private void grow(int minCapacity) {
+        // overflow-conscious code
+        int oldCapacity = elementData.length;
+        // 若没有指定capacityIncrement,则扩容两倍
+        int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
+                                         capacityIncrement : oldCapacity);
+        if (newCapacity - minCapacity < 0)
+            newCapacity = minCapacity;
+        if (newCapacity - MAX_ARRAY_SIZE > 0)
+            newCapacity = hugeCapacity(minCapacity);
+        elementData = Arrays.copyOf(elementData, newCapacity);
+    }
+```
+
+##### `Vector`添加元素
+
+```java
+    /**
+     * Appends the specified element to the end of this Vector.
+     *
+     * @param e element to be appended to this Vector
+     * @return {@code true} (as specified by {@link Collection#add})
+     * @since 1.2
+     */
+    public synchronized boolean add(E e) {
+        modCount++;
+        ensureCapacityHelper(elementCount + 1);
+        elementData[elementCount++] = e;
+        return true;
+    }
+
+    /**
+     * Inserts the specified element at the specified position in this Vector.
+     * Shifts the element currently at that position (if any) and any
+     * subsequent elements to the right (adds one to their indices).
+     *
+     * @param index index at which the specified element is to be inserted
+     * @param element element to be inserted
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     *         ({@code index < 0 || index > size()})
+     * @since 1.2
+     */
+    public void add(int index, E element) {
+        insertElementAt(element, index);
+    }
+    /**
+     * Inserts the specified object as a component in this vector at the
+     * specified {@code index}. Each component in this vector with
+     * an index greater or equal to the specified {@code index} is
+     * shifted upward to have an index one greater than the value it had
+     * previously.
+     *
+     * <p>The index must be a value greater than or equal to {@code 0}
+     * and less than or equal to the current size of the vector. (If the
+     * index is equal to the current size of the vector, the new element
+     * is appended to the Vector.)
+     *
+     * <p>This method is identical in functionality to the
+     * {@link #add(int, Object) add(int, E)}
+     * method (which is part of the {@link List} interface).  Note that the
+     * {@code add} method reverses the order of the parameters, to more closely
+     * match array usage.
+     *
+     * @param      obj     the component to insert
+     * @param      index   where to insert the new component
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     *         ({@code index < 0 || index > size()})
+     */
+    public synchronized void insertElementAt(E obj, int index) {
+        modCount++;
+        if (index > elementCount) {
+            throw new ArrayIndexOutOfBoundsException(index
+                                                     + " > " + elementCount);
+        }
+        ensureCapacityHelper(elementCount + 1);
+        System.arraycopy(elementData, index, elementData, index + 1, elementCount - index);
+        elementData[index] = obj;
+        elementCount++;
+    }
+```
+
+##### `Vector`移除元素
+
+```java
+    /**
+     * Removes the element at the specified position in this Vector.
+     * Shifts any subsequent elements to the left (subtracts one from their
+     * indices).  Returns the element that was removed from the Vector.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     *         ({@code index < 0 || index >= size()})
+     * @param index the index of the element to be removed
+     * @return element that was removed
+     * @since 1.2
+     */
+    public synchronized E remove(int index) {
+        modCount++;
+        if (index >= elementCount)
+            throw new ArrayIndexOutOfBoundsException(index);
+        E oldValue = elementData(index);
+
+        int numMoved = elementCount - index - 1;
+        if (numMoved > 0)
+            // 复制数组，假设数组移除了中间某元素，后边有效值前移1位
+            System.arraycopy(elementData, index+1, elementData, index,
+                             numMoved);
+        elementData[--elementCount] = null; // Let gc do its work
+
+        return oldValue;
+    }
+```
+
+#### `Stack`
+
+```java
+package java.util;
+
+/**
+ * The <code>Stack</code> class represents a last-in-first-out
+ * (LIFO) stack of objects. It extends class <tt>Vector</tt> with five
+ * operations that allow a vector to be treated as a stack. The usual
+ * <tt>push</tt> and <tt>pop</tt> operations are provided, as well as a
+ * method to <tt>peek</tt> at the top item on the stack, a method to test
+ * for whether the stack is <tt>empty</tt>, and a method to <tt>search</tt>
+ * the stack for an item and discover how far it is from the top.
+ * <p>
+ * When a stack is first created, it contains no items.
+ *
+ * <p>A more complete and consistent set of LIFO stack operations is
+ * provided by the {@link Deque} interface and its implementations, which
+ * should be used in preference to this class.  For example:
+ * <pre>   {@code
+ *   Deque<Integer> stack = new ArrayDeque<Integer>();}</pre>
+ *
+ * @author  Jonathan Payne
+ * @since   JDK1.0
+ */
+public
+class Stack<E> extends Vector<E> {
+    /**
+     * Creates an empty Stack.
+     */
+    public Stack() {
+    }
+
+    /**
+     * Pushes an item onto the top of this stack. This has exactly
+     * the same effect as:
+     * <blockquote><pre>
+     * addElement(item)</pre></blockquote>
+     *
+     * @param   item   the item to be pushed onto this stack.
+     * @return  the <code>item</code> argument.
+     * @see     java.util.Vector#addElement
+     */
+    public E push(E item) {
+        addElement(item);
+
+        return item;
+    }
+
+    /**
+     * Removes the object at the top of this stack and returns that
+     * object as the value of this function.
+     *
+     * @return  The object at the top of this stack (the last item
+     *          of the <tt>Vector</tt> object).
+     * @throws  EmptyStackException  if this stack is empty.
+     */
+    public synchronized E pop() {
+        E       obj;
+        int     len = size();
+
+        obj = peek();
+        removeElementAt(len - 1);
+
+        return obj;
+    }
+
+    /**
+     * Looks at the object at the top of this stack without removing it
+     * from the stack.
+     *
+     * @return  the object at the top of this stack (the last item
+     *          of the <tt>Vector</tt> object).
+     * @throws  EmptyStackException  if this stack is empty.
+     */
+    public synchronized E peek() {
+        int     len = size();
+
+        if (len == 0)
+            throw new EmptyStackException();
+        return elementAt(len - 1);
+    }
+
+    /**
+     * Tests if this stack is empty.
+     *
+     * @return  <code>true</code> if and only if this stack contains
+     *          no items; <code>false</code> otherwise.
+     */
+    public boolean empty() {
+        return size() == 0;
+    }
+
+    /**
+     * Returns the 1-based position where an object is on this stack.
+     * If the object <tt>o</tt> occurs as an item in this stack, this
+     * method returns the distance from the top of the stack of the
+     * occurrence nearest the top of the stack; the topmost item on the
+     * stack is considered to be at distance <tt>1</tt>. The <tt>equals</tt>
+     * method is used to compare <tt>o</tt> to the
+     * items in this stack.
+     *
+     * @param   o   the desired object.
+     * @return  the 1-based position from the top of the stack where
+     *          the object is located; the return value <code>-1</code>
+     *          indicates that the object is not on the stack.
+     */
+    public synchronized int search(Object o) {
+        int i = lastIndexOf(o);
+
+        if (i >= 0) {
+            return size() - i;
+        }
+        return -1;
+    }
+
+    /** use serialVersionUID from JDK 1.0.2 for interoperability */
+    private static final long serialVersionUID = 1224463164541339165L;
+}
+
+```
+
+#### `Queue`
+
+> **队列的操作不会因为队列为空抛出异常，而集合的操作是队列为空抛出异常。**
+
+```java
+public interface Queue<E> extends Collection<E> {
+    /**
+     * Inserts the specified element into this queue if it is possible to do so
+     * immediately without violating capacity restrictions, returning
+     * {@code true} upon success and throwing an {@code IllegalStateException}
+     * if no space is currently available.
+     * 增加一个元素。如果队列已满，则抛出一个IIIegaISlabEepeplian异常
+     * @param e the element to add
+     * @return {@code true} (as specified by {@link Collection#add})
+     * @throws IllegalStateException if the element cannot be added at this
+     *         time due to capacity restrictions
+     * @throws ClassCastException if the class of the specified element
+     *         prevents it from being added to this queue
+     * @throws NullPointerException if the specified element is null and
+     *         this queue does not permit null elements
+     * @throws IllegalArgumentException if some property of this element
+     *         prevents it from being added to this queue
+     */
+    boolean add(E e);
+
+    /**
+     * Inserts the specified element into this queue if it is possible to do
+     * so immediately without violating capacity restrictions.
+     * When using a capacity-restricted queue, this method is generally
+     * preferable to {@link #add}, which can fail to insert an element only
+     * by throwing an exception.
+     * 添加一个元素并返回true。如果队列已满，则返回false
+     * @param e the element to add
+     * @return {@code true} if the element was added to this queue, else
+     *         {@code false}
+     * @throws ClassCastException if the class of the specified element
+     *         prevents it from being added to this queue
+     * @throws NullPointerException if the specified element is null and
+     *         this queue does not permit null elements
+     * @throws IllegalArgumentException if some property of this element
+     *         prevents it from being added to this queue
+     */
+    boolean offer(E e);
+
+    /**
+     * Retrieves and removes the head of this queue.  This method differs
+     * from {@link #poll poll} only in that it throws an exception if this
+     * queue is empty.
+     * 移除元素，当集合为空，抛出异常
+     * @return the head of this queue
+     * @throws NoSuchElementException if this queue is empty
+     */
+    E remove();
+
+    /**
+     * Retrieves and removes the head of this queue,
+     * or returns {@code null} if this queue is empty.
+     * 移除队列头部元素并返回，如果为空，返回null
+     * @return the head of this queue, or {@code null} if this queue is empty
+     */
+    E poll();
+
+    /**
+     * Retrieves, but does not remove, the head of this queue.  This method
+     * differs from {@link #peek peek} only in that it throws an exception
+     * if this queue is empty.
+     * 查询集合第一个元素，如果为空，抛出异常
+     * @return the head of this queue
+     * @throws NoSuchElementException if this queue is empty
+     */
+    E element();
+
+    /**
+     * Retrieves, but does not remove, the head of this queue,
+     * or returns {@code null} if this queue is empty.
+     * 查询队列中第一个元素，如果为空，返回null
+     * @return the head of this queue, or {@code null} if this queue is empty
+     */
+    E peek();
+}
+```
+
+##### `Deque`
+
+> Deque英文全称是Double ended queue，也就是俗称的双端队列.对于这个队列容器，既可以从头部插入也可以从尾部插入，既可以从头部获取，也可以从尾部获取.
+
+##### `PriorityQueue`
+
+###### `PriorityQueue`常量
+
+```java
+    private static final int DEFAULT_INITIAL_CAPACITY = 11;
+
+    /**
+	 * 存放元素的数组    
+     * Priority queue represented as a balanced binary heap: the two
+     * children of queue[n] are queue[2*n+1] and queue[2*(n+1)].  The
+     * priority queue is ordered by comparator, or by the elements'
+     * natural ordering, if comparator is null: For each node n in the
+     * heap and each descendant d of n, n <= d.  The element with the
+     * lowest value is in queue[0], assuming the queue is nonempty.
+     */
+    transient Object[] queue; // non-private to simplify nested class access
+
+    /**
+     * 队列中存放了多少元素 
+     * The number of elements in the priority queue.
+     */
+    private int size = 0;
+
+    /**
+     * 自定义的比较规则，有该规则时优先使用，否则使用元素实现的Comparable接口方法。
+     * The comparator, or null if priority queue uses elements'
+     * natural ordering.
+     */
+    private final Comparator<? super E> comparator;
+
+    /**
+     * 队列修改次数，每次存取都算一次修改
+     * The number of times this priority queue has been
+     * <i>structurally modified</i>.  See AbstractList for gory details.
+     */
+    transient int modCount = 0; // non-private to simplify nested class access
+```
+
+###### `PriorityQueue`**offer方法**
+
+
+
+##### `ArrayDeque`
+
+
+
