@@ -933,8 +933,6 @@ public interface List<E> extends Collection<E> {
 
 <img src="http://www.chenjunlin.vip/img/java/collection/Stack.png" alt="img" style="zoom:80%;" />
 
-##### 
-
 ```java
 package java.util;
 
