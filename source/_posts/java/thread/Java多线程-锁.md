@@ -20,6 +20,10 @@ aplayer:
 highlight_shrink:
 ---
 
+### 参考文献
+
+* [锁的简单应用](https://www.cnblogs.com/dj3839/p/6580765.html)
+
 ### 锁
 
 #### Java对象头
@@ -245,9 +249,70 @@ CAS虽然很高效，但是它也存在三大问题，这里也简单说一下�
 * 可重入意味着所有的请求是基于"每个线程(per-thread)",而不是基于"每个调用(pre-invocation)"的.
 * 可重入实现是通过每个锁关联**一个请求计数器(acquisition count)**和**一个占有它的线程**.当计数为0时,认为锁是未被占有的.线程请求一个未被占有的锁时,JVM将记录锁的占有者,并且将请求计数置为1.若同一线程再次请求这个锁,计数将递增,每次占用线程退出同步块,计数器值将递减,直到计数器达到0时,锁被释放.
 
-**优点:** 
+##### **优点** 
 
 * 可重入锁的一个优点是可一定程度避免死锁
+
+```java
+public class Lock {
+    boolean isLocked = false;
+    Thread lockedBy = null;
+    int lockedCount = 0;
+
+    public synchronized void lock()
+            throws InterruptedException {
+        Thread thread = Thread.currentThread();
+        while (isLocked && lockedBy != thread) {
+            wait();
+        }
+        isLocked = true;
+        lockedCount++;
+        lockedBy = thread;
+    }
+
+    public synchronized void unlock() {
+        if (Thread.currentThread() == this.lockedBy) {
+            lockedCount--;
+            if (lockedCount == 0) {
+                isLocked = false;
+                notify();
+            }
+        }
+    }
+}
+```
+
+#### 不可重入锁
+
+```java
+public class Lock{
+    private boolean isLocked = false;
+    public synchronized void lock() throws InterruptedException{
+        while(isLocked){
+            wait();
+        }
+        isLocked = true;
+    }
+    public synchronized void unlock(){
+        isLocked = false;
+        notify();
+    }
+}
+
+public class Count{
+    Lock lock = new Lock();
+    public void print(){
+        lock.lock();
+        doAdd();
+        lock.unlock();
+    }
+    public void doAdd(){
+        lock.lock();
+        //do something
+        lock.unlock();
+    }
+}
+```
 
 #### 互斥锁(mutual exclusion local)
 

@@ -38,7 +38,7 @@ highlight_shrink:
 
 ##### volatile原理
 
-* volatile的底层原理是内存屏障Memory Bairrier(Memory Fence)
+* volatile的底层原理是内存屏障Memory Barrier(Memory Fence)
 
   * 对volatile变量的写指令后加写屏障;
   * 对volatile变量的读指令前加读屏障;
@@ -77,3 +77,12 @@ highlight_shrink:
 * 写屏障仅仅是保证之后的读能读到最新的结果,但不能保证读跑到它前面去;
 * 而有序性的保证也是保证了本线程内相关代码不能被重排序;
 
+##### **volatile 类型变量提供什么保证？**
+
+> volatile 变量提供顺序和可见性保证，例如，JVM 或者 JIT为了获得更好的性能会对语句重排序，但是 volatile 类型变量即使在没有同步块的情况下赋值也不会与其他语句重排序。volatile 提供 happens-before 的保证，确保一个线程的修改能对其他线程是可见的。某些情况下，volatile 还能提供原子性，如读 64 位数据类型，像 long 和 double 都不是原子的，但 volatile 类型的 double 和 long 就是原子的。
+
+##### **volatile 修饰符的有过什么实践？**
+
+> 一种实践是用 volatile 修饰 long 和 double 变量，使其能按原子类型来读写。double 和 long 都是64位宽，因此对这两种类型的读是分为两部分的，第一次读取第一个 32 位，然后再读剩下的 32 位，这个过程不是原子的，但 Java 中 volatile 型的 long 或 double 变量的读写是原子的。
+>
+> volatile 修复符的另一个作用是提供内存屏障（memory barrier），例如在分布式框架中的应用。简单的说，就是当你写一个 volatile 变量之前，Java 内存模型会插入一个写屏障（write barrier），读一个 volatile 变量之前，会插入一个读屏障（read barrier）。意思就是说，在你写一个 volatile 域时，能保证任何线程都能看到你写的值，同时，在写之前，也能保证任何数值的更新对所有线程是可见的，因为内存屏障会将其他所有写的值更新到缓存。

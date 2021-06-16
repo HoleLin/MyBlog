@@ -23,6 +23,8 @@ highlight_shrink:
 
 * Java并发编程实战
 * 极客时间:Java并发编程实战
+* [JAVA多线程之线程间的通信方式](https://www.cnblogs.com/hapjin/p/5492619.html)
+* [Java并发编程相关面试问题-含程序答案](https://blog.csdn.net/qq_34039315/article/details/78542498)
 
 ### 线程
 
@@ -49,7 +51,7 @@ highlight_shrink:
   t.start;
   ```
 
-* `FutureTask`配合`Thread`
+* 实现`Callable`接口通过`FutureTask`包装器来创建`Thread`线程；
 
   ```java
   // FutureTask能接收Callable类型的参数,用来处理返回结果
@@ -62,7 +64,7 @@ highlight_shrink:
   String result = task.get();
   ```
   
-* 利用`Executor`框架来创建线程池
+* 使用`ExecutorService`、`Callable`、`Future`实现有返回结果的多线程（也就是使用了`ExecutorService`来管理前面的三种方式）
 
 #### 线程上下文切换(Thread Context Switch)
 
@@ -539,5 +541,529 @@ highlight_shrink:
 
 ```java
 t.setDaemon(true);
+```
+
+### 多线程之线程间的通信方式
+
+#### 同步
+
+> 这里讲的同步是指多个线程通过synchronized关键字这种方式来实现线程间的通信。
+
+```java
+public class MyObject {
+
+    synchronized public void methodA() {
+        //do something....
+    }
+
+    synchronized public void methodB() {
+        //do some other thing
+    }
+}
+
+public class ThreadA extends Thread {
+
+    private MyObject object;
+	//	省略构造方法
+    @Override
+    public void run() {
+        super.run();
+        object.methodA();
+    }
+}
+
+public class ThreadB extends Thread {
+
+    private MyObject object;
+	// 省略构造方法
+    @Override
+    public void run() {
+        super.run();
+        object.methodB();
+    }
+}
+
+public class Run {
+    public static void main(String[] args) {
+        MyObject object = new MyObject();
+
+        // 线程A与线程B 持有的是同一个对象:object
+        ThreadA a = new ThreadA(object);
+        ThreadB b = new ThreadB(object);
+        a.start();
+        b.start();
+    }
+}
+```
+
+> 由于线程A和线程B持有同一个MyObject类的对象object，尽管这两个线程需要调用不同的方法，但是它们是同步执行的，比如：**线程B需要等待线程A执行完了methodA()方法之后，它才能执行methodB()方法。这样，线程A和线程B就实现了 通信。**
+>
+> **这种方式，本质上就是“共享内存”式的通信。多个线程需要访问同一个共享变量，谁拿到了锁（获得了访问权限），谁就可以执行。**
+
+#### **while轮询的方式**
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class MyList {
+
+    private List<String> list = new ArrayList<String>();
+    public void add() {
+        list.add("elements");
+    }
+    public int size() {
+        return list.size();
+    }
+}
+
+import mylist.MyList;
+
+public class ThreadA extends Thread {
+
+    private MyList list;
+
+    public ThreadA(MyList list) {
+        super();
+        this.list = list;
+    }
+
+    @Override
+    public void run() {
+        try {
+            for (int i = 0; i < 10; i++) {
+                list.add();
+                System.out.println("添加了" + (i + 1) + "个元素");
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+import mylist.MyList;
+
+public class ThreadB extends Thread {
+
+    private MyList list;
+
+    public ThreadB(MyList list) {
+        super();
+        this.list = list;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+                if (list.size() == 5) {
+                    System.out.println("==5, 线程b准备退出了");
+                    throw new InterruptedException();
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+import mylist.MyList;
+import extthread.ThreadA;
+import extthread.ThreadB;
+
+public class Test {
+
+    public static void main(String[] args) {
+        MyList service = new MyList();
+
+        ThreadA a = new ThreadA(service);
+        a.setName("A");
+        a.start();
+
+        ThreadB b = new ThreadB(service);
+        b.setName("B");
+        b.start();
+    }
+}
+```
+
+> 在这种方式下，线程A不断地改变条件，线程ThreadB不停地通过while语句检测这个条件(list.size()==5)是否成立 ，从而实现了线程间的通信。但是**这种方式会浪费CPU资源**。之所以说它浪费资源，是因为JVM调度器将CPU交给线程B执行时，它没做啥“有用”的工作，只是在不断地测试 某个条件是否成立。*就类似于现实生活中，某个人一直看着手机屏幕是否有电话来了，而不是： 在干别的事情，当有电话来时，响铃通知TA电话来了。*关于线程的轮询的影响
+>
+> 线程都是先把变量读取到本地线程栈空间，然后再去再去修改的本地变量。因此，如果线程B每次都在取本地的 条件变量，那么尽管另外一个线程已经改变了轮询的条件，它也察觉不到，这样也会造成死循环。
+
+#### **wait/notify机制**
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class MyList {
+
+    private static List<String> list = new ArrayList<String>();
+
+    public static void add() {
+        list.add("anyString");
+    }
+
+    public static int size() {
+        return list.size();
+    }
+}
+
+
+public class ThreadA extends Thread {
+
+    private Object lock;
+
+    public ThreadA(Object lock) {
+        super();
+        this.lock = lock;
+    }
+
+    @Override
+    public void run() {
+        try {
+            synchronized (lock) {
+                if (MyList.size() != 5) {
+                    System.out.println("wait begin "
+                            + System.currentTimeMillis());
+                    lock.wait();
+                    System.out.println("wait end  "
+                            + System.currentTimeMillis());
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+public class ThreadB extends Thread {
+    private Object lock;
+
+    public ThreadB(Object lock) {
+        super();
+        this.lock = lock;
+    }
+
+    @Override
+    public void run() {
+        try {
+            synchronized (lock) {
+                for (int i = 0; i < 10; i++) {
+                    MyList.add();
+                    if (MyList.size() == 5) {
+                        lock.notify();
+                        System.out.println("已经发出了通知");
+                    }
+                    System.out.println("添加了" + (i + 1) + "个元素!");
+                    Thread.sleep(1000);
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class Run {
+
+    public static void main(String[] args) {
+
+        try {
+            Object lock = new Object();
+
+            ThreadA a = new ThreadA(lock);
+            a.start();
+
+            Thread.sleep(50);
+
+            ThreadB b = new ThreadB(lock);
+            b.start();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+> 线程A要等待某个条件满足时(list.size()==5)，才执行操作。线程B则向list中添加元素，改变list 的size。
+>
+> A,B之间如何通信的呢？也就是说，线程A如何知道 list.size() 已经为5了呢？
+>
+> 这里用到了Object类的 wait() 和 notify() 方法。
+>
+> 当条件未满足时(list.size() !=5)，线程A调用wait() 放弃CPU，并进入阻塞状态。---不像②while轮询那样占用CPU
+>
+> 当条件满足时，线程B调用 notify()通知 线程A，所谓通知线程A，就是唤醒线程A，并让它进入可运行状态。
+>
+> 这种方式的一个好处就是CPU的利用率提高了。
+>
+> 但是也有一些缺点：比如，线程B先执行，一下子添加了5个元素并调用了notify()发送了通知，而此时线程A还执行；当线程A执行并调用wait()时，那它永远就不可能被唤醒了。因为，线程B已经发了通知了，以后不再发通知了。这说明：**通知过早，会打乱程序的执行逻辑。**
+
+#### **管道通信**就是使用java.io.PipedInputStream 和 java.io.PipedOutputStream进行通信
+
+> 具体就不介绍了。分布式系统中说的两种通信机制：共享内存机制和消息通信机制。感觉前面的①中的synchronized关键字和②中的while轮询 “属于” 共享内存机制，由于是轮询的条件使用了volatile关键字修饰时，这就表示它们通过判断这个“共享的条件变量“是否改变了，来实现进程间的交流。
+>
+> 而管道通信，更像消息传递机制，也就是说：通过管道，将一个线程中的消息发送给另一个。
+
+### 实操
+
+#### 如何让一段程序并发的执行，并最终汇总结果？
+
+> 使用CyclicBarrier 在多个关口处将多个线程执行结果汇总， CountDownLatch 在各线程执行完毕后向总线程汇报结果。
+>
+> CountDownLatch : 一个线程(或者多个)， 等待另外N个线程完成某个事情之后才能执行。
+>
+> CyclicBarrier : N个线程相互等待，任何一个线程完成之前，所有的线程都必须等待。
+>
+> 这样应该就清楚一点了，对于CountDownLatch来说，重点是那个“一个线程”, 是它在等待，而另外那N的线程在把“某个事情”做完之后可以继续等待，可以终止。而对于CyclicBarrier来说，重点是那N个线程，他们之间任何一个没有完成，所有的线程都必须等待。
+>
+> 从api上理解就是CountdownLatch有主要配合使用两个方法countDown()和await()，countDown()是做事的线程用的方法，await()是等待事情完成的线程用个方法，这两种线程是可以分开的(下面例子:CountdownLatchTest2)，当然也可以是同一组线程;CyclicBarrier只有一个方法await(),指的是做事线程必须大家同时等待，必须是同一组线程的工作。
+
+```java
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * 各个线程执行完成后，主线程做总结性工作的例子
+ * @author xuexiaolei
+ * @version 2017年11月02日
+ */
+public class CountdownLatchTest2 {
+    private final static int THREAD_NUM = 10;
+    public static void main(String[] args) {
+        CountDownLatch lock = new CountDownLatch(THREAD_NUM);
+        ExecutorService exec = Executors.newCachedThreadPool();
+        for (int i = 0; i < THREAD_NUM; i++) {
+            exec.submit(new CountdownLatchTask(lock, "Thread-"+i));
+        }
+        try {
+            lock.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("大家都执行完成了，做总结性工作");
+        exec.shutdown();
+    }
+
+    static class CountdownLatchTask implements Runnable{
+        private final CountDownLatch lock;
+        private final String threadName;
+        CountdownLatchTask(CountDownLatch lock, String threadName) {
+            this.lock = lock;
+            this.threadName = threadName;
+        }
+        @Override public void run() {
+            System.out.println(threadName + " 执行完成");
+            lock.countDown();
+        }
+    }
+}
+mport java.util.concurrent.*;
+
+/**
+ *
+ * @author xuexiaolei
+ * @version 2017年11月02日
+ */
+public class CyclicBarrierTest {
+    private final static int THREAD_NUM = 10;
+    public static void main(String[] args) {
+        CyclicBarrier lock = new CyclicBarrier(THREAD_NUM, new Runnable() {
+            @Override public void run() {
+                System.out.println("这阶段大家都执行完成了，我总结一下，然后开始下一阶段");
+            }
+        });
+        ExecutorService exec = Executors.newCachedThreadPool();
+        for (int i = 0; i < THREAD_NUM; i++) {
+            exec.submit(new CountdownLatchTask(lock, "Task-"+i));
+        }
+        exec.shutdown();
+    }
+
+    static class CountdownLatchTask implements Runnable{
+        private final CyclicBarrier lock;
+        private final String threadName;
+        CountdownLatchTask(CyclicBarrier lock, String threadName) {
+            this.lock = lock;
+            this.threadName = threadName;
+        }
+        @Override public void run() {
+            for (int i = 0; i < 3; i++) {
+                System.out.println(threadName + " 执行完成");
+                try {
+                    lock.await();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+}
+```
+
+#### 如何实现一个流控程序，用于控制请求的调用次数？
+
+```java
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+
+/**
+ * 阻塞访问的线程，直到获取了访问令牌
+ * @author xuexiaolei
+ * @version 2017年11月15日
+ */
+public class FlowControl2 {
+    private final static int MAX_COUNT = 10;
+    private final Semaphore semaphore = new Semaphore(MAX_COUNT);
+    private final ExecutorService exec = Executors.newCachedThreadPool();
+
+    public void access(int i){
+        exec.submit(new Runnable() {
+            @Override public void run() {
+                semaphore.acquireUninterruptibly();
+                doSomething(i);
+                semaphore.release();
+            }
+        });
+    }
+
+    public void doSomething(int i){
+        try {
+            Thread.sleep(new Random().nextInt(100));
+            System.out.println(String.format("%s 通过线程:%s 访问成功",i,Thread.currentThread().getName()));
+        } catch (InterruptedException e) {
+        }
+    }
+
+    public static void main(String[] args) {
+        FlowControl2 web = new FlowControl2();
+        for (int i = 0; i < 2000; i++) {
+            web.access(i);
+        }
+    }
+}
+```
+
+#### 多读少写的场景应该使用哪个并发容器，为什么使用它？比如你做了一个搜索引擎，搜索引擎每次搜索前需要判断搜索关键词是否在黑名单里，黑名单每天更新一次
+
+> 用CopyOnWriteArrayList、CopyOnWriteArraySet。
+>
+> CopyOnWriteArrayList特性：
+> CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。
+
+```java
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.*;
+
+/**
+ * 做了一个搜索引擎，搜索引擎每次搜索前需要判断搜索关键词是否在黑名单里，黑名单每天更新一次。
+ * @author xuexiaolei
+ * @version 2017年11月03日
+ */
+public class SearchEngineBlackListCache {
+    private final Set<String> blackList = new CopyOnWriteArraySet<>();//黑名单集合
+    private final Set<String> todayBlackList = new ConcurrentSkipListSet<>();//当天添加的黑名单
+
+
+    /******内部类单例写法 start******/
+    private SearchEngineBlackListCache(){}
+    private static class Holder {
+        private static SearchEngineBlackListCache singleton = new SearchEngineBlackListCache();
+    }
+    public static SearchEngineBlackListCache getInstance(){
+        return Holder.singleton;
+    }
+    /******内部类单例写法 end******/
+
+    /**
+     * 获取黑名单列表
+     * @return
+     */
+    public Set<String> getBlackList() {
+        return Collections.unmodifiableSet(blackList);
+    }
+
+    /**
+     * 判断是否在黑名单内
+     * @param name
+     * @return
+     */
+    public boolean isBlack(String name){
+        return blackList.contains(name);
+    }
+
+    /**
+     * 将今天的黑名单加入到黑名单内，外部系统可以定时每天执行这个方法
+     */
+    public void mergeBlackList(){
+        synchronized (todayBlackList){
+            blackList.addAll(todayBlackList);
+            todayBlackList.clear();
+        }
+    }
+
+    /**
+     * 加入黑名单
+     * @param name
+     */
+    public void addBlackList(String name){
+        synchronized (todayBlackList) {
+            todayBlackList.add(name);
+        }
+    }
+
+    /**
+     * 随机生成50个线程来测试
+     * @param args
+     */
+    public static void main(String[] args) {
+        SearchEngineBlackListCache cache = SearchEngineBlackListCache.getInstance();
+        final int COUNT = 50;
+        CountDownLatch countDownLatch = new CountDownLatch(COUNT);
+        ExecutorService exec = Executors.newFixedThreadPool(COUNT);
+        for (int i = 0; i < COUNT; i++) {
+            exec.execute(new Runnable() {
+                @Override public void run() {
+                    try {
+                        countDownLatch.countDown();
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    cache.addBlackList(UUID.randomUUID().toString());//随机增加黑名单字符串
+                    cache.mergeBlackList();
+                    System.out.println(cache.getBlackList().size());
+                }
+            });
+        }
+        exec.shutdown();
+    }
+}
+```
+
+#### **你是如何调用 wait（）方法的？****使用 if 块还是循环？为什么？**
+
+> wait() 方法应该在循环调用，因为当线程获取到 CPU 开始执行的时候，其他条件可能还没有满足，所以在处理前，循环检测条件是否满足会更好。下面是一段标准的使用 wait 和 notify 方法的代码：
+
+```
+
+// The standard idiom for using the wait method
+synchronized (obj) {
+while (condition does not hold)
+obj.wait(); // (Releases lock, and reacquires on wakeup)
+... // Perform action appropriate to condition
+}
 ```
 
