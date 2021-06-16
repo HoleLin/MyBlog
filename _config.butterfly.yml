@@ -55,7 +55,7 @@ algolia_search:
 
 # Local search
 local_search:
-  enable: true
+  enable: false
   path: /source/_posts
 # Math (數學)
 # --------------------------------------
