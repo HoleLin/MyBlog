@@ -109,7 +109,6 @@ highlight_shrink:
   * 对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改，可以阻止脏读和不可重复读，但幻读仍有可能发生。
 
 * **串行(Serializable)**
-
   * 对于同一行记录,"写"会加"写锁","读"会加"读锁".当出现读写锁冲突的时候,后访问的事务必须等前一个事务执行完成,才能继续执行;
   
   * 我的事务尚未提交,别人就不能改我的数据;
@@ -154,3 +153,24 @@ select @@global.tx_isolation;
  select @@tx_isolation;
 ```
 
+#### **隔离级别与锁的关系**
+
+* 在Read Uncommitted级别下，读取数据不需要加共享锁，这样就不会跟被修改的数据上的排他锁冲突
+
+* 在Read Committed级别下，读操作需要加共享锁，但是在语句执行完以后释放共享锁；
+
+* 在Repeatable Read级别下，读操作需要加共享锁，但是在事务提交之前并不释放共享锁，也就是必须等待事务执行完毕以后才释放共享锁。
+
+* Serializable 是限制性最强的隔离级别，因为该级别锁定整个范围的键，并一直持有锁，直到事务完成。
+
+#### **InnoDB存储引擎的锁的算法有三种**
+
+- Record lock：单个行记录上的锁
+- Gap lock：间隙锁，锁定一个范围，不包括记录本身
+- Next-key lock：record+gap 锁定一个范围，包含记录本身
+
+> - innodb对于行的查询使用next-key lock
+> - Next-locking keying为了解决Phantom Problem幻读问题
+> - 当查询的索引含有唯一属性时，将next-key lock降级为record key
+> - Gap锁设计的目的是为了阻止多个事务将记录插入到同一范围内，而这会导致幻读问题的产生
+> - 有两种方式显式关闭gap锁：（除了外键约束和唯一性检查外，其余情况仅使用record lock） A. 将事务隔离级别设置为RC B. 将参数innodb_locks_unsafe_for_binlog设置为1
