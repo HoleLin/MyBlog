@@ -56,7 +56,6 @@ algolia_search:
 # Local search
 local_search:
   enable: true
-  path: /root/MyBlog/source/_posts
 # Math (數學)
 # --------------------------------------
 # About the per_page
