@@ -97,7 +97,7 @@ highlight_shrink:
 
 * **主键索引**
 
-  > 设定为主键后数据库会**自动建立索引**，innodb为聚簇索引
+  > 设定为主键后数据库会**自动建立索引**，`Innodb`为聚簇索引,一个表只能有一个主键索引，但是可以有多个唯一索引。
 
   * 示例
 
@@ -141,7 +141,13 @@ highlight_shrink:
     CREATE INDEX idx_student ON `user`(name,age,department_id);
     ```
 
-* **全文索引**（`fulltext key`
+* **全文索引**（`fulltext key`)
+
+  > `MySQL`自带的全文索引只能用于`MyISAM`，并且只能对英文进行全文检索 （基本不用）
+
+* **外键索引**
+
+  > 只有`InnoDB`类型的表才可以使用外键索引，保证数据的一致性、完整性、和实现级联操作（基本不用）
 
 #### 如何创建索引
 
