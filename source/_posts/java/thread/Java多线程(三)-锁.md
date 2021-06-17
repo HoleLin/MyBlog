@@ -254,7 +254,7 @@ CAS虽然很高效，但是它也存在三大问题，这里也简单说一下�
 * **可重入锁优点** 
   * 可重入锁的一个优点是可一定程度避免死锁
 
-    ```
+    ```java
     public class Lock {
         boolean isLocked = false;
         Thread lockedBy = null;
