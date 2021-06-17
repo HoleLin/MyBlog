@@ -156,6 +156,140 @@ highlight_shrink:
 - 如果一个变量事先没有被lock操作锁定，则不允许对它执行unlock操作；也不允许去unlock一个被其他线程锁定的变量。
 - 对一个变量执行unlock操作之前，必须先把此变量同步到主内存中（执行store和write操作）。
 
+### 设计模式-保护性暂停
+
+* 同步模式之保护性暂停即(Guarded Suspension),用在一个线程等待另一个线程的执行结果;
+
+* **要点**
+
+  * 有一个结果需要从一个线程传递到另一个线程,让他们关联同一个`GuardedObject`;
+  * 如果有结果不断从一个线程到另一个线程那么可以使用消息队列(生产者/消费者);
+  * `JDK`中`join`的实现,`Future`的实现,采用此模式;
+  * 因为要等待,另一方的结果,因此归类到同步模式;
+
+  ![img](http://www.chenjunlin.vip/img/java/thread/%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E5%81%9C.png)
+
+* 示例
+
+  ```java
+  import com.google.common.collect.Lists;
+  import lombok.extern.slf4j.Slf4j;
+  
+  import java.util.List;
+  
+  @Slf4j
+  public class GuardedObject {
+      private Object response;
+      private Object lock = new Object();
+  
+      public Object get() {
+          synchronized (lock) {
+              // 条件不满足则等待
+              while (response == null) {
+                  try {
+                      lock.wait();
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+              }
+              return response;
+          }
+      }
+  
+      public void complete(Object response) {
+          synchronized (lock) {
+              // 条件满足,通知等待线程
+              this.response = response;
+              lock.notifyAll();
+          }
+      }
+  
+      public static void main(String[] args) {
+          GuardedObject guardedObject = new GuardedObject();
+          new Thread(() -> {
+              List<String> response = download();
+              guardedObject.complete(response);
+          }).start();
+          // 主线程阻塞等待
+          Object response = guardedObject.get();
+          log.info("get response:[{}] lines", ((List<String>) response).size());
+      }
+  
+      public static List<String> download() {
+          List<String> list = Lists.newArrayList();
+          list.add("GuardedObject");
+          try {
+              log.info("等待两秒");
+              Thread.sleep(2000);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
+          log.info("获取数据");
+          return list;
+      }
+  }
+  ```
+
+  ```java
+      /**
+       * Waits at most {@code millis} milliseconds for this thread to
+       * die. A timeout of {@code 0} means to wait forever.
+       *
+       * <p> This implementation uses a loop of {@code this.wait} calls
+       * conditioned on {@code this.isAlive}. As a thread terminates the
+       * {@code this.notifyAll} method is invoked. It is recommended that
+       * applications not use {@code wait}, {@code notify}, or
+       * {@code notifyAll} on {@code Thread} instances.
+       *
+       * @param  millis
+       *         the time to wait in milliseconds
+       *
+       * @throws  IllegalArgumentException
+       *          if the value of {@code millis} is negative
+       *
+       * @throws  InterruptedException
+       *          if any thread has interrupted the current thread. The
+       *          <i>interrupted status</i> of the current thread is
+       *          cleared when this exception is thrown.
+       */
+      public final synchronized void join(long millis)
+      throws InterruptedException {
+          long base = System.currentTimeMillis();
+          long now = 0;
+  
+          if (millis < 0) {
+              throw new IllegalArgumentException("timeout value is negative");
+          }
+  
+          if (millis == 0) {
+              while (isAlive()) {
+                  wait(0);
+              }
+          } else {
+              while (isAlive()) {
+                  long delay = millis - now;
+                  if (delay <= 0) {
+                      break;
+                  }
+                  wait(delay);
+                  now = System.currentTimeMillis() - base;
+              }
+          }
+      }
+  ```
+
+#### 异步模式之生产者消费者
+
+* **要点**
+
+  * 与之前的保护性暂停中的`GuardedObject`不同,不需要产生结果和消费结果一一对应;
+  * 消费队列可以用来平衡生产和消费的线程资源;
+  * 生产者仅负责生产结果数据,不关心数据该如何处理,而消费者专心处理结果数据;
+  * 消息队列是有容量限制,满时不会再加入数据,空时不会再消耗数据;
+  * `JDK`中各种阻塞队列,采用的就是这种模式;
+
+  <img src="http://www.chenjunlin.vip/img/java/thread/%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85.png" alt="img" style="zoom:67%;" />
+
 ### 常见问题
 
 #### `notify()`和`notifyAll()`有什么区别？

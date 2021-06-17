@@ -98,15 +98,17 @@ highlight_shrink:
 
 #### 管程(Moitor)
 
-> 每个Java对象都可以关联一个Monitor对象,如果使用`synchronized`给对象上锁(重量级锁)之后,该对象的Mark Word中就被设置指向Monitor对象的指针
->
-> 
->
-> **Moitor内部属性**
->
-> * WaitSet
-> * EntryList
-> * Owner
+> 每个Java对象都可以关联一个Monitor对象,如果使用`synchronized`给对象上锁(重量级锁)之后,该对象的Mark Word中就被设置指向Monitor对象的指针.
+
+![img](http://www.chenjunlin.vip/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
+
+##### 流程说明
+
+* 刚开始`Monitor`中`Owner`为null,当Thread-2执行`synchronized(object)`就会将`Monitor`的所有者`Owner`设置为Thread-2,**Monitor中只能有一个Owner**;
+* 在Thread-2上锁的过程中,如果Thread-3,Thread-4,Thread-5也来执行`synchroinzed(object)`就会进入`EntryList`中被阻塞,线程进入`BLOCKED`状态
+* Thread-2执行完成同步代码块的内容,然后唤醒`EntryList`中等待的线程来进行竞争锁,竞争是非公平的;
+* 上图中`WaitSet`中Thread-0,Thread-1是之前获得过锁,但条件不满足进入`WAITING`状态;
+  * **tips:**`synchronized`必须是进入同一个对象的`Monitor`才有上述效果,不加`synchronized`的对象不会关联`Monitor`,不遵从以上规则;
 
 ##### Java实现管程的方式: `synchronized`
 
@@ -240,49 +242,48 @@ CAS虽然很高效，但是它也存在三大问题，这里也简单说一下�
   >
   > - Java从1.5开始JDK提供了AtomicReference类来保证引用对象之间的原子性，可以把多个变量放在一个对象里来进行CAS操作。
 
-#### 可重入(Reentrancy)
+#### 可重入锁与不可重入锁
 
-> **可重入锁又名递归锁**，是指在同一个线程在外层方法获取锁的时候，再进入该线程的内层方法会自动获取锁（前提锁对象得是同一个对象或者class），不会因为之前已经获取过还没释放而阻塞
->
-> 当一个线程请求其他线程已经占有的锁时,请求线程将被阻塞,然而内部锁`synchronized`是可重入的,因此线程在试图获取它自己占有的锁时,请求会成功.
+##### 可重入锁
+
+> **可重入锁又名递归锁**，是指在同一个线程在外层方法获取锁的时候，再进入该线程的内层方法会自动获取锁（前提锁对象得是同一个对象或者class），不会因为之前已经获取过还没释放而阻塞;当一个线程请求其他线程已经占有的锁时,请求线程将被阻塞,然而内部锁`synchronized`是可重入的,因此线程在试图获取它自己占有的锁时,请求会成功.
 
 * 可重入意味着所有的请求是基于"每个线程(per-thread)",而不是基于"每个调用(pre-invocation)"的.
 * 可重入实现是通过每个锁关联**一个请求计数器(acquisition count)**和**一个占有它的线程**.当计数为0时,认为锁是未被占有的.线程请求一个未被占有的锁时,JVM将记录锁的占有者,并且将请求计数置为1.若同一线程再次请求这个锁,计数将递增,每次占用线程退出同步块,计数器值将递减,直到计数器达到0时,锁被释放.
 
-##### **优点** 
+* **可重入锁优点** 
+  * 可重入锁的一个优点是可一定程度避免死锁
 
-* 可重入锁的一个优点是可一定程度避免死锁
-
-```java
-public class Lock {
-    boolean isLocked = false;
-    Thread lockedBy = null;
-    int lockedCount = 0;
-
-    public synchronized void lock()
-            throws InterruptedException {
-        Thread thread = Thread.currentThread();
-        while (isLocked && lockedBy != thread) {
-            wait();
+    ```
+    public class Lock {
+        boolean isLocked = false;
+        Thread lockedBy = null;
+        int lockedCount = 0;
+    
+        public synchronized void lock()
+                throws InterruptedException {
+            Thread thread = Thread.currentThread();
+            while (isLocked && lockedBy != thread) {
+                wait();
+            }
+            isLocked = true;
+            lockedCount++;
+            lockedBy = thread;
         }
-        isLocked = true;
-        lockedCount++;
-        lockedBy = thread;
-    }
-
-    public synchronized void unlock() {
-        if (Thread.currentThread() == this.lockedBy) {
-            lockedCount--;
-            if (lockedCount == 0) {
-                isLocked = false;
-                notify();
+    
+        public synchronized void unlock() {
+            if (Thread.currentThread() == this.lockedBy) {
+                lockedCount--;
+                if (lockedCount == 0) {
+                    isLocked = false;
+                    notify();
+                }
             }
         }
     }
-}
-```
+    ```
 
-#### 不可重入锁
+##### 不可重入锁
 
 ```java
 public class Lock{
@@ -320,9 +321,101 @@ public class Count{
 >
 > 意味着至多只有一个线程可以拥有锁,当线程A尝试请求一个被线程B占有的锁时,线程A必须等待或者阻塞,直到B线程释放这个锁,.若线程B永远不释放锁,A将永远等待下去.
 
-#### 自旋锁和适应性自旋锁
+#### 轻量级锁与重量级锁
+
+##### 轻量级锁
+
+* 使用场景: 如果一个对象虽然有多线程访问,但多线程访问的时间是错开的(也就是没有竞争),那么就可以使用轻量级说来优化
+
+* 轻量级锁对使用者是透明的,即语法任然是`synchronized`
+
+* 说明
+
+  * 创建**锁记录**（`Lock Record`）对象，每个线程的栈帧都会包含一个锁记录对象，内部可以存储锁定对象的`mark word`（不再一开始就使用`Monitor`）;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%811.png" alt="img" style="zoom:80%;" />
+
+  * 让锁记录中的`Object reference`指向锁对象（Object），并尝试用`cas`去替换Object中的`mark word`，将此`mark word`放入`lock record`中保存;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%812.png" alt="img" style="zoom:80%;" />
+
+  * 如果`CAS`替换成功，则将Object的对象头替换为**锁记录的地址**和**状态 00（轻量级锁状态）**，并由该线程给对象加锁;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%813.png" alt="img" style="zoom:80%;" />
+
+    ##### 锁膨胀
+
+    * 如果一个线程在给一个对象加轻量级锁时，**`CAS`替换操作失败**（因为此时其他线程已经给对象加了轻量级锁），此时该线程就会进入**锁膨胀**过程;
+
+      <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%801.png" alt="img" style="zoom:80%;" />
+
+    * 此时便会给对象加上重量级锁（使用Monitor）
+
+      - 将对象头的`Mark Word`改为`Monitor`的地址，并且状态改为**01**(重量级锁)
+      - 并且该线程放入入`EntryList`中，并进入阻塞状态**BLOCKED**
+
+      <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%802.png" alt="img" style="zoom: 67%;" />
+
+    * 当Thread-0退出同步块解锁时,使用`CAS`将`Mark Word`的值恢复给对象头,失败,这时会进入重量级解锁流程,即按照`Monitor`地址找到`Monitor`对象设置Owner为null,唤醒`EntryList`中`BLOCKED`线程;
+
+#### 自旋锁,适应性自旋锁
 
 ##### 自旋锁
 
+* **重量级锁**竞争时，还可以使用自选来优化，如果当前线程在**自旋成功**（使用锁的线程退出了同步块，**释放了锁**），这时就可以避免线程进入阻塞状态;
+
+* `Java6`之后自旋锁是自适应的,比如对象刚刚一次的自旋操作成功过,那么认为这次自旋成功的可能性会高,就多自旋几次,反之就会少自旋升值不自旋,总之比较智能,自旋会占用CPU时间,单核CPU自旋就是浪费,多核CPU自旋才能发挥作用;
+
+* `Java7`之后不能控制是否开启自旋功能;
+
+  <img src="http://www.chenjunlin.vip/img/java/thread/%E8%87%AA%E6%97%8B%E6%88%90%E5%8A%9F.png" alt="img" style="zoom:67%;" />
+
+  <img src="http://www.chenjunlin.vip/img/java/thread/%E8%87%AA%E6%97%8B%E5%A4%B1%E8%B4%A5.png" alt="img" style="zoom:67%;" />
+
 ##### 适应性自选锁
+
+#### 偏向锁
+
+* 轻量级锁在没有竞争时(就自己这个线程),每次重入任需要`CAS`操作;
+* Java6引入偏向锁来做优化,只有第一次使用`CAS`将线程ID设置到对象的`Mark Word`头之后,发现这个线程ID是自己的就表示没有竞争,不用重新`CAS`,以后只要不发生竞争,这个对象就该线程所有;
+* 一个对象创建时,如果开启了偏向锁（默认开启）,对象的Mark Word的值为`Ox05`即最后三位为101,此时他的thread,epoch,age都是0;
+* 但是偏向锁默认是**有延迟**的，不会再程序一启动就生效，而是会在程序运行一段时间（几秒之后），才会对创建的对象设置为偏向状态;如果想避免延迟,可加VM参数`-XX:BasicLockingStartupDelay=0`来禁用延迟;
+* 如果没有开启偏向锁，那么对象创建后,`Mark Word`值为`Ox01`即最后三位为001,这时它的`hashcode`,age都为0,第一次用到`hashcode`时赋值;
+
+##### 禁用偏向锁
+
+* 添加VM参数:`-XX:uUserBaisedLocking`
+
+##### 撤销偏向锁
+
+*  调用对象`hashCode`方法
+  * 调用了对象的`hashCode`但偏向锁的对象`Mark Word`中存储的是线程id,如果调用`hashCode`会导致偏向锁被撤销 ;
+    * 轻量级锁会在锁记录中记录`hashCode`
+    * 重量级锁会在锁记录中记录`hashCode`
+* 其他线程使用对象
+  * 当有其他线程使用偏向锁对象时,会将偏向锁升级为轻量级锁;
+* 调用`wait`-`notify`
+
+##### 批量重偏向
+
+##### 批量撤销
+
+##### `wait`-`notify`
+
+> `Owner`线程发现条件不满足,调用`wait`方法,即可进入`WaitSet`变为`WAITING`状态;
+>
+> `BLCOKED`和`WAITING`的线程都处于阻塞状态,不占用CPU时间片;
+>
+> `BLOCKED`线程会在`Owner`线程释放锁时唤醒;
+>
+> `WAITING`线程会`Owner`线程调用`notify`或`notifyAll`时唤醒,但唤醒后并不意味者立即获得锁,仍需进入`EntryList`重新竞争
+
+![img](http://www.chenjunlin.vip/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
+
+###### API
+
+* `obj.wait()/obj.wait(long timeout)`让进入object监视器的线程到`WaitSet`中等待;
+* `obj.notify()`在object上正在`WaitSet`等待的线程挑一个唤醒;
+* `obj.notifyAll()`在object上正在`WaitSet`等待的线程全部唤醒;
+* 他们都是线程进行协作的手段,都属于Object对象的方法,必须获得对象的锁,才能调用这些方法
 
