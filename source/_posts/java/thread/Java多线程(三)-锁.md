@@ -98,11 +98,11 @@ highlight_shrink:
 
 #### 管程(Moitor)
 
-> 每个Java对象都可以关联一个Monitor对象,
+> 每个Java对象都可以关联一个Monitor对象,如果使用`synchronized`给对象上锁(重量级锁)之后,该对象的Mark Word中就被设置指向Monitor对象的指针
 >
-> 如果使用`synchronized`给对象上锁(重量级锁)之后,该对象的Mark Word中就被设置指向Monitor对象的指针
+> 
 >
-> Moitor内部属性
+> **Moitor内部属性**
 >
 > * WaitSet
 > * EntryList

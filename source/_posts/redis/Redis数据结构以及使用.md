@@ -70,8 +70,6 @@ mermaid: true
       >
       > * 设置成功，返回 1 。 设置失败，返回 0 。
 
-    * `setxx key value`
-
     * `setnx`使用场景: 如果有多个客户端同时执行`setnx key value`,根据`setnx`的特性只有一个客户端能设置成功,`setnx`可以作为分布式锁的一种实现方案.Redis官方给出了使用`setnx`实现分布式锁的方法:https://redis.io/topics/distlock
 
   * **获取值**: `get key`
@@ -86,7 +84,7 @@ mermaid: true
 
     * 不使用mget命令: **n 次get时间 = n次网络时间 + n次命令时间**
     * 使用mget命令: **n次get时间 = 1次网络时间 + n次命令时间**
-
+  
   * **计数**: 
 
     * **自增**:`incr key`
@@ -98,7 +96,7 @@ mermaid: true
       * 值不是整数,返回错误;
       * 值是帧数,返回自增后的结果;
       * 键不存在,按照值为0自增,返回结果为1;
-
+  
   * **追加值**: `append key value` 向字符串尾部追加值
 
   * **字符串长度**:`strlen key`
@@ -129,7 +127,7 @@ mermaid: true
     | strlen key                     | O(1)                                                         |
     | setrange key offset value      | O(1)                                                         |
     | getrange key start end         | O(n) n为字符串长度,由于获取字符串非常快,若字符串不是很长,可视为O(1) |
-
+  
   * **内存编码**
 
     * 字符串类型内部编码有3种:
@@ -137,7 +135,7 @@ mermaid: true
       * embstr: 小于等于39个字节的字符串;
       * raw: 大于39个字节的字符串;
     * Redis会更根据当前值的类型和长度决定使用哪种内部编码实现.
-
+  
 * **典型使用场景**
 
   * **缓存功能**
@@ -221,7 +219,7 @@ mermaid: true
 * **内部编码**
 
   * 哈希类型的内部编码有两种:
-    * **zplist(压缩列表)**: 当**哈希类型元素个数小于hash-max-ziplist-entries配置(默认512个)**,**同时所有值都小于hash-max-ziplist-value配置(默认64字节)时,Redis会使用ziplist作为哈希的内部实现**,ziplist使用更加紧凑的结构实现多个元素的连续存储,所有在节省内存方面比hashtable更加优秀.
+    * **ziplist(压缩列表)**: 当**哈希类型元素个数小于hash-max-ziplist-entries配置(默认512个)**,**同时所有值都小于hash-max-ziplist-value配置(默认64字节)时,Redis会使用ziplist作为哈希的内部实现**,ziplist使用更加紧凑的结构实现多个元素的连续存储,所有在节省内存方面比hashtable更加优秀.
     * **hashtable(哈希表)**: 当哈希类型无法满足ziplist的条件时,Redis会使用hashtable作为哈希的内部实现,因此此时ziplist的读写效率会下降,而hashtable的读写时间复杂度为O(1).
   
 * **使用场景**
