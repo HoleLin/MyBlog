@@ -17,3 +17,13 @@ cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
 cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 ```
 
+#### Excel设置全局文本类型
+
+```java
+//创建默认的单元格默认文本样式
+CellStyle textCellStyle = book.createCellStyle();
+DataFormat dataFormat = book.createDataFormat();
+textCellStyle.setDataFormat(dataFormat.getFormat("@"));
+cellStyleMap.put("textCommon", textCellStyle);
+```
+
