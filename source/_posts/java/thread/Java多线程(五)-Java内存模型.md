@@ -1,10 +1,11 @@
 ---
-title: Java多线程-volatile
+title: Java多线程-Java内存模型
 date: 2021-06-11 22:07:30
 cover: /img/cover/Java.jpg
 tags:
 - 多线程
 - volatile
+- JMM
 categories:
 - Java
 updated:
@@ -20,14 +21,24 @@ aplayer:
 highlight_shrink:
 ---
 
+### Java内存模型(JMM)
+
+* Java Memory Model
+
+* JMM体现在一下几个方面
+  * **原子性**: 保证指令不会受到线程上下文切换的影响;
+  * **可见性**: 保证指令不受CPU缓存的影响;
+    * 使用`volatile`关键字
+  * **有序性**: 保证指令不受CPU指令并行优化影响;
+
 #### volatile
 
 > * 获取共享变量时,为了保证变量的可见性,需求使用`volatile`修饰;
 > * 它可以用来修饰**成员变量**和**静态变量**,可以避免线程从自己的工作缓存中查找变量的值,必须到主存中获取他的值,线程操作`volatile`变量都是直接操作主存,即一个线程对`volatile`变量的修改,对另一个线程可见;
 >   * `volatile`仅仅保证了共享变量的可见性,让其他线程能够看到最新值,但不能解决指令交错问题(不能保证原子性);
-> * CAS必须借助`volatile`才能读取共享变量的最新值来实现比较-交换的效果;
+> * `CAS`必须借助`volatile`才能读取共享变量的最新值来实现比较-交换的效果;
 
-##### 内存配置
+##### 内存屏障
 
 * 可见性
   * 写屏障(Sfence)保证在该屏障之前的,对共享变量的改动,都同步到主存中.
@@ -71,6 +82,11 @@ highlight_shrink:
   ```
 
   <img src="http://www.chenjunlin.vip/img/thread/volatile%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C.png" alt="img" style="zoom: 67%;" />
+
+###### 如何保证有序性
+
+* 写屏障会确保指令重排序时,不会将写屏障之前的代码排在写屏障之后;
+* 读屏障会确保指令重排序时,不会将读屏障之后的代码排在读屏障之前;
 
 ##### volatile不能解决指令交错的问题
 

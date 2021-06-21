@@ -290,6 +290,303 @@ highlight_shrink:
 
   <img src="http://www.chenjunlin.vip/img/java/thread/%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85.png" alt="img" style="zoom:67%;" />
 
+### 设计模式-固定运行顺序
+
+#### `wait/notify`版
+
+```java
+package com.holelin.sundry.test.thread;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SequentialOutputTest {
+    public static void main(String[] args) {
+        waitAndNotify();
+    }
+
+    /**
+     * 用来同步的对象
+     */
+    static Object object = new Object();
+    /**
+     * t2运行标志,表示t2是否执行过
+     */
+    static boolean t2Runned = false;
+
+    public static void waitAndNotify() {
+        Thread t1 = new Thread(() -> {
+            synchronized (object) {
+                while (t2Runned) {
+                    try {
+                        object.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            log.info("1");
+        });
+        Thread t2 = new Thread(() -> {
+            log.info("2");
+            synchronized (object) {
+                // 修改运行标记
+                t2Runned = true;
+                object.notifyAll();
+            }
+        });
+        t1.start();
+        t2.start();
+    }
+}
+
+```
+
+* 首先,需要保证先wait在notify,否则wait线程永远得不到唤醒,因此使用**运行标记**来判断该不该wait;
+* 如果有些干扰线程错误的notify了wait线程,条件不满足时还需要重新等待,使用while循环来解决此问题;
+* 唤醒对象上的wait线程需要使用notifyAll,因为同步对象上的等待线程可能不止一个
+
+#### `park/unpark`版
+
+```java
+    public static void parkAndUnpark() {
+        Thread t1 = new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 当没有许可时,当前线程暂停运行,有许可时,用掉这个许可,当前线程恢复运行
+            LockSupport.park();
+            log.info("1");
+        });
+        Thread t2 = new Thread(() -> {
+            log.info("2");
+            // 给线程t1发放许可.(多次连续调用unpark,只会发放一个许可)
+            LockSupport.unpark(t1);
+
+        });
+        t1.start();
+        t2.start();
+    }
+```
+
+#### 交替输出
+
+```java
+package com.holelin.sundry.test.thread;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class AlternateOutputTest {
+    public static void main(String[] args) {
+        waitAndNotify();
+    }
+
+    public static void waitAndNotify() {
+        SyncWaitNotify syncWaitNotify = new SyncWaitNotify(1, 5);
+        new Thread(() -> {
+            syncWaitNotify.print(1, 2, "a");
+        }).start();
+        new Thread(() -> {
+            syncWaitNotify.print(2, 3, "b");
+        }).start();
+        new Thread(() -> {
+            syncWaitNotify.print(3, 1, "c");
+        }).start();
+    }
+
+    static class SyncWaitNotify {
+        private int flag;
+        private int loopNumber;
+
+        public SyncWaitNotify(int flag, int loopNumber) {
+            this.flag = flag;
+            this.loopNumber = loopNumber;
+        }
+
+        private void print(int waitFlag, int nextFlag, String str) {
+            for (int i = 0; i < loopNumber; i++) {
+                synchronized (this) {
+                    while (this.flag != waitFlag) {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    log.info(str);
+                    flag = nextFlag;
+                    this.notifyAll();
+                }
+            }
+        }
+    }
+}
+23:04:11.123 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:04:11.125 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:04:11.125 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:04:11.125 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:04:11.125 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:04:11.125 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:04:11.125 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:04:11.125 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:04:11.125 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:04:11.125 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:04:11.125 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:04:11.125 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:04:11.125 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:04:11.125 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:04:11.125 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+```
+
+```java
+    static class AwaitSignal extends ReentrantLock {
+        private int loopNumber;
+
+        public AwaitSignal(int loopNumber) {
+            this.loopNumber = loopNumber;
+        }
+
+        public void start(Condition first) {
+            this.lock();
+            try {
+                log.info("start");
+                first.signal();
+            } finally {
+                this.unlock();
+            }
+        }
+
+        public void print(Condition current, Condition next, String str) {
+            for (int i = 0; i < loopNumber; i++) {
+                this.lock();
+                try {
+                    current.await();
+                    log.info(str);
+                    next.signal();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    this.unlock();
+                }
+            }
+        }
+
+    }
+    public static void awaitSignal() {
+        AwaitSignal as = new AwaitSignal(5);
+        Condition aWaitSet = as.newCondition();
+        Condition bWaitSet = as.newCondition();
+        Condition cWaitSet = as.newCondition();
+        new Thread(() -> {
+            as.print(aWaitSet, bWaitSet, "a");
+        }).start();
+        new Thread(() -> {
+            as.print(bWaitSet, cWaitSet, "b");
+        }).start();
+        new Thread(() -> {
+            as.print(cWaitSet, aWaitSet, "c");
+        }).start();
+        as.start(aWaitSet);
+
+    }
+
+23:14:26.140 [main] INFO com.holelin.sundry.test.thread.AlternateOutputTest - start
+23:14:26.141 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:14:26.142 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:14:26.142 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:14:26.142 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:14:26.142 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:14:26.142 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:14:26.142 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:14:26.142 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:14:26.142 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:14:26.142 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:14:26.142 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:14:26.142 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:14:26.142 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:14:26.142 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:14:26.142 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+```
+
+```java
+ static class SyncPark {
+        private int loopNumber;
+        private Thread[] threads;
+
+        public SyncPark(int loopNumber) {
+            this.loopNumber = loopNumber;
+        }
+
+        public void setThreads(Thread... threads) {
+            this.threads = threads;
+        }
+
+        public void print(String str) {
+            for (int i = 0; i < loopNumber; i++) {
+                LockSupport.park();
+                log.info(str);
+                LockSupport.unpark(nextThread());
+            }
+        }
+
+        private Thread nextThread() {
+            Thread currentThread = Thread.currentThread();
+            int index = 0;
+            for (int i = 0; i < threads.length; i++) {
+                if (threads[i] == currentThread) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < threads.length - 1) {
+                return threads[index + 1];
+            } else {
+                return threads[0];
+            }
+        }
+
+        public void start() {
+            for (Thread thread : threads) {
+                thread.start();
+            }
+            LockSupport.unpark(threads[0]);
+        }
+    }
+    
+    public static void syncPark() {
+        SyncPark syncPark = new SyncPark(5);
+        Thread t1 = new Thread(() -> {
+            syncPark.print("a");
+        });
+        Thread t2 = new Thread(() -> {
+            syncPark.print("b");
+        });
+        Thread t3 = new Thread(() -> {
+            syncPark.print("c");
+        });
+        syncPark.setThreads(t1, t2, t3);
+        syncPark.start();
+    }
+23:21:08.881 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:21:08.882 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:21:08.882 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:21:08.883 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:21:08.883 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:21:08.883 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:21:08.883 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:21:08.883 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:21:08.883 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:21:08.883 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:21:08.883 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:21:08.883 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+23:21:08.883 [Thread-0] INFO com.holelin.sundry.test.thread.AlternateOutputTest - a
+23:21:08.883 [Thread-1] INFO com.holelin.sundry.test.thread.AlternateOutputTest - b
+23:21:08.883 [Thread-2] INFO com.holelin.sundry.test.thread.AlternateOutputTest - c
+```
+
 ### 常见问题
 
 #### `notify()`和`notifyAll()`有什么区别？

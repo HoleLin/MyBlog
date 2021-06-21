@@ -31,15 +31,313 @@ highlight_shrink:
 
 - 降低资源消耗。
 
-- - 通过重复利用已经创建的线程降低线程创建的和销毁造成的消耗。例如，工作线程Woker会无线循环获取阻塞队列中的任务来执行。
+  - 通过重复利用已经创建的线程降低线程创建的和销毁造成的消耗。例如，工作线程Woker会无线循环获取阻塞队列中的任务来执行。
 
 - 提高响应速度。
 
-- - 当任务到达时，任务可以不需要等到线程创建就能立即执行。
+  - 当任务到达时，任务可以不需要等到线程创建就能立即执行。
 
 - 提高线程的可管理性。
 
-- - 线程是稀缺资源，Java的线程池可以对线程资源进行统一分配、调优和监控。
+  - 线程是稀缺资源，Java的线程池可以对线程资源进行统一分配、调优和监控。
+
+#### 实现线程池
+
+* 自定义拒绝策略接口
+
+  ```java
+  @FunctionalInterface
+  public interface RejectPolicy<T> {
+      void reject(BlockingQueue<T> queue, T task);
+  }
+  ```
+
+* 自定义任务队列
+
+  ```java
+  package com.holelin.sundry.test.thread;
+  
+  import lombok.extern.slf4j.Slf4j;
+  
+  import java.util.ArrayDeque;
+  import java.util.Deque;
+  import java.util.concurrent.TimeUnit;
+  import java.util.concurrent.locks.Condition;
+  import java.util.concurrent.locks.ReentrantLock;
+  
+  @Slf4j
+  public class BlockingQueue<T> {
+      /**
+       * 任务队列
+       */
+      private Deque<T> queue = new ArrayDeque<>();
+      /**
+       * 锁
+       */
+      private ReentrantLock lock = new ReentrantLock();
+      /**
+       * 生产者条件变量
+       */
+      private Condition fullWaitSet = lock.newCondition();
+      /**
+       * 消费者条件变量
+       */
+      private Condition emptyWaitSet = lock.newCondition();
+  
+      /**
+       * 容量
+       */
+      private int capacity;
+  
+      /**
+       * 带超时阻塞获取
+       *
+       * @param timeout
+       * @param unit
+       * @return
+       */
+      public T poll(long timeout, TimeUnit unit) {
+          lock.lock();
+          try {
+              long nanos = unit.toNanos(timeout);
+              while (queue.isEmpty()) {
+                  try {
+                      if (nanos <= 0) {
+                          return null;
+                      }
+                      emptyWaitSet.awaitNanos(nanos);
+                  } catch (InterruptedException e) {
+  
+                  }
+              }
+              T t = queue.removeFirst();
+              fullWaitSet.signal();
+              return t;
+          } finally {
+              lock.unlock();
+          }
+      }
+  
+      /**
+       * 阻塞获取
+       *
+       * @return
+       */
+      public T take() {
+          lock.lock();
+          try {
+              while (queue.isEmpty()) {
+                  try {
+                      emptyWaitSet.await();
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+              }
+              T t = queue.removeFirst();
+              fullWaitSet.signal();
+              return t;
+          } finally {
+              lock.unlock();
+          }
+      }
+  
+      public void put(T task) {
+          lock.lock();
+          try {
+              while (queue.size() == capacity) {
+                  log.info("等待加入任务队列:{}", task);
+                  try {
+                      fullWaitSet.await();
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+              }
+              log.info("加入任务队列:{}", task);
+              queue.addLast(task);
+              emptyWaitSet.signal();
+          } finally {
+              lock.unlock();
+          }
+      }
+  
+      public boolean offer(T task, long timeout, TimeUnit unit) {
+          lock.lock();
+          try {
+              long nanos = unit.toNanos(timeout);
+              while (queue.size() == capacity) {
+                  if (nanos <= 0) {
+                      return false;
+                  }
+                  log.info("等待加入任务队列:{}", task);
+                  try {
+                      nanos = fullWaitSet.awaitNanos(nanos);
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+              }
+              log.info("加入任务队列:{}", task);
+              queue.addLast(task);
+              emptyWaitSet.signal();
+              return true;
+          } finally {
+              lock.unlock();
+          }
+      }
+  
+      public int size() {
+          lock.lock();
+          try {
+              return queue.size();
+          } finally {
+              lock.unlock();
+          }
+      }
+  
+      public void tryPut(RejectPolicy<T> rejectPolicy, T task) {
+          lock.lock();
+          try {
+              if (queue.size()==capacity){
+                  rejectPolicy.reject(this,task);
+              }else {
+                  log.info("加入任务队列:{}", task);
+                  queue.addLast(task);
+                  emptyWaitSet.signal();
+              }
+          } finally {
+              lock.unlock();
+          }
+      }
+  }
+  ```
+
+* 自定义线程池
+
+  ```java
+  package com.holelin.sundry.test.thread;
+  
+  import lombok.extern.slf4j.Slf4j;
+  
+  import java.util.HashSet;
+  import java.util.Objects;
+  import java.util.concurrent.TimeUnit;
+  
+  @Slf4j
+  public class ThreadPool {
+      /**
+       * 任务队列
+       */
+      private BlockingQueue<Runnable> taskQueue;
+      /**
+       * 线程集合
+       */
+      private HashSet<Worker> workers = new HashSet<>();
+      /**
+       * 核心线程数
+       */
+      private int coreSize;
+      /**
+       * 获取任务时的超时时间
+       */
+      private long timeout;
+  
+      private TimeUnit timeUnit;
+  
+      private RejectPolicy<Runnable> rejectPolicy;
+  
+      public void execute(Runnable task) {
+          synchronized (workers) {
+              if (workers.size() < coreSize) {
+                  Worker worker = new Worker(task);
+                  log.info("新增worker{},{}", worker, task);
+                  workers.add(worker);
+                  worker.start();
+              } else {
+  //                taskQueue.put(task);
+                  // 1. 死等
+                  // 2. 带超时时间等待
+                  // 3. 让调用者放弃任务执行
+                  // 4. 让调用者抛出异常
+                  // 5. 让调用者自己执行任务
+                  taskQueue.tryPut(rejectPolicy, task);
+              }
+          }
+      }
+  
+      public ThreadPool(int coreSize, long timeout, TimeUnit timeUnit, int queueCapacity, RejectPolicy<Runnable> rejectPolicy) {
+          this.workers = workers;
+          this.coreSize = coreSize;
+          this.timeout = timeout;
+          this.timeUnit = timeUnit;
+          this.taskQueue = new BlockingQueue<>(queueCapacity);
+          this.rejectPolicy = rejectPolicy;
+      }
+  
+      class Worker extends Thread {
+          private Runnable task;
+  
+          public Worker(Runnable task) {
+              this.task = task;
+          }
+  
+          @Override
+          public void run() {
+              /**
+               * 执行任务
+               * 1. 当task不为空,执行任务
+               * 2. 当task执行完毕,再接着从任务队列中获取任务并执行
+               */
+              while (Objects.nonNull(task) || Objects.nonNull(task = taskQueue.poll(timeout, timeUnit))) {
+                  try {
+                      log.info("正在执行...{}", task);
+                      task.run();
+                  } catch (Exception e) {
+                      e.printStackTrace();
+                  } finally {
+                      task = null;
+                  }
+              }
+              synchronized (workers) {
+                  log.info("worker被移除{}", this);
+                  workers.remove(this);
+              }
+          }
+      }
+  }
+  
+  ```
+
+* 测试
+
+  ```java
+  @Slf4j
+  public class ThreadPoolTest {
+      public static void main(String[] args) {
+          ThreadPool threadPool = new ThreadPool(1, 100, TimeUnit.MILLISECONDS, 1, ((queue, task) -> {
+              // 1. 死等
+  //            queue.put(task);
+              // 2. 带超时时间等待
+  //            queue.offer(task, 1500, TimeUnit.MILLISECONDS);
+              // 3. 让调用者放弃任务执行
+  //            log.info("放弃执行:{}", task);
+              // 4. 让调用者抛出异常
+  //            throw new RuntimeException("任务执行失败" + task);
+              // 5. 让调用者自己执行任务
+              task.run();
+          }));
+          for (int i = 0; i < 4; i++) {
+              int j = i;
+              threadPool.execute(() -> {
+                  try {
+                      Thread.sleep(1000L);
+                  } catch (InterruptedException e) {
+                      e.printStackTrace();
+                  }
+                  log.info("{}", j);
+              });
+          }
+      }
+  }
+  ```
 
 #### 线程池的工作流程
 
@@ -160,3 +458,4 @@ public void execute(Runnable command) {
 - shutdownNow方法将线程池的状态设置为STOP状态，会中断所有工作线程，不管工作线程是否空闲。
 - 调用两者中任何一种方法，都会使isShutdown方法的返回值为true；线程池中所有的任务都关闭后，isTerminated方法的返回值为true。
 - 通常使用shutdown方法关闭线程池，如果不要求任务一定要执行完，则可以调用shutdownNow方法。
+
