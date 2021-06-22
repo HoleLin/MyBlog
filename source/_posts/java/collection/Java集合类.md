@@ -1293,7 +1293,7 @@ public interface Queue<E> extends Collection<E> {
 
 #### `HashMap` 
 
-> [HashMap分析](http://www.chenjunlin.vip/2021/05/25/java/HashMap/)
+> [HashMap分析](http://www.chenjunlin.vip/2021/05/25/java/collection/HashMap/)
 
 #### `LinkedHashMap`
 
