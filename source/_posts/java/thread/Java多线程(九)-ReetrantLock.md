@@ -205,18 +205,18 @@ public class ReentrantLockTest {
       ```java
            	/** Marker to indicate a node is waiting in exclusive mode */
               static final Node EXCLUSIVE = null;
-      		// ==> arg为1
+      		 // ==> arg为1
               public final void acquire(int arg) {
                   // tryAcquire方法执行,当前state为1且当前线程不是获取锁的线程,方法返回false
                   if (!tryAcquire(arg) &&
                       acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
                       selfInterrupt();
               }
-      		// ==> 
+      		 // ==> 
               protected final boolean tryAcquire(int acquires) {
                   return nonfairTryAcquire(acquires);
               }
-      		// ==> 
+      		 // ==> 
               /**
                * Performs non-fair tryLock.  tryAcquire is implemented in
                * subclasses, but both need nonfair try for trylock method.
@@ -267,7 +267,7 @@ public class ReentrantLockTest {
               enq(node);
               return node;
           }
-      	// ==>
+      	 // ==>
           /**
            * Inserts node into queue, initializing if necessary. See picture above.
            * @param node the node to insert
@@ -426,7 +426,7 @@ public class ReentrantLockTest {
       public void unlock() {
           sync.release(1);
       }
-  	// 	==>
+  	 // 	==>
       /**
        * Releases in exclusive mode.  Implemented by unblocking one or
        * more threads if {@link #tryRelease} returns true.
