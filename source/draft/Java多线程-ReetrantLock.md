@@ -2,8 +2,11 @@
 title: Java多线程-ReetrantLock
 mermaid: true
 date: 2021-06-18 00:06:08
+cover: /img/cover/Java.jpg
 tags:
+- ReetrantLock
 categories:
+- Java
 updated:
 type:
 comments:
@@ -16,6 +19,9 @@ aside:
 aplayer:
 highlight_shrink:
 ---
+
+### 参考文献
+
 
 ### 特点
 

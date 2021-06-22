@@ -23,6 +23,7 @@ highlight_shrink:
 ### 参考文献
 
 * [锁的简单应用](https://www.cnblogs.com/dj3839/p/6580765.html)
+* [图解Java中那18 把锁](https://mp.weixin.qq.com/s/l6ee7k0n7CCVFgBS4tI2kQ)
 
 ### 锁
 
@@ -321,43 +322,6 @@ public class Count{
 >
 > 意味着至多只有一个线程可以拥有锁,当线程A尝试请求一个被线程B占有的锁时,线程A必须等待或者阻塞,直到B线程释放这个锁,.若线程B永远不释放锁,A将永远等待下去.
 
-#### 轻量级锁与重量级锁
-
-##### 轻量级锁
-
-* 使用场景: 如果一个对象虽然有多线程访问,但多线程访问的时间是错开的(也就是没有竞争),那么就可以使用轻量级说来优化
-
-* 轻量级锁对使用者是透明的,即语法任然是`synchronized`
-
-* 说明
-
-  * 创建**锁记录**（`Lock Record`）对象，每个线程的栈帧都会包含一个锁记录对象，内部可以存储锁定对象的`mark word`（不再一开始就使用`Monitor`）;
-
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%811.png" alt="img" style="zoom:80%;" />
-
-  * 让锁记录中的`Object reference`指向锁对象（Object），并尝试用`cas`去替换Object中的`mark word`，将此`mark word`放入`lock record`中保存;
-
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%812.png" alt="img" style="zoom:80%;" />
-
-  * 如果`CAS`替换成功，则将Object的对象头替换为**锁记录的地址**和**状态 00（轻量级锁状态）**，并由该线程给对象加锁;
-
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%813.png" alt="img" style="zoom:80%;" />
-
-    ##### 锁膨胀
-
-    * 如果一个线程在给一个对象加轻量级锁时，**`CAS`替换操作失败**（因为此时其他线程已经给对象加了轻量级锁），此时该线程就会进入**锁膨胀**过程;
-
-      <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%801.png" alt="img" style="zoom:80%;" />
-
-    * 此时便会给对象加上重量级锁（使用Monitor）
-
-      - 将对象头的`Mark Word`改为`Monitor`的地址，并且状态改为**01**(重量级锁)
-      - 并且该线程放入入`EntryList`中，并进入阻塞状态**BLOCKED**
-
-      <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%802.png" alt="img" style="zoom: 67%;" />
-
-    * 当Thread-0退出同步块解锁时,使用`CAS`将`Mark Word`的值恢复给对象头,失败,这时会进入重量级解锁流程,即按照`Monitor`地址找到`Monitor`对象设置Owner为null,唤醒`EntryList`中`BLOCKED`线程;
-
 #### 自旋锁,适应性自旋锁
 
 ##### 自旋锁
@@ -374,7 +338,13 @@ public class Count{
 
 ##### 适应性自选锁
 
-#### 偏向锁
+### 锁升级(无锁|偏向锁|轻量级锁|重量级锁)
+
+#### 偏向锁(Biased Locking)
+
+> Java偏向锁(Biased Locking)是指它会偏向于第一个访问锁的线程，如果在运行过程中，只有一个线程访问加锁的资源，不存在多线程竞争的情况，那么线程是不需要重复获取锁的，这种情况下，就会给线程加一个偏向锁。
+>
+> 偏向锁的实现是通过控制对象`Mark Word`的标志位来实现的，如果当前是`可偏向状态`，需要进一步判断对象头存储的线程 ID 是否与当前线程 ID 一致，如果一致直接进入。
 
 * 轻量级锁在没有竞争时(就自己这个线程),每次重入任需要`CAS`操作;
 * Java6引入偏向锁来做优化,只有第一次使用`CAS`将线程ID设置到对象的`Mark Word`头之后,发现这个线程ID是自己的就表示没有竞争,不用重新`CAS`,以后只要不发生竞争,这个对象就该线程所有;
@@ -384,7 +354,7 @@ public class Count{
 
 ##### 禁用偏向锁
 
-* 添加VM参数:`-XX:uUserBaisedLocking`
+* 添加VM参数:`-XX:UserBaisedLocking`
 
 ##### 撤销偏向锁
 
@@ -419,3 +389,109 @@ public class Count{
 * `obj.notifyAll()`在object上正在`WaitSet`等待的线程全部唤醒;
 * 他们都是线程进行协作的手段,都属于Object对象的方法,必须获得对象的锁,才能调用这些方法
 
+#### 轻量级锁与重量级锁
+
+##### 轻量级锁
+
+> 当线程竞争变得比较激烈时，偏向锁就会升级为`轻量级锁`，轻量级锁认为虽然竞争是存在的，但是理想情况下竞争的程度很低，通过`自旋方式`等待上一个线程释放锁。
+
+* 使用场景: 如果一个对象虽然有多线程访问,但多线程访问的时间是错开的(也就是没有竞争),那么就可以使用轻量级说来优化
+
+* 轻量级锁对使用者是透明的,即语法任然是`synchronized`
+
+* 说明
+
+  * 创建**锁记录**（`Lock Record`）对象，每个线程的栈帧都会包含一个锁记录对象，内部可以存储锁定对象的`mark word`（不再一开始就使用`Monitor`）;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%811.png" alt="img" style="zoom:80%;" />
+
+  * 让锁记录中的`Object reference`指向锁对象（Object），并尝试用`cas`去替换Object中的`mark word`，将此`mark word`放入`lock record`中保存;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%812.png" alt="img" style="zoom:80%;" />
+
+  * 如果`CAS`替换成功，则将Object的对象头替换为**锁记录的地址**和**状态 00（轻量级锁状态）**，并由该线程给对象加锁;
+
+    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%813.png" alt="img" style="zoom:80%;" />
+
+##### 锁膨胀
+
+* 如果一个线程在给一个对象加轻量级锁时，**`CAS`替换操作失败**（因为此时其他线程已经给对象加了轻量级锁），此时该线程就会进入**锁膨胀**过程;
+
+  <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%801.png" alt="img" style="zoom:80%;" />
+
+* 此时便会给对象加上重量级锁（使用Monitor）
+
+  - 将对象头的`Mark Word`改为`Monitor`的地址，并且状态改为**01**(重量级锁)
+  - 并且该线程放入入`EntryList`中，并进入阻塞状态**BLOCKED**
+
+  <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%802.png" alt="img" style="zoom: 67%;" />
+
+* 当Thread-0退出同步块解锁时,使用`CAS`将`Mark Word`的值恢复给对象头,失败,这时会进入重量级解锁流程,即按照`Monitor`地址找到`Monitor`对象设置Owner为null,唤醒`EntryList`中`BLOCKED`线程;
+
+##### 重量级锁
+
+> 如果线程并发进一步加剧，线程的自旋超过了一定次数，或者一个线程持有锁，一个线程在自旋，又来了第三个线程访问时（反正就是竞争继续加大了），轻量级锁就会膨胀为`重量级锁`，重量级锁会使除了此时拥有锁的线程以外的线程都阻塞。
+>
+> 升级到重量级锁其实就是互斥锁了，一个线程拿到锁，其余线程都会处于阻塞等待状态。
+>
+> 在 Java 中，synchronized 关键字内部实现原理就是锁升级的过程：无锁 --> 偏向锁 --> 轻量级锁 --> 重量级锁
+
+### 锁优化技术（锁粗化、锁消除）
+
+#### **锁粗化**
+
+* `锁粗化`就是将多个同步块的数量减少，并将单个同步块的作用范围扩大，本质上就是将多次上锁、解锁的请求合并为一次同步请求。
+
+举个例子，一个循环体中有一个代码同步块，每次循环都会执行加锁解锁操作。
+
+```java
+private static final Object LOCK = new Object();
+
+for(int i = 0;i < 100; i++) {
+    synchronized(LOCK){
+        // do some magic things
+    }
+}
+```
+
+经过`锁粗化`后就变成下面这个样子了：
+
+```java
+ synchronized(LOCK){
+     for(int i = 0;i < 100; i++) {
+        // do some magic things
+    }
+}
+```
+
+#### **锁消除**
+
+* `锁消除`是指虚拟机编译器在运行时检测到了共享数据没有竞争的锁，从而将这些锁进行消除。
+
+举个例子让大家更好理解。
+
+```java
+public String test(String s1, String s2){
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append(s1);
+    stringBuffer.append(s2);
+    return stringBuffer.toString();
+}
+```
+
+上面代码中有一个 test 方法，主要作用是将字符串 s1 和字符串 s2 串联起来。
+
+test 方法中三个变量s1, s2, stringBuffer， 它们都是局部变量，局部变量是在栈上的，栈是线程私有的，所以就算有多个线程访问 test 方法也是线程安全的。
+
+我们都知道 StringBuffer 是线程安全的类，append 方法是同步方法，但是 test 方法本来就是线程安全的，为了提升效率，虚拟机帮我们消除了这些同步锁，这个过程就被称为`锁消除`。
+
+```java
+StringBuffer.class
+
+// append 是同步方法
+public synchronized StringBuffer append(String str) {
+    toStringCache = null;
+    super.append(str);
+    return this;
+}
+```
