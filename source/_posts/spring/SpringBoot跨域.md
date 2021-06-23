@@ -3,10 +3,8 @@ title: SpringBoot中的跨域问题
 date: 2021-05-26 22:14:33
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
-tags: 
-- SpringBoot
+tags:
 - 跨域
-- Java
 categories: 
 - SpringBoot
 - Spring

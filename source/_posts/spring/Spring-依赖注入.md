@@ -29,8 +29,8 @@ categories:
 
 | 依赖注入类型 | 配置原数据举例                                    |
 | ------------ | ------------------------------------------------- |
-| setter方法   | <proeprty name="user" ref="userBean"/>            |
-| 构造器       | <construcot-arg name="user" ref="userBean"/>      |
+| setter方法   | \<proeprty name="user" ref="userBean"/>           |
+| 构造器       | \<construcot-arg name="user" ref="userBean"/>     |
 | 字段         | @Autowired<br />private User user                 |
 | 方法         | @Autowired<br /> public void user(User user){...} |
 | 接口回调     | class MyBean implements BeanFactoryAware{....}    |
