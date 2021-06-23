@@ -102,3 +102,12 @@ highlight_shrink:
 > 一种实践是用 volatile 修饰 long 和 double 变量，使其能按原子类型来读写。double 和 long 都是64位宽，因此对这两种类型的读是分为两部分的，第一次读取第一个 32 位，然后再读剩下的 32 位，这个过程不是原子的，但 Java 中 volatile 型的 long 或 double 变量的读写是原子的。
 >
 > volatile 修复符的另一个作用是提供内存屏障（memory barrier），例如在分布式框架中的应用。简单的说，就是当你写一个 volatile 变量之前，Java 内存模型会插入一个写屏障（write barrier），读一个 volatile 变量之前，会插入一个读屏障（read barrier）。意思就是说，在你写一个 volatile 域时，能保证任何线程都能看到你写的值，同时，在写之前，也能保证任何数值的更新对所有线程是可见的，因为内存屏障会将其他所有写的值更新到缓存。
+
+##### `volatile`与`synchronized`的区别
+
+* `volatile`本质是告诉`JVM`当前变量在寄存器中的值是不确定的,需要从主存中读取,`synchronized`则是锁定当前变量,只有当前线程可以访问改变量,其他线程被阻塞住;
+* `volatile`仅能使用变量级别,`synchronized`则可以使用在变量,方法上;
+* `volatile`仅能实现变量的修改可见性,但不具备原子特性,而`synchronized`则可以保证变量的修改可见性和原子性;
+* `volatile`不会造成线程阻塞,而`synchronized`可能会造成线程阻塞;
+* `volatile`标记的变量不会被编译优化,而`synchronized`标记的变量可以被编译优化;
+

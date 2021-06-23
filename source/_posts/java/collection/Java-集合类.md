@@ -1355,8 +1355,50 @@ public interface Queue<E> extends Collection<E> {
   * `ArrayList`和`Vector`两者允许null值，也可以使用索引值对元素进行随机访问。
 * **不同点:**
   * `Vector`是同步的，而`ArrayList`不是。然而，如果你寻求在迭代的时候对列表进行改变，你应该使用`CopyOnWriteArrayList`。
+  
   * `ArrayList`比Vector快，它因为没有同步，不会过载。
+  
   * `ArrayList`更加通用，因为我们可以使用Collections工具类轻易地获取同步列表和只读列表。
+  
+  * `Vector`默认增长为原来的一倍,而`ArrayList`却是原来的一半;
+  
+    ```java
+    	// Vector
+    	private void grow(int minCapacity) {
+            // overflow-conscious code
+            int oldCapacity = elementData.length;
+            // 若没有指定capacityIncrement,则扩容两倍
+            int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
+                                             capacityIncrement : oldCapacity);
+            if (newCapacity - minCapacity < 0)
+                newCapacity = minCapacity;
+            if (newCapacity - MAX_ARRAY_SIZE > 0)
+                newCapacity = hugeCapacity(minCapacity);
+            elementData = Arrays.copyOf(elementData, newCapacity);
+        }
+    ```
+  
+    ```java
+    	// ArrayList
+    	/**
+         * Increases the capacity to ensure that it can hold at least the
+         * number of elements specified by the minimum capacity argument.
+         *
+         * @param minCapacity the desired minimum capacity
+         */
+        private void grow(int minCapacity) {
+            // overflow-conscious code
+            int oldCapacity = elementData.length;
+            // 采用右移运算，就是原来的一般，所以是扩容1.5倍。
+            int newCapacity = oldCapacity + (oldCapacity >> 1);
+            if (newCapacity - minCapacity < 0)
+                newCapacity = minCapacity;
+            if (newCapacity - MAX_ARRAY_SIZE > 0)
+                newCapacity = hugeCapacity(minCapacity);
+            // minCapacity is usually close to size, so this is a win:
+            elementData = Arrays.copyOf(elementData, newCapacity);
+        }
+    ```
 
 #### `Array`和`ArrayList`有何区别？什么时候更适合用`Array`？
 
@@ -1366,3 +1408,8 @@ public interface Queue<E> extends Collection<E> {
 * 如果列表的大小已经指定，大部分情况下是存储和遍历它们。
 * 对于遍历基本数据类型，尽管Collections使用自动装箱来减轻编码任务，在指定大小的基本类型的列表上工作也会变得很慢。
 * 如果你要使用多维数组，使用[][]比List<List<>>更容易。
+
+#### `Collection`和`Collections`的区别
+
+* `Collection`是`java.util`下的接口,它是各种集合的父接口,继承与它的接口主要有List和Set;
+* `Collections`是`java.util`下的类,是针对集合的帮助类,提供一系列静态方法实现,对各种集合的搜索,排序,线程安全等操作;
