@@ -66,7 +66,7 @@ highlight_shrink:
 >
 > 综上，并发与并行并不是互斥的概念，只是前者关注的是任务的抽象调度、后者关注的是任务的实际执行。而它们又是相关的，比如并行一定会允许并发。
 
-<img src="http://www.chenjunlin.vip/img/thread/concurrent_parallel.jpg" alt="img" style="zoom:80%;" />
+<img src="http://www.chenjunlin.vip/img/java/thread/concurrent_parallel.jpg" alt="img" style="zoom:80%;" />
 
 #### 弱并发
 
@@ -342,9 +342,9 @@ public class SequentialOutputTest {
 
 ```
 
-* 首先,需要保证先wait在notify,否则wait线程永远得不到唤醒,因此使用**运行标记**来判断该不该wait;
-* 如果有些干扰线程错误的notify了wait线程,条件不满足时还需要重新等待,使用while循环来解决此问题;
-* 唤醒对象上的wait线程需要使用notifyAll,因为同步对象上的等待线程可能不止一个
+* 首先,需要保证先`wait`在`notify`,否则`wait`线程永远得不到唤醒,因此使用**运行标记**来判断该不该`wait`;
+* 如果有些干扰线程错误的`notify`了`wait`线程,条件不满足时还需要重新等待,使用while循环来解决此问题;
+* 唤醒对象上的`wait`线程需要使用`notifyAll,`因为同步对象上的等待线程可能不止一个
 
 #### `park/unpark`版
 

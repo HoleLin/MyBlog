@@ -62,7 +62,7 @@ class VolatileExample {
 
 > 这条规则是指如果 A Happens-Before B，且 B Happens-Before C，那么 A Happens-Before C。
 >
-> <img src="http://www.chenjunlin.vip/img/thread/Happens-Before%E4%BC%A0%E9%80%92%E6%80%A7.png" alt="img" style="zoom:80%;" />
+> <img src="http://www.chenjunlin.vip/img/java/thread/Happens-Before%E4%BC%A0%E9%80%92%E6%80%A7.png" alt="img" style="zoom:80%;" />
 >
 > 从图中，我们可以看到：
 >
