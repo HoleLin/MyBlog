@@ -665,7 +665,73 @@ public class Main {
 
 > (1) **HashMap**：它根据键的hashCode值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却是不确定的。 **HashMap最多只允许一条记录的键为null，允许多条记录的值为null**。HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
 >
+> ```java
+>     /**
+>      * Computes key.hashCode() and spreads (XORs) higher bits of hash
+>      * to lower.  Because the table uses power-of-two masking, sets of
+>      * hashes that vary only in bits above the current mask will
+>      * always collide. (Among known examples are sets of Float keys
+>      * holding consecutive whole numbers in small tables.)  So we
+>      * apply a transform that spreads the impact of higher bits
+>      * downward. There is a tradeoff between speed, utility, and
+>      * quality of bit-spreading. Because many common sets of hashes
+>      * are already reasonably distributed (so don't benefit from
+>      * spreading), and because we use trees to handle large sets of
+>      * collisions in bins, we just XOR some shifted bits in the
+>      * cheapest possible way to reduce systematic lossage, as well as
+>      * to incorporate impact of the highest bits that would otherwise
+>      * never be used in index calculations because of table bounds.
+>      */
+>     static final int hash(Object key) {
+>         int h;
+>         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+>     }
+> ```
+>
 > (2) **Hashtable**：Hashtable是遗留类，很多映射的常用功能与HashMap类似，不同的是它承自Dictionary类，并且是线程安全的，任一时间只有一个线程能写Hashtable，并发性不如ConcurrentHashMap，因为ConcurrentHashMap引入了分段锁。Hashtable不建议在新代码中使用，不需要线程安全的场合可以用HashMap替换，需要线程安全的场合可以用ConcurrentHashMap替换。
+>
+> ```java
+>  /**
+>      * Maps the specified <code>key</code> to the specified
+>      * <code>value</code> in this hashtable. Neither the key nor the
+>      * value can be <code>null</code>. <p>
+>      *
+>      * The value can be retrieved by calling the <code>get</code> method
+>      * with a key that is equal to the original key.
+>      *
+>      * @param      key     the hashtable key
+>      * @param      value   the value
+>      * @return     the previous value of the specified key in this hashtable,
+>      *             or <code>null</code> if it did not have one
+>      * @exception  NullPointerException  if the key or value is
+>      *               <code>null</code>
+>      * @see     Object#equals(Object)
+>      * @see     #get(Object)
+>      */
+>     public synchronized V put(K key, V value) {
+>         // Make sure the value is not null
+>         if (value == null) {
+>             throw new NullPointerException();
+>         }
+> 
+>         // Makes sure the key is not already in the hashtable.
+>         Entry<?,?> tab[] = table;
+>         int hash = key.hashCode();
+>         int index = (hash & 0x7FFFFFFF) % tab.length;
+>         @SuppressWarnings("unchecked")
+>         Entry<K,V> entry = (Entry<K,V>)tab[index];
+>         for(; entry != null ; entry = entry.next) {
+>             if ((entry.hash == hash) && entry.key.equals(key)) {
+>                 V old = entry.value;
+>                 entry.value = value;
+>                 return old;
+>             }
+>         }
+> 
+>         addEntry(hash, key, value, index);
+>         return null;
+>     }
+> ```
 >
 > (3) **LinkedHashMap**：LinkedHashMap是HashMap的一个子类，保存了记录的插入顺序，在用Iterator遍历LinkedHashMap时，先得到的记录肯定是先插入的，也可以在构造时带参数，按照访问次序排序。
 >

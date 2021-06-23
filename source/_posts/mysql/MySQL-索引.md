@@ -256,7 +256,7 @@ mysql> explain select * from innodb1 where id_card like '123%';
 
 ### 索引优化
 
-#### 单表查询优化
+#### 单表查询优化(10个)
 
 * **全值匹配很快捷**
 
