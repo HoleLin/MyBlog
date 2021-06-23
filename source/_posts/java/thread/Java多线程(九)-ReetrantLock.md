@@ -180,11 +180,12 @@ public class ReentrantLockTest {
            * acquire on failure.
            */
           final void lock() {
+              // 首先用CAS尝试(仅尝试一次),将state从0改为1,如果成功表示获得了独占锁;
               if (compareAndSetState(0, 1))
                   // 初始状态state为0,没有竞争,直接获取锁
                   setExclusiveOwnerThread(Thread.currentThread());
               else
-                  // state不为0
+                  // state不为0,如果尝试失败,进入acquire
                   acquire(1);
           }
   ```
@@ -209,6 +210,7 @@ public class ReentrantLockTest {
               public final void acquire(int arg) {
                   // tryAcquire方法执行,当前state为1且当前线程不是获取锁的线程,方法返回false
                   if (!tryAcquire(arg) &&
+                     // 当tryAcquire返回false时,先调用addWaiter,接着acquireQueued
                       acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
                       selfInterrupt();
               }
@@ -224,12 +226,15 @@ public class ReentrantLockTest {
               final boolean nonfairTryAcquire(int acquires) {
                   final Thread current = Thread.currentThread();
                   int c = getState();
+                  // 如果还没有获得锁
                   if (c == 0) {
+                      // 尝试CAS获得,这里体现了非公平性,不去检查AQS队列
                       if (compareAndSetState(0, acquires)) {
                           setExclusiveOwnerThread(current);
                           return true;
                       }
                   }
+                  // 如果已经获得了锁,线程还是当前线程,表示发生了锁重入
                   else if (current == getExclusiveOwnerThread()) {
                       int nextc = c + acquires;
                       if (nextc < 0) // overflow
@@ -237,14 +242,15 @@ public class ReentrantLockTest {
                       setState(nextc);
                       return true;
                   }
+                  // 获取失败,回到调用处
                   return false;
               }
       ```
-
+    
     * 接下来进入`addWaiter`逻辑,构造`Node`队列
-
+    
       ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync3.png)
-
+    
       ```java
          /**
            * Creates and enqueues node for current thread and given mode.
@@ -253,17 +259,21 @@ public class ReentrantLockTest {
            * @return the new node
            */
           private Node addWaiter(Node mode) {
+              // 将当前线程关联到一个Node对象上,模式为独占模式
               Node node = new Node(Thread.currentThread(), mode);
               // Try the fast path of enq; backup to full enq on failure
+              // 如果tail不为null,CAS尝试将Node对象加入AQS队列尾部
               Node pred = tail;
               if (pred != null) {
                   node.prev = pred;
                   if (compareAndSetTail(pred, node)) {
+                      // 双向链表
                       pred.next = node;
                       return node;
                   }
               }
-              // 第一次进入,队列为空,直接入队
+              // 第一次进入,队列为空,直接入队 
+              // 尝试将Node加入AQS队列
               enq(node);
               return node;
           }
@@ -278,7 +288,7 @@ public class ReentrantLockTest {
                   Node t = tail;
                   // 队列中还没有元素tail为null
                   if (t == null) { // Must initialize
-                      // 将head从null->dumny
+                      // 将head从null->dumny 设置head为哨兵节点(不对应线程,状态为0)
                       if (compareAndSetHead(new Node()))
                           tail = head;
                   } else {
@@ -294,13 +304,13 @@ public class ReentrantLockTest {
               }
           }
       ```
-
+    
       * 图中黄色三角表示该Node的`waitSatus`状态,其中0为默认正常状态
       * `Node`的创建是懒惰的
       * 其中第一个`Node`称为`Dummy`(哑元)或哨兵,用来占位,并不关联线程;
-
+    
     * 当前线程进入`acquireQueued`逻辑
-
+    
       ```java
       
           /**
@@ -318,14 +328,20 @@ public class ReentrantLockTest {
                   for (;;) {
                       // 获取node的前驱节点
                       final Node p = node.predecessor();
+                      // 若上个节点是head,表示轮到自己(当前线程对应的Node)了,尝试获取锁
                       // 若前驱节点p为head节点,则再次尝试获取锁
                       if (p == head && tryAcquire(arg)) {
+                          // 获取成功,设置自己(当前线程对应的Node)为head
                           setHead(node);
+                          // 上个节点为null
                           p.next = null; // help GC
                           failed = false;
+                          // 返回中断标记false
                           return interrupted;
                       }
+                      // 判断是否应当park
                       if (shouldParkAfterFailedAcquire(p, node) &&
+                          // park等待,此时Node的状态被设置为Node.SIGNAL
                           parkAndCheckInterrupt())
                           interrupted = true;
                   }
@@ -366,6 +382,7 @@ public class ReentrantLockTest {
              * @return {@code true} if thread should block
              */
             private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+                // 获取上个节点的状态
                 int ws = pred.waitStatus;
                 if (ws == Node.SIGNAL)
                     // 第二次进入waitStatus==-1该分支
@@ -373,12 +390,15 @@ public class ReentrantLockTest {
                      * This node has already set status asking a release
                      * to signal it, so it can safely park.
                      */
+                    // 上个节点阻塞,那么自己也阻塞好了
                     return true;
+                // > 0 表示取消状态
                 if (ws > 0) {
                     /*
                      * Predecessor was cancelled. Skip over predecessors and
                      * indicate retry.
                      */
+                     // 上一个节点取消,那么重构删除前面所有取消的节点,返回到外层循环重试
                     do {
                         node.prev = pred = pred.prev;
                     } while (pred.waitStatus > 0);
@@ -390,6 +410,8 @@ public class ReentrantLockTest {
                      * need a signal, but don't park yet.  Caller will need to
                      * retry to make sure it cannot acquire before parking.
                      */
+                    // 这次还没有阻塞
+                    // 但下次如果重试不成功,则需要阻塞,这是需要设置上个节点状态为Node.SIGNAL
                     compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
                 }
                 return false;
