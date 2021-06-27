@@ -1,12 +1,14 @@
 ---
-title: Redis持久化
+title: Redis-持久化
 date: 2021-05-24 23:33:33
 index_img: /img/cover/Redis.jpg
 cover: /img/cover/Redis.jpg
 tags: 
-- Redis
 - 持久化
-categories: Redis
+- RDB
+- AOF
+categories: 
+- Redis
 mermaid: true
 ---
 

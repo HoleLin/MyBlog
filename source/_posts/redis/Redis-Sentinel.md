@@ -1,10 +1,11 @@
 ---
-title: Redis哨兵模式(Sentinel)
+title: Redis-哨兵模式(Sentinel)
 date: 2021-06-04 22:54:54
 index_img: /img/cover/Redis.jpg
 cover: /img/cover/Redis.jpg
 tags:
 - 哨兵模式
+- Sentinel
 categories:
 - Redis
 ---

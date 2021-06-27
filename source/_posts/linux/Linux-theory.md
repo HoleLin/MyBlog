@@ -4,7 +4,6 @@ date: 2021-05-30 17:17:47
 index_img: /img/cover/Linux.jpg
 cover: /img/cover/Linux.jpg
 tags:
-- linux
 - 理论
 categories:
 - Linux
