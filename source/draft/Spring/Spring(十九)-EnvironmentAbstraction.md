@@ -1,11 +1,11 @@
 ---
-title: Spring-BeanDefinition
+title: Spring(十九)-EnvironmentAbstraction
 mermaid: true
-date: 2021-06-23 17:09:26
+date: 2021-06-27 21:05:11
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
-- BeanDefinition
+- IoC 
 categories:
 - Spring
 updated:
@@ -20,9 +20,3 @@ aside:
 aplayer:
 highlight_shrink:
 ---
-
-### 定义SpringBean
-
-#### 什么是Spring BeanDefinition
-
-> BeanDefinition

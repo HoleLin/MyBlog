@@ -1,6 +1,5 @@
 ---
 title: Spring Inversion of Control (IoC)
-mermaid: true
 date: 2021-06-23 15:40:34
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
@@ -132,3 +131,8 @@ highlight_shrink:
   * 国际化(il8n)
   * 注解(Annotations)
   * Environment对象(Environment Abstracttion)
+
+#### 使用Spring IoC容器
+
+* BeanFactory是Spring底层IoC容器
+* ApplicationContext是具备应用特征的BeanFactory超集
