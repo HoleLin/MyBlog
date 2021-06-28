@@ -137,3 +137,42 @@ public class DependencyLookupDemo {
 }
 ```
 
+#### 安全依赖查找
+
+* 依赖查找安全性对比
+
+  | 依赖查找类型 | 代表实现                             | 是否安全 |
+  | ------------ | ------------------------------------ | -------- |
+  | 单一类型查找 | `BeanFactory#getBean`                | 否       |
+  |              | `ObjectFactory#getObject`            | 否       |
+  |              | `ObjectProvider#getIfAvailable`      | 是       |
+  |              |                                      |          |
+  | 集合类型查找 | `ListableBeanFactory#getBeansOfType` | 是       |
+  |              | `ObjectProvider#stream`              | 是       |
+
+#### 内建可查找的依赖
+
+* `AbstractApplicationContext`内建可查找的依赖
+
+  | Bean名称                      | Bean实例                                      | 使用场景               |
+  | ----------------------------- | --------------------------------------------- | ---------------------- |
+  | `environment`                 | `Environment`对象                             | 外部化配置以及Profiles |
+  | `systemProperties`            | `Map<String, Object> getSystemProperties();`  | Java系统属性           |
+  | `systemEnvironment`           | `Map<String, Object> getSystemEnvironment();` | 操作系统环境变量       |
+  | `messageSource`               | `MessageSource`对象                           | 国际化文案             |
+  | `applicationEventMulticaster` | `ApplicationEventMulticaster`对象             | Spring事件广播器       |
+  | `lifecycleProcessor`          | `LifecycleProcessor`对象                      | `Lifecycle Bean`处理器 |
+
+#### 依赖查找中的经典异常
+
+* BeanException子类型
+
+  | 异常类型                          | 触发条件(举例)                              | 场景举例                                      |
+  | --------------------------------- | ------------------------------------------- | --------------------------------------------- |
+  | `NoSuchBeanDefinitionException`   | 当查找 Bean 不存在于 IoC 容器时             | `BeanFactory#getBean ObjectFactory#getObject` |
+  | `NoUniqueBeanDefinitionException` | 类型依赖查找时，IoC 容器存在多 个 Bean 实例 | `BeanFactory#getBean(Class)`                  |
+  | `BeanInstantiationException `     | 当 Bean 所对应的类型非具体类时              | `BeanFactory#getBean`                         |
+  | `BeanCreationException`           | 当 Bean 初始化过程中                        | Bean 初始化方法执行异常 时                    |
+  | `BeanDefinitionStoreException `   | 当 BeanDefinition 配置元信息非法 时         | XML 配置资源无法打开时                        |
+
+  

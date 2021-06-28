@@ -5,7 +5,7 @@ date: 2021-06-27 20:57:01
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
-- Bean
+- BeanDefintionan
 categories:
 - Spring
 updated:

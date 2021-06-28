@@ -2279,38 +2279,11 @@ public class XmlDependencyConstructorInjectionDemo {
 
 ![img](http://www.chenjunlin.vip/img/spring/SpringBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
 
-#### 补充描述
 
-##### BeanPostProcessor的使用场景有哪些?
 
-> BeanPostProcessor提供Spring Bean初始化前和初始化后的生命周期,分别对应`postProcessBeforeInitialization`以及`postProcessAfterInitialization`方法,允许对关心的Bean进行扩展,甚至替换.
->
-> 其中,ApplicationContext相关的Aware回调也是基于BeanPostProcessor实现,即`ApplicationContextAwareProcessor`
+##### 
 
-##### BeanFactoryPostProcessor与BeanPostProcessor的区别
 
-> BeanFactoryPostProcessor是Spring BeanFactory(实际为`ConfigurableListableBeanFactory`)的后置处理器,用于扩展BeanFactory或通过BeanFactory进行依赖查找和依赖注入,BeanFactoryPostProcessor必须由Spring ApplicationContext执行,BeanFactory无法进行直接交互;
->
-> 而BeanFactory与BeanPostProcessor直接关系属于1:N的关系
-
-##### BeanFactory是怎么处理Bean生命周期的
-
-> BeanFactory默认实现为`DefaultListableBeanFactory`其中Bean生命周期与方法映射如下:
->
-> * BeanDefinition注册阶段:  `registerBeanDefinition`
-> * BeanDefinition合并阶段:  `getMergedLocalBeanDefinition`
-> * Bean实例化前阶段:  `resolveBeforeInstantiation`
-> * Bean实例化: `createBeanInstance`
-> * Bean实例化后阶段: `populateBean`
-> * Bean属性赋值前阶段: `populateBean`
-> * Bean属性赋值阶段: `populateBean`
-> * Bean Aware接口回调阶段:  `initializeBean`
-> * Bean 初始化前阶段:  `initializeBean`
-> * Bean 初始化阶段:  `initializeBean`
-> * Bean 初始化后阶段:  `initializeBean`
-> * Bean 初始化完成阶段: `preInstantiateSingletons`
-> * Bean 销毁前阶段: `destoryBean`
-> * Bean 销毁阶段: `destoryBean`
 
 
 

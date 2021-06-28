@@ -1,3 +1,24 @@
+---
+title: JPA
+date: 2021-06-27 20:54:53
+index_img: /img/cover/Spring.jpg
+cover: /img/cover/Spring.jpg
+tags:
+- JPA
+categories:
+- Spring
+updated:
+type:
+comments:
+description:
+keywords:
+top_img:
+mathjax:
+katex:
+aside:
+aplayer:
+highlight_shrink:
+---
 ## JPA
 
 ### 1. 基础使用

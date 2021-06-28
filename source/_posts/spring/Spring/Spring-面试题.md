@@ -84,3 +84,97 @@ highlight_shrink:
 * `ApplicationContext`是具备应用特性的BeanFactory超集;
 * `ApplicationContext`是`BeanFactory`的子接口,说明`ApplicationContext is BeanFactory`,并且`ApplicationContext`的包装类,也就是内部组合了`BeanFactory`的实现(`DefaultListableBeanFactory`)
 
+#### 注入和查找的依赖来源是否相同?
+
+* 否;
+* 依赖查找的来源仅限于`Spring BeanDefinition`以及单例对象;
+* 而依赖注入的来源还包括`Resolvable Dependency`以及`@Value`所标注的外部化配置;
+
+#### 单例对象能在IoC容器启动后注册吗?
+
+* 可以的
+* 单例对象的注册与`BeanDefinition`不同,`BeanDefinition`会被`ConfigurableListableBeanFactory#freezeConfiguration`方法影响,从而冻结注册,单例对象则没有这个限制;
+
+#### Spring依赖注入的来源有哪些?
+
+* Spring `BeanDefinition`
+* 单例对象
+* `Resolvable Dependency`
+* `@Value`外部化配置
+
+#### 有多少中依赖注入的方式 ?
+
+*  构造器注入
+* `Setter`注入
+* 字段注入
+* 方法注入
+* 接口回调注入
+
+ #### Spring内建的Bean的作用域有几种?
+
+* singletion
+* prototype
+* request
+* session
+* application
+* websocket
+
+#### Singleton Bean是否在一个应用是唯一的?
+
+* 否;
+* Singletoin bean仅在当前Spring IoC容器(BeanFactory)中是单例对象;
+
+#### BeanPostProcessor 的使用场景有哪些？  
+
+* `BeanPostProcessor` 提供 Spring Bean 初始化前和初始化后的生命周期回调，分别对应 `postProcessBeforeInitialization` 以及`postProcessAfterInitialization`方法，允许对关心的 Bean 进行扩展，甚至是替换。  
+* 其中，`ApplicationContext `相关的 Aware 回调也是基于`BeanPostProcessor `实现，即 `ApplicationContextAwareProcessor`。  
+
+#### BeanFactoryPostProcessor 与BeanPostProcessor 的区别  
+
+* `BeanFactoryPostProcessor `是 Spring `BeanFactory`（实际为`ConfigurableListableBeanFactory`） 的后置处理器，用于扩展BeanFactory，或通过 BeanFactory 进行依赖查找和依赖注入。  
+* `BeanFactoryPostProcessor `必须有 Spring `ApplicationContext`执行，BeanFactory 无法与其直接交互;
+* 而 `BeanPostProcessor` 则直接与BeanFactory 关联，属于 N 对 1 的关系。  
+
+##### BeanFactory是怎么处理Bean生命周期的
+
+BeanFactory默认实现为`DefaultListableBeanFactory`其中Bean生命周期与方法映射如下:
+
+* BeanDefinition注册阶段:  `registerBeanDefinition`
+* BeanDefinition合并阶段:  `getMergedLocalBeanDefinition`
+* Bean实例化前阶段:  `resolveBeforeInstantiation`
+* Bean实例化: `createBeanInstance`
+* Bean实例化后阶段: `populateBean`
+* Bean属性赋值前阶段: `populateBean`
+* Bean属性赋值阶段: `populateBean`
+* Bean Aware接口回调阶段:  `initializeBean`
+* Bean 初始化前阶段:  `initializeBean`
+* Bean 初始化阶段:  `initializeBean`
+* Bean 初始化后阶段:  `initializeBean`
+* Bean 初始化完成阶段: `preInstantiateSingletons`
+* Bean 销毁前阶段: `destoryBean`
+* Bean 销毁阶段: `destoryBean`
+
+#### Spring 內建 XML Schema 常见有哪些？  
+
+| 命名空间 | 所属模块       | Schema 资源 URL                                              |
+| -------- | -------------- | ------------------------------------------------------------ |
+| beans    | spring-beans   | https://www.springframework.org/schema/beans/spring-beans.xsd |
+| context  | spring-context | https://www.springframework.org/schema/context/spring context.xsd |
+| aop      | spring-aop     | https://www.springframework.org/schema/aop/spring-aop.xsd    |
+| tx       | spring-tx      | https://www.springframework.org/schema/tx/spring-tx.xsd      |
+| util     | spring-beans   | https://www.springframework.org/schema/util/spring-util.xsd  |
+| tool     | spring-beans   | https://www.springframework.org/schema/tool/spring-tool.xsd  |
+
+#### Spring配置元信息具体有哪些？  
+
+* Bean 配置元信息：通过媒介（如 XML、Proeprties 等），解析 BeanDefinition
+* IoC 容器配置元信息：通过媒介（如 XML、Proeprties 等），控制 IoC 容器行为，比如注解驱动、AOP 等
+* 外部化配置：通过资源抽象（如 Proeprties、YAML 等），控制 PropertySource
+* Spring Profile：通过外部化配置，提供条件分支流程  
+
+#### Extensible XML authoring 的缺点？  
+
+* 高复杂度：开发人员需要熟悉 XML Schema，spring.handlers，spring.schemas以及 Spring API 。
+* 嵌套元素支持较弱：通常需要使用方法递归或者其嵌套解析的方式处理嵌套（子）元素。
+* XML 处理性能较差：Spring XML 基于 DOM Level 3 API 实现，该 API 便于理解，然而性能较差。
+* XML 框架移植性差：很难适配高性能和便利性的 XML 框架，如 JAXB  
