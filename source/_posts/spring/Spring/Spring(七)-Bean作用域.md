@@ -1,5 +1,5 @@
 ---
-title: Spring-Bean作用域
+title: Spring(七) Bean作用域
 mermaid: true
 date: 2021-06-27 20:58:40
 index_img: /img/cover/Spring.jpg

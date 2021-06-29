@@ -178,3 +178,31 @@ BeanFactory默认实现为`DefaultListableBeanFactory`其中Bean生命周期与�
 * 嵌套元素支持较弱：通常需要使用方法递归或者其嵌套解析的方式处理嵌套（子）元素。
 * XML 处理性能较差：Spring XML 基于 DOM Level 3 API 实现，该 API 便于理解，然而性能较差。
 * XML 框架移植性差：很难适配高性能和便利性的 XML 框架，如 JAXB  
+
+#### Spring配置资源中有哪些常见类型?
+
+* XML资源
+* Properties资源
+* YAML资源
+
+#### 请例举不同类型Spring配置资源?
+
+* XML资源
+  * 普通Bean Definition XML配置资源 : `*.xml`
+  * Spring Schema 资源 :`*.xsd`
+* Properties资源
+  * 普通Properties格式资源: `*.properties`
+  * Spring Handler实现类映射文件: `META-INF/spring.handlers`
+  * Spring Schema资源映射文件: `META-INF/spring.schemas`
+* YAML资源
+  * 普通YAML配置资源: `*.yaml`或`*.yml`
+
+#### Java标准资源管理扩展的步骤
+
+* 简易实现
+  * 实现`URLStreamHandler`并放置在`sun.net.www.protocol.${protocol}.Handler`包下
+* 自定义实现
+  * 实现`URLStreamHandler`
+  * 添加`-Djava.protocol.handler.pkgs`启动参数,指向`URLStreamHandler`实现类的包下
+* 高级实现
+  * 实现`URLStreamHandlerFactory`并传递到URL之中

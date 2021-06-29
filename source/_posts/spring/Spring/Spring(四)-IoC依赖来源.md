@@ -1,5 +1,5 @@
 ---
-title: Spring-IoC依赖来源
+title: Spring(四) IoC依赖来源
 mermaid: true
 date: 2021-06-27 20:58:21
 index_img: /img/cover/Spring.jpg

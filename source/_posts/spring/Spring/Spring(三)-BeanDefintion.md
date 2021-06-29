@@ -1,5 +1,5 @@
 ---
-title: Spring-BeanDefintion
+title: Spring(三) BeanDefintion
 mermaid: true
 date: 2021-06-27 20:57:01
 index_img: /img/cover/Spring.jpg

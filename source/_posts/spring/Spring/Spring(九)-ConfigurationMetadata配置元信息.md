@@ -1,5 +1,5 @@
 ---
-title: Spring-ConfigurationMetadata配置元信息
+title: Spring(九) ConfigurationMetadata配置元信息
 mermaid: true
 date: 2021-06-27 21:00:43
 index_img: /img/cover/Spring.jpg

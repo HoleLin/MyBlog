@@ -1,5 +1,5 @@
 ---
-title: Spring Inversion of Control (IoC)
+title: Spring(二) Inversion of Control (IoC)
 date: 2021-06-23 15:40:34
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
