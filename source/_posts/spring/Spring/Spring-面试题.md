@@ -206,3 +206,71 @@ BeanFactory默认实现为`DefaultListableBeanFactory`其中Bean生命周期与�
   * 添加`-Djava.protocol.handler.pkgs`启动参数,指向`URLStreamHandler`实现类的包下
 * 高级实现
   * 实现`URLStreamHandlerFactory`并传递到URL之中
+
+#### SpringBoot为什么要新建`MessageSource Bean`
+
+* `AbstractApplicationContext` 的实现决定了 `MessageSource` 內建实现 
+* Spring Boot 通过外部化配置简化 `MessageSource Bean` 构建  
+* `Spring Boot` 基于 `Bean Validation` 校验非常普遍
+
+#### Spring国际化接口有哪些?
+
+* 核心接口: `MessageSource`
+* 层次性接口: `org.springframework.context.HierarchicalMessageSource  `
+
+#### Spring 有哪些 MessageSource 內建实现 ?
+
+* `org.springframework.context.support.ResourceBundleMessageSource`
+* `org.springframework.context.support.ReloadableResourceBundleMessageSource`
+* `org.springframework.context.support.StaticMessageSource`
+* `org.springframework.context.support.DelegatingMessageSource `
+
+#### 如何实现配置自动更新 MessageSource ?
+
+* 主要技术
+  * `Java NIO2`：`java.nio.file.WatchService`
+  * `Java Concurrency` : `java.util.concurrent.ExecutorService`
+  * `Spring`：`org.springframework.context.support.AbstractMessageSource`
+
+#### Spring 校验接口是哪个？
+
+* `org.springframework.validation.Validator`
+
+#### Spring 有哪些校验核心组件?
+
+* 检验器：`org.springframework.validation.Validator`
+* 错误收集器：`org.springframework.validation.Errors`
+* Java Bean 错误描述：`org.springframework.validation.ObjectError`
+* Java Bean 属性错误描述：`org.springframework.validation.FieldError`
+* Bean Validation 适配：`org.springframework.validation.beanvalidation.LocalValidatorFactoryBean`  
+
+#### Spring 类型转换器接口有哪些 ?
+
+* 类型转换接口 - `org.springframework.core.convert.converter.Converter`
+* 通用类型转换接口 - `org.springframework.core.convert.converter.GenericConverter`
+* 类型条件接口 - `org.springframework.core.convert.converter.ConditionalConverter`
+* 综合类型转换接口 -`org.springframework.core.convert.converter.ConditionalGenericConverter `
+
+#### Java 泛型擦写发生在编译时还是运行时?
+
+* 运行时
+
+#### 请介绍 Java 5 Type 类型的派生类或接口 ?
+
+* `java.lang.Class`
+* `java.lang.reflect.GenericArrayType`
+* `java.lang.reflect.ParameterizedType`
+* `java.lang.reflect.TypeVariable`
+* `java.lang.reflect.WildcardType`
+
+#### Spring事件核心接口/组件
+
+* Spring事件: `org.springframework.context.ApplicationEvent`
+* Spring事件监听器: `org.springframework.context.ApplicationListener`
+* Spring事件发布器: `org.springframework.context.ApplicationEventPublisher`
+* Spring事件广播器: `org.springframework.context.event.ApplicationEventMulticaster`
+
+#### Spring同步和异步事件处理的使用场景
+
+* Spring同步事件: 绝大多数Spring使用场景: 如`ContextRefreshedEvent`
+* Spring异步事件: 主要`@EventListener`与`@Async`,实现异步处理,不阻塞主线程,不如长时间的数据计算任务等.不要轻易调整`SimpleApplicationEventMulticaster`中关联的`taskExecutor`对象,除非使用者非常了解Spring事件机制,否则容易出现异常行为;
