@@ -274,3 +274,19 @@ BeanFactory默认实现为`DefaultListableBeanFactory`其中Bean生命周期与�
 
 * Spring同步事件: 绝大多数Spring使用场景: 如`ContextRefreshedEvent`
 * Spring异步事件: 主要`@EventListener`与`@Async`,实现异步处理,不阻塞主线程,不如长时间的数据计算任务等.不要轻易调整`SimpleApplicationEventMulticaster`中关联的`taskExecutor`对象,除非使用者非常了解Spring事件机制,否则容易出现异常行为;
+
+#### 简单介绍Spring `Environment`接口
+
+* 核心接口: `org.springframework.core.env.Environment`
+* 父接口: `org.springframework.core.env.PropertyResolver`
+* 可配置接口: `org.springframework.core.env.ConfigurableEnvironment`
+* 职责: 
+  * 管理Spring配置属性源
+  * 管理`Profiles`
+
+#### Spring应用上下文生命周期有哪些阶段?
+
+* 刷新阶段: `ConfigurableApplicationContext#refresh`
+* 启动阶段: `ConfigurableApplicationContext#start`
+* 停止阶段: `ConfigurableApplicationContext#stop`
+* 关闭阶段: `ConfigurableApplicationContext#close`

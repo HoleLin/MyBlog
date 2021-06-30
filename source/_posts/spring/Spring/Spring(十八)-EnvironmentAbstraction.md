@@ -1,5 +1,5 @@
 ---
-title: Spring(十九)-EnvironmentAbstraction
+title: Spring(十八)-Environment Abstraction
 mermaid: true
 date: 2021-06-27 21:05:11
 index_img: /img/cover/Spring.jpg
@@ -136,6 +136,18 @@ highlight_shrink:
 #### 基于注解的扩展Spring配置属性源
 
 * `@org.springframework.context.annotation.PropertySource`实现原理
-  * 入口: ``
+  * 入口: `org.springframework.context.annotation.ConfigurationClassParser#doProcessConfigurationClass`
+    * `org.springframework.context.annotation.ConfigurationClassParser#processPropertySource`
+  * 4.3 新增语义
+    * 配置属性字符编码- `encoding`
+    * `org.springframework.core.io.support.PropertySourceFactory`
+  * 适配对象: `org.springframework.core.env.CompositePropertySource`
+
+####  基于API扩展Spring配置属性源
+
+* Spring应用上下文启动前装配: `PropertySource`
+* Spring应用上下文启动后装配: `PropertySource`
+
+
 
   
