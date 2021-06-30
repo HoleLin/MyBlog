@@ -99,6 +99,8 @@ Thread-2 冲破栅栏 B
 
 * 在`CyclicBarrier`类的内部有一个计数器，每个线程在到达屏障点的时候都会调用await方法将自己阻塞，此时计数器会减1，当计数器减为0的时候所有因调用await方法而被阻塞的线程将被唤醒。这就是实现一组线程相互等待的原理;
 
+  <img src="http://www.chenjunlin.vip/img/java/thread/CyclicBarrier/CyclicBarrier.png" alt="img" style="zoom: 50%;" />
+  
   ```java
       /**
        * Each use of the barrier is represented as a generation instance.
@@ -142,7 +144,7 @@ Thread-2 冲破栅栏 B
   ```
 
   ##### 构造器
-
+  
   ```java
      /**
        * Creates a new {@code CyclicBarrier} that will trip when the
@@ -179,7 +181,7 @@ Thread-2 冲破栅栏 B
   ##### 等待的方法
 
   > `CyclicBarrier`类最主要的功能就是使先到达屏障点的线程阻塞并等待后面的线程，其中它提供了两种等待的方法，分别是定时等待和非定时等待。
-
+  
   ```java
   //非定时等待
   public int await() throws InterruptedException, BrokenBarrierException {
@@ -195,7 +197,7 @@ Thread-2 冲破栅栏 B
     return dowait(true, unit.toNanos(timeout));
   }
   ```
-
+  
   ```java
       /**
        * Main barrier code, covering the various policies.
@@ -282,7 +284,7 @@ Thread-2 冲破栅栏 B
   ```
 
   ##### 重置一个栅栏
-
+  
   ```java
   public void reset() {
       final ReentrantLock lock = this.lock;
@@ -295,5 +297,5 @@ Thread-2 冲破栅栏 B
       }
   }
   ```
-
+  
   
