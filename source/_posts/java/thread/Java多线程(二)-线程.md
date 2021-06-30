@@ -1,5 +1,5 @@
 ---
-title: Java多线程-线程操作
+title: Java多线程(二)-线程操作
 date: 2021-06-11 22:07:30
 cover: /img/cover/Java.jpg
 tags:

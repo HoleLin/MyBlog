@@ -1,6 +1,5 @@
 ---
-title: Java多线程-线程池
-mermaid: true
+title: Java多线程(四)-线程池
 date: 2021-06-16 16:42:44
 cover: /img/cover/Java.jpg
 tags:

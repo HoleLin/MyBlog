@@ -21,23 +21,6 @@ aplayer:
 highlight_shrink:
 ---
 
-### `CyclicBarrier`
-
-* 它允许一组线程互相等待，直到到达某个公共屏障点 (common barrier point)
-* 通俗讲：让一组线程到达一个屏障时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活
-* 底层采用ReentrantLock + Condition实现
-* 应用场景
-  * 多线程结果合并的操作，用于多线程计算数据，最后合并计算结果的应用场景
-
-### `CountDownLatch`
-
-* 在完成一组正在其他线程中执行的操作之前，它允许一个或多个线程一直等待
-* 用给定的计数 初始化 CountDownLatch。由于调用了 countDown() 方法，所以在当前计数到达零之前，await 方法会一直受阻塞。之后，会释放所有等待的线程，await 的所有后续调用都将立即返回。这种现象只出现一次——计数无法被重置。如果需要重置计数，请考虑使用 CyclicBarrier。
-* 与CyclicBarrier区别
-  * CountDownLatch的作用是允许1或N个线程等待其他线程完成执行；而CyclicBarrier则是允许N个线程相互等待
-  * CountDownLatch的计数器无法被重置；CyclicBarrier的计数器可以被重置后使用，因此它被称为是循环的barrier
-* 内部采用共享锁来实现
-
 ### `Semaphore`
 
 * 一个控制访问多个共享资源的计数器

@@ -1,5 +1,5 @@
 ---
-title: Java多线程-理论
+title: Java多线程(一)-理论
 date: 2021-06-11 22:07:30
 cover: /img/cover/Java.jpg
 tags:
