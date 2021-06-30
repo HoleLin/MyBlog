@@ -1,5 +1,5 @@
 ---
-title: Java多线程-Semaphore
+title: Java多线程(十二)-Semaphore
 date: 2021-06-30 23:02:30
 cover: /img/cover/Java.jpg
 tags:
