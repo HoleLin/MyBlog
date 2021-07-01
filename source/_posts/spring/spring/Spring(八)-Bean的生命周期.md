@@ -1146,10 +1146,6 @@ public class XmlDependencyConstructorInjectionDemo {
 	}
 ```
 
-##### 
-
-
-
 ##### Spring Bean 实例化阶段
 
 ###### 前阶段
@@ -2290,7 +2286,7 @@ public class XmlDependencyConstructorInjectionDemo {
 
 
 
-##### 
+
 
 
 
