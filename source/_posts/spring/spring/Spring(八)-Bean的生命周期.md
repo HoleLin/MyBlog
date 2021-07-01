@@ -11,13 +11,22 @@ categories:
 
 ### SpringBean生命周期
 
-#### 参考文献
+### 参考文献
+
+* [北京某大公司：SpringBean生命周期](https://juejin.cn/post/6979398918429736996?utm_source=gold_browser_extension)
 
 * [深究Spring中Bean的生命周期](https://mp.weixin.qq.com/s/GczkZHJ2DdI7cf9g0e6t_w)
 
 * [小马哥讲Spring核心编程思想](https://time.geekbang.org/course/intro/100042601)
 
 <img src="http://www.chenjunlin.vip/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" style="zoom: 25%;" />
+
+#### 普通Java对象实例化过程
+
+* Java源码被编译为class文件;
+* 等到类需要被初始化时(比如说new,反射等);
+* class文件被虚拟机通过类加载器加载到JVM;
+* 初始化对象供我们shiy9ong
 
 #### Bean的完整生命周期
 
