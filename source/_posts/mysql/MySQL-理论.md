@@ -52,12 +52,12 @@ highlight_shrink:
 
 ### 触发器
 
-- Before Insert
-- After Insert
-- Before Update
-- After Update
-- Before Delete
-- After Delete
+- **Before Insert**
+- **After Insert**
+- **Before Update**
+- **After Update**
+- **Before Delete**
+- **After Delete**
 
 #### **使用场景**
 
@@ -66,8 +66,6 @@ highlight_shrink:
 - 例如可以生成某些业务的编号。
 - 注意不要滥用，否则会造成数据库及应用程序的维护困难。
 - 大家需要牢记以上基础知识点，重点是理解数据类型CHAR和VARCHAR的差异，表存储引擎InnoDB和MyISAM的区别。
-
-#### 
 
 ### 常见问题
 
@@ -94,3 +92,38 @@ highlight_shrink:
 #### **int(20)中20的含义**
 
 * 是指显示字符的长度，不影响内部存储，只是当定义了ZEROFILL时，前面补多少个 0
+
+#### SQL执行加载顺序
+
+```sql
+SELECT DISTINCT
+	< select_list > 
+FROM
+	< left_table > 
+	< join_type > JOIN < right_table > ON < join_condition > 
+WHERE
+	< where_condition > 
+GROUP BY
+	< group_by_list > 
+HAVING
+	< having_condition > 
+ORDER BY
+	< order_by_condition > 
+	LIMIT < limit_number>
+```
+
+* 动态调整后执行顺序
+
+```sql
+FROM < left_table > 
+ON < join_condition > 
+< join_type > JOIN < right_table > 
+WHERE < where_condition > 
+GROUP BY < group_by_list > 
+HAVING < having_condition > 
+SELECT 
+DISTINCT < select_list > 
+ORDER BY < order_by_condition > 
+LIMIT < limit_number>
+```
+
