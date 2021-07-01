@@ -2284,6 +2284,35 @@ public class XmlDependencyConstructorInjectionDemo {
 
 ![img](http://www.chenjunlin.vip/img/spring/SpringBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
 
+#### 结合容器内Spring生命周期
+
+* `org.springframework.context.support.AbstractApplicationContext#refresh`**(入口)**
+
+* `org.springframework.context.support.AbstractApplicationContext#finishBeanFactoryInitialization`**(初始化单例对象入口)**
+
+* `org.springframework.beans.factory.config.ConfigurableListableBeanFactory#preInstantiateSingletons`**(初始化单例对象入口)**
+
+* `org.springframework.beans.factory.support.AbstractBeanFactory#getBean(java.lang.String)`**（万恶之源，获取并创建Bean的入口）**
+
+* `org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean`**（实际的获取并创建Bean的实现）**
+
+* `org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(java.lang.String)`**（从缓存中尝试获取）**
+
+* `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String,`
+
+  `org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])`**（实例化Bean）**
+
+* `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#doCreateBean`**（实例化Bean具体实现）**
+
+* `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance`**（具体实例化过程）**
+
+* `org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#addSingletonFactory`**（将实例化后的Bean添加到三级缓存）**
+
+* `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean`**（实例化后属性注入）**
+
+* `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)`**（初始化入口）**
+
+
 
 
 
