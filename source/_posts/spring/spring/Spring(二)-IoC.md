@@ -35,10 +35,10 @@ highlight_shrink:
   * **参数注入**
   * **Setter注入**
   * **接口注入**
-* **上下文的依赖查询**(ContextUalized lookup)
-  *  Spring 参考了Java Beans中的实现方式，Java beans 中有一个通用的上下文 beancontext，既可以传输bean，又可以管理bean的层次 
-* **模板方法**(Template Method Design Pattern)
-* **策略模式**(Strategy Design patten)
+* **上下文的依赖查询(ContextUalized lookup)**
+  *  Spring 参考了Java Beans中的实现方式，Java Beans 中有一个通用的上下文 BeanContext，既可以传输Bean，又可以管理Bean的层次;
+* **模板方法(Template Method Design Pattern)**
+* **策略模式(Strategy Design patten)**
 
 ### IoC容器的职责
 

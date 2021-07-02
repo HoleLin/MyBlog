@@ -22,21 +22,21 @@ highlight_shrink:
 
 ### 参考文献
 
-* [【对线面试官】 Java NI/O](https://mp.weixin.qq.com/s?__biz=MzU4NzA3MTc5Mg==&mid=2247483854&idx=1&sn=aa450a03ac0d6e8cf12cf13d4719ede3&scene=21#wechat_redirect)
+* [【对线面试官】 Java NIO](https://mp.weixin.qq.com/s?__biz=MzU4NzA3MTc5Mg==&mid=2247483854&idx=1&sn=aa450a03ac0d6e8cf12cf13d4719ede3&scene=21#wechat_redirect)
 
-#### NI/O和传统I/O的区别
+#### NIO和传统I/O的区别
 
-* 传统I/O是一次一个字节的处理数据,NI/O是以块(缓冲区)的形式处理数据.
-* 最主要的是,NI/O可以实现非阻塞,而传统I/O只能阻塞;
-* I/O的实际场景是文件I/O和网络I/O,NI/O在网络I/O场景下提升就是尤其明显;
+* 传统I/O是一次一个字节的处理数据,NIO是以块(缓冲区)的形式处理数据.
+* 最主要的是,NIO可以实现非阻塞,而传统I/O只能阻塞;
+* I/O的实际场景是文件I/O和网络I/O,NIO在网络I/O场景下提升就是尤其明显;
 
-#### NI/O的组成部分(三个部分)
+#### NIO的组成部分(三个部分)
 
 * **Buffer(缓冲区)**: Buffer是存储数据的地方;
 * **Channel(管道)**: Channel是运输数据的载体;
 * **Selector(选择器)**: Selector用于检查多个Channel的状态变更情况;
 
-#### NI/O示例
+#### NIO示例
 
 * 服务端
 
