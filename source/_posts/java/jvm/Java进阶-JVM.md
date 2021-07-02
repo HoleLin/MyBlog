@@ -1,5 +1,5 @@
 ---
-title: JVM
+title: Java进阶-JVM
 date: 2021-05-31 22:30:31
 index_img: /img/cover/Java.jpg
 cover: /img/cover/Java.jpg

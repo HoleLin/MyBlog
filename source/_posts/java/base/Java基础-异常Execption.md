@@ -1,9 +1,9 @@
 ---
-title: Java异常
+title: Java基础-异常Exception
 date: 2021-06-11 22:07:30
 cover: /img/cover/Java.jpg
 tags:
-- 异常
+- 异常Exception
 categories:
 - Java
 updated:

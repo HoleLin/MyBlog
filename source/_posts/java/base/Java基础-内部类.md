@@ -1,5 +1,5 @@
 ---
-title: Java内部类
+title: Java基础-内部类
 mermaid: true
 date: 2021-06-11 22:11:28
 cover: /img/cover/Java.jpg

@@ -1,5 +1,5 @@
 ---
-title: Java集合类
+title: Java基础-集合类
 mermaid: true
 date: 2021-06-14 00:21:17
 cover: /img/cover/Java.jpg

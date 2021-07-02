@@ -1,5 +1,5 @@
 ---
-title: Java-基础
+title: Java基础-基础理论
 mermaid: true
 date: 2021-06-23 19:27:26
 cover: /img/cover/Java.jpg

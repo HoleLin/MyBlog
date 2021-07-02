@@ -1,10 +1,9 @@
 ---
-title: JVM-对象实例化
+title: Java进阶-对象实例化
 date: 2021-07-01 09:33:01
 cover: /img/cover/Java.jpg
 tags:
 - 对象实例化
-- JVM
 categories:
 - Java
 updated:
