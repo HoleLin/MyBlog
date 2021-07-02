@@ -54,7 +54,7 @@ mermaid: true
 
 * **常用命令**
 
-  * **设置值**:`set key value [ex seconds] [px milliseconds] [nx|xx]`
+  * **设置值**:`set key value [ex seconds] [px milliseconds] [nx]`
 
     * ex seconds: 为键设置秒级过期时间;
     * px milliseconds: 为键设置毫秒级过期时间;
