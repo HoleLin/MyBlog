@@ -9,9 +9,14 @@ tags:
 categories: Redis
 mermaid: true
 ---
+### 参考文献
+
+* [一口气说出Redis 5种数据结构及对应使用场景，面试要加分的](https://www.cnblogs.com/chengxy-nds/p/12322595.html)
+* 《Redis开发与运维》
+
 ### Redis数据结构以及使用场景
 
-#### **数据结构和内部编码**
+#### 数据结构和内部编码
 
 * **对外的数据结构**
 
@@ -37,18 +42,15 @@ mermaid: true
   | zset     | skiplist   |
   |          | ziplist    |
 
-#### **单线程架构**
-
-* Redis使用了单线程架构和I/O多路复用模型来实现高性能的内存数据库服务.Redis客户端与服务端的模型,每次客户端调用都经历了**发送命令,执行命令,返回结果**三个过程.
-* 因为Redis是单线程来处理命令的,所以一条命令从客户端达到服务端不会立刻被执行,所有命令都会进入到一个队列中,然后逐个被执行.
-* **单线程为什么还能这么快?**
-  * 纯内存访问,Redis将所有数据放在内存中,内存的响应时长大约为100纳秒;
-  * 非阻塞I/O,Redis使用epoll作为I/O多路复用技术的实现,在加上Redis自身的时间处理模型将epoll中的连接,读写,关闭都转换为事件,不在网络I/O上浪费过多的时间;
-  * 单线程避免了线程切换和竞态产生的消耗;
-
 #### 字符串
 
-* 字符串类型的值可以是字符串(简单的字符串,复杂的字符串(JSON,XML)),数字(整数,浮点数),甚至为二进制(图片,音频,视频),但是**值最大不能超过512MB.**
+* 在Redis中String是可以修改的,称为**动态字符串**(`Simple Dynamic String` 简称 `SDS`)
+
+* `Redis`的内存分配机制是这样：
+
+  - 当字符串的长度小于 1MB时，每次扩容都是加倍现有的空间。
+  - 如果字符串长度超过 1MB时，每次扩容时只会扩展 1MB 的空间。
+  - 这样既保证了内存空间够用，还不至于造成内存的浪费，**字符串最大长度为 `512MB`.**。
 
 * **常用命令**
 
@@ -58,7 +60,7 @@ mermaid: true
     * px milliseconds: 为键设置毫秒级过期时间;
     * nx: 键必须不存在,才可以设置成功,用于添加.
 
-  * **setex,setnx,setxx**
+  * **`setex`,`setnx`**
 
     * `setex key seconds value `设置指定 key 的值为 value，并将 key 的过期时间设为 seconds (以秒为单位)。
 
@@ -66,7 +68,7 @@ mermaid: true
 
       > * 设置指定 key 的值为 value，只有在 key 不存在时设置 key 的值。
       >
-      > * setnx（SET if Not eXists） 命令在指定的 key 不存在时，为 key 设置指定的值。
+      > * setnx（SET If Not Exists） 命令在指定的 key 不存在时，为 key 设置指定的值。
       >
       > * 设置成功，返回 1 。 设置失败，返回 0 。
 
@@ -82,8 +84,8 @@ mermaid: true
 
   * 批量操作可以有效的提高开发效率
 
-    * 不使用mget命令: **n 次get时间 = n次网络时间 + n次命令时间**
-    * 使用mget命令: **n次get时间 = 1次网络时间 + n次命令时间**
+    * 不使用`mget`命令: **n 次get时间 = n次网络时间 + n次命令时间**
+    * 使用`mget`命令: **n次get时间 = 1次网络时间 + n次命令时间**
   
   * **计数**: 
 
@@ -92,7 +94,7 @@ mermaid: true
     * **自增指定数字**: `incrby key increment`
     * **自减指定数字**: `decrby key decrment`
     * **自增浮点数**: `incrbyfloat key incremet`
-    * incr命令用于对值做自增操作,返回结果分为三种情况:
+    * `incr`命令用于对值做自增操作,返回结果分为三种情况:
       * 值不是整数,返回错误;
       * 值是帧数,返回自增后的结果;
       * 键不存在,按照值为0自增,返回结果为1;
@@ -111,22 +113,22 @@ mermaid: true
 
   * **字符串类型命令时间复杂度**
 
-    | 命令                           | 时间复杂度                                                   |
-    | ------------------------------ | ------------------------------------------------------------ |
-    | set key value                  | O(1)                                                         |
-    | get key                        | O(1)                                                         |
-    | del key [key ...]              | O(k) k是键的个数                                             |
-    | mset key value [key value ...] | O(k) k是键的个数                                             |
-    | mget key [key ...]             | O(k) k是键的个数                                             |
-    | incr key                       | O(1)                                                         |
-    | decr key                       | O(1)                                                         |
-    | incrby key increment           | O(1)                                                         |
-    | decrby key decrment            | O(1)                                                         |
-    | incrbyfloat key increment      | O(1)                                                         |
-    | append key value               | O(1)                                                         |
-    | strlen key                     | O(1)                                                         |
-    | setrange key offset value      | O(1)                                                         |
-    | getrange key start end         | O(n) n为字符串长度,由于获取字符串非常快,若字符串不是很长,可视为O(1) |
+    | 命令                             | 时间复杂度                                                   |
+    | -------------------------------- | ------------------------------------------------------------ |
+    | `set key value`                  | O(1)                                                         |
+    | `get key`                        | O(1)                                                         |
+    | `del key [key ...]`              | O(k) k是键的个数                                             |
+    | `mset key value [key value ...]` | O(k) k是键的个数                                             |
+    | `mget key [key ...]`             | O(k) k是键的个数                                             |
+    | `incr key`                       | O(1)                                                         |
+    | `decr key`                       | O(1)                                                         |
+    | `incrby key increment`           | O(1)                                                         |
+    | `decrby key decrment`            | O(1)                                                         |
+    | `incrbyfloat key increment`      | O(1)                                                         |
+    | `append key value`               | O(1)                                                         |
+    | `strlen key`                     | O(1)                                                         |
+    | `setrange key offset value`      | O(1)                                                         |
+    | `getrange key start end`         | O(n) n为字符串长度,由于获取字符串非常快,若字符串不是很长,可视为O(1) |
   
   * **内存编码**
 
@@ -182,7 +184,7 @@ mermaid: true
   * **获取值**: `hget key field`
     * 若键或者field不存在,则会返回nil
   * **删除field**: `hdel key field [field ...]`
-    * hdel会删除一个或多个field,返回结果为成功删除的field个数
+    * `hdel`会删除一个或多个field,返回结果为成功删除的field个数
   * **计算field个数**: `hlen key`
   * **批量设置或获取field-value**:
     * `hmget key field [field ....]`
@@ -192,29 +194,29 @@ mermaid: true
   * **获取所有的value**: `hvals key`
   * **获取所有的field-value**: `hgetall key`
     * 使用过hgetall的时候,若哈希元素个数比较多,会存在阻塞Redis的可能,若一定要获取全部field-value,可以使用`hscan`命令,该命令会渐进式遍历哈希类型.
-  * **hincrby hincrbyfloat** 
+  * **`hincrby` `hincrbyfloat`** 
     * `hincrby key field`
     * `hincrbyfloat key field`
   * **计算value的字符串长度(Redis3.2以上)**:`hstrlen key field`
 
 * **哈希类型命令的时间复杂度**
 
-  | 命令                                    | 时间复杂度        |
-  | --------------------------------------- | ----------------- |
-  | hset key field value                    | O(1)              |
-  | hget key field                          | O(1)              |
-  | hdel key field [field ...]              | O(k),k是field个数 |
-  | hlen key                                | O(1)              |
-  | hgetall key                             | O(n),n是field总数 |
-  | hgmet key field [field ...]             | O(k),k是field个数 |
-  | hmset key field value [field value ...] | O(k),k是field个数 |
-  | hexists key field                       | O(1)              |
-  | hkeys key                               | O(n),n是field总数 |
-  | hvals key                               | O(n),n是field总数 |
-  | hsetnx key field value                  | O(1)              |
-  | hincrby key field increment             | O(1)              |
-  | hincrbyfloat key field increment        | O(1)              |
-  | hstrlen key field                       | O(1)              |
+  | 命令                                      | 时间复杂度        |
+  | ----------------------------------------- | ----------------- |
+  | `hset key field value`                    | O(1)              |
+  | `hget key field`                          | O(1)              |
+  | `hdel key field [field ...]`              | O(k),k是field个数 |
+  | `hlen key`                                | O(1)              |
+  | `hgetall key`                             | O(n),n是field总数 |
+  | `hgmet key field [field ...]`             | O(k),k是field个数 |
+  | `hmset key field value [field value ...]` | O(k),k是field个数 |
+  | `hexists key field`                       | O(1)              |
+  | `hkeys key`                               | O(n),n是field总数 |
+  | `hvals key`                               | O(n),n是field总数 |
+  | `hsetnx key field value`                  | O(1)              |
+  | `hincrby key field increment`             | O(1)              |
+  | `hincrbyfloat key field increment`        | O(1)              |
+  | `hstrlen key field`                       | O(1)              |
 
 * **内部编码**
 
@@ -306,20 +308,20 @@ mermaid: true
 
     * **列表命令时间复杂度**
 
-      | 命令                                  | 时间复杂度                                |
-      | ------------------------------------- | ----------------------------------------- |
-      | rpush key value [value...]            | O(k) ,k是元素个数                         |
-      | lpush key value [value...]            | O(k) ,k是元素个数                         |
-      | linsert key before\|after pivot value | O(n),n是pivot距离列表头或为的距离         |
-      | lrange key start end                  | O(s+n),s是start偏移量,n是start到end的范围 |
-      | lindex key index                      | O(n),n是索引的偏移量                      |
-      | llen key                              | O(1)                                      |
-      | lpop key                              | O(1)                                      |
-      | rpop key                              | O(1)                                      |
-      | lrem count value                      | O(n),n是列表长度                          |
-      | ltrim key start end                   | O(n),n是要剪裁的元素总数                  |
-      | lset key index value                  | O(n),n是索引的偏移量                      |
-      | blpop brpop                           | O(1)                                      |
+      | 命令                                    | 时间复杂度                                |
+      | --------------------------------------- | ----------------------------------------- |
+      | `rpush key value [value...]`            | O(k) ,k是元素个数                         |
+      | `lpush key value [value...]`            | O(k) ,k是元素个数                         |
+      | `linsert key before\|after pivot value` | O(n),n是pivot距离列表头或为的距离         |
+      | `lrange key start end`                  | O(s+n),s是start偏移量,n是start到end的范围 |
+      | `lindex key index`                      | O(n),n是索引的偏移量                      |
+      | `llen key`                              | O(1)                                      |
+      | `lpop key`                              | O(1)                                      |
+      | `rpop key`                              | O(1)                                      |
+      | `lrem count value`                      | O(n),n是列表长度                          |
+      | `ltrim key start end`                   | O(n),n是要剪裁的元素总数                  |
+      | `lset key index value`                  | O(n),n是索引的偏移量                      |
+      | `blpop brpop`                           | O(1)                                      |
 
 * **内部编码**
 
@@ -336,9 +338,11 @@ mermaid: true
   
 * **使用场景**
 
-  * **定时排行榜**
+  * **消息队列**：`lpop`和`rpush`（或者反过来，`lpush`和`rpop`）能实现队列的功能
 
-    > list类型的lrange命令可以分页查看队列中的数据。可将每隔一段时间计算一次的排行榜存储在list类型中，如QQ音乐内地排行榜，每周计算一次存储再list类型中，访问接口时通过page和size分页转化成lrange命令获取排行榜数据。
+  * **朋友圈的点赞列表、评论列表、定时排行榜**
+  
+    > list类型的`lrange`命令可以分页查看队列中的数据。可将每隔一段时间计算一次的排行榜存储在list类型中，如QQ音乐内地排行榜，每周计算一次存储再list类型中，访问接口时通过page和size分页转化成`lrange`命令获取排行榜数据。
     >
     > 但是，并不是所有的排行榜都能用list类型实现，只有定时计算的排行榜才适合使用list类型存储，与定时计算的排行榜相对应的是实时计算的排行榜，list类型不能支持实时计算的排行榜;
 
@@ -372,18 +376,18 @@ mermaid: true
 
 * **集合常用命令时间复杂度**
 
-  | 命令                           | 时间复杂度                                     |
-  | ------------------------------ | ---------------------------------------------- |
-  | sadd key element [element ...] | O(k),k是元素个数                               |
-  | srem key element [element...]  | O(k),k是元素个数                               |
-  | scard key                      | O(1)                                           |
-  | sismember key element          | O(1)                                           |
-  | srandmember key [count]        | O(count)                                       |
-  | spop key                       | O(1)                                           |
-  | smembers key                   | O(n),n是元素总数                               |
-  | sinter key [key...]            | O(n*k),k是多个集合中元素最少的个数,m是键的个数 |
-  | sunion key [key...]            | O(k),k是多个集合元素个数和                     |
-  | sdiff key [key...]             | O(k),k是多个集合元素个数和                     |
+  | 命令                             | 时间复杂度                                     |
+  | -------------------------------- | ---------------------------------------------- |
+  | `sadd key element [element ...]` | O(k),k是元素个数                               |
+  | `srem key element [element...]`  | O(k),k是元素个数                               |
+  | `scard key`                      | O(1)                                           |
+  | `sismember key element`          | O(1)                                           |
+  | `srandmember key [count]`        | O(count)                                       |
+  | `spop key`                       | O(1)                                           |
+  | `smembers key`                   | O(n),n是元素总数                               |
+  | `sinter key [key...]`            | O(n*k),k是多个集合中元素最少的个数,m是键的个数 |
+  | `sunion key [key...]`            | O(k),k是多个集合元素个数和                     |
+  | `sdiff key [key...]`             | O(k),k是多个集合元素个数和                     |
 
 * **内部编码**
 
@@ -393,9 +397,9 @@ mermaid: true
 * **使用场景**
 
   * **收藏夹/标签(tag)**: 用户的兴趣爱好
-  * sadd=Tagging(标签)
-  * spop/srandmember=Random item(生成随机数,比如抽奖)
-  * sadd+sinter=Social Graph(社交需求)
+  * `sadd`=Tagging(标签)
+  * `spop/srandmembe`r=Random item(生成随机数,比如抽奖)
+  * `sadd+sinter`=Social Graph(社交需求)
 
 #### 有序集合
 
@@ -510,7 +514,7 @@ mermaid: true
   * Bitmaps间的运算:`bitop op destkey key [key ...]`,bitop是一个复合操作,它可以做多个Bitmaps的支持and(交集),or(并集),not(非),xor(异或)操作并将结果保存到destkey中
   * 计算Bitmaps中第一个值为targetBit的偏移量:`bitpos key target [start][end]`
 
-#### **HyperLogLog**
+#### HyperLogLog
 
 * **命令**
 * 添加:`padd key element [element...]`
