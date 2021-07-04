@@ -741,6 +741,42 @@ public class ReentrantLockTest {
 * 开始`Thread-0`持有锁,调用`await`,进入`ConditionObject`的`addConditionWaiter`流程
 
   ```java
+        /**
+           * Implements interruptible condition wait.
+           * <ol>
+           * <li> If current thread is interrupted, throw InterruptedException.
+           * <li> Save lock state returned by {@link #getState}.
+           * <li> Invoke {@link #release} with saved state as argument,
+           *      throwing IllegalMonitorStateException if it fails.
+           * <li> Block until signalled or interrupted.
+           * <li> Reacquire by invoking specialized version of
+           *      {@link #acquire} with saved state as argument.
+           * <li> If interrupted while blocked in step 4, throw InterruptedException.
+           * </ol>
+           */
+          public final void await() throws InterruptedException {
+              if (Thread.interrupted())
+                  throw new InterruptedException();
+              Node node = addConditionWaiter();
+              int savedState = fullyRelease(node);
+              int interruptMode = 0;
+              while (!isOnSyncQueue(node)) {
+                  LockSupport.park(this);
+                  if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+                      break;
+              }
+              if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
+                  interruptMode = REINTERRUPT;
+              if (node.nextWaiter != null) // clean up if cancelled
+                  unlinkCancelledWaiters();
+              if (interruptMode != 0)
+                  reportInterruptAfterWait(interruptMode);
+          }
+  ```
+
+  * 创建新的Node状态为-2(`Node.CONDITION`),关联`Thread-0`,加入等待队列尾部;
+
+  ```java
           /** waitStatus value to indicate thread is waiting on condition */
           static final int CONDITION = -2;
   		/**
@@ -764,5 +800,46 @@ public class ReentrantLockTest {
           }
   ```
 
-  * 创建新的Node状态为-2(`Node.CONDITION`),关联`Thread-0`,加入等待队列尾部
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await1.png)
 
+* 接下来进入AQS的`fullyRelease`流程,释放同步器上的锁;
+
+  ```java
+      /**
+       * Invokes release with current state value; returns saved state.
+       * Cancels node and throws exception on failure.
+       * @param node the condition node for this wait
+       * @return previous sync state
+       */
+      final int fullyRelease(Node node) {
+          boolean failed = true;
+          try {
+              int savedState = getState();
+              if (release(savedState)) {
+                  failed = false;
+                  return savedState;
+              } else {
+                  throw new IllegalMonitorStateException();
+              }
+          } finally {
+              if (failed)
+                  node.waitStatus = Node.CANCELLED;
+          }
+      }
+  ```
+
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await2.png)
+
+* `unpark` AQS队列中的下一个节点,竞争锁,假设没有其他竞争线程,那么`Thread-1`竞争成功
+
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await3.png)
+
+* park阻塞`Thread-0`
+
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await4.png)
+
+##### `signal`流程
+
+* 假设`Thread-1`要唤醒`Thread-0`
+
+  
