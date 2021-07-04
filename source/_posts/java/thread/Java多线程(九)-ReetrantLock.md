@@ -333,7 +333,6 @@ public class ReentrantLockTest {
                       if (p == head && tryAcquire(arg)) {
                           // 获取成功,设置自己(当前线程对应的Node)为head
                           setHead(node);
-                          // 上个节点为null
                           p.next = null; // help GC
                           failed = false;
                           // 返回中断标记false
@@ -360,15 +359,15 @@ public class ReentrantLockTest {
               return Thread.interrupted();
           }
       ```
-    
+      
       * `acquireQueued`会在一个死循环中不断尝试获得锁,然后失败后进入`park`阻塞;
-    
+      
       * 如果自己是紧邻着`head`(排在第二位),那么在此`tryAcquire`尝试获取锁,当然此时`state`仍为1,获取锁失败;
-    
+      
       * 进入`shouldParkAfterFailedAcquire`逻辑,将前驱`node`,即`head`的`waitStatus`改为-1(`Node.SIGNAL`),这次返回`false`;
-    
+      
         ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync4.png)
-    
+      
         ```java
              /** waitStatus value to indicate successor's thread needs unparking */
              static final int SIGNAL    = -1;
@@ -417,15 +416,15 @@ public class ReentrantLockTest {
                 return false;
             }
         ```
-    
+      
       * `shouldParkAfterFailedAcquire`执行完毕回到`acquireQueued`,返回`false`,再次`tryAcquire`尝试获取锁,当然此时`state`仍为-1(`Node.SIGNAL`),获取锁失败;
-    
+      
       * 当再次进入`shouldParkAfterFailedAcquire`时,这是因为其前驱node的`waitStatus`已经为-1,这次返回`true`;
-    
+      
       * 进入`parkAndCheckInterrupt`逻辑,`Thread-1 park` (深灰色表示)
-    
+      
         ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync5.png)
-    
+      
     * 再次多个线程经历上述过程竞争失败后,变成下图所示
     
       ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync6.png)
@@ -460,9 +459,15 @@ public class ReentrantLockTest {
        * @return the value returned from {@link #tryRelease}
        */
       public final boolean release(int arg) {
+          // 尝试释放锁
           if (tryRelease(arg)) {
+              // 队列头节点unpark
               Node h = head;
-              if (h != null && h.waitStatus != 0)
+              // 队列不为null
+              if (h != null && 
+                  // waitStatus == Node.SIGNAL才需要unpark
+                  h.waitStatus != 0)
+                  // unpark AQS中等待的线程
                   unparkSuccessor(h);
               return true;
           }
@@ -473,25 +478,28 @@ public class ReentrantLockTest {
 * `Thread-0`释放锁,进入`tryRelease`流程,如果成功
   
     ```java
+    
     		protected final boolean tryRelease(int releases) {
+                // state--
                 int c = getState() - releases;
                 if (Thread.currentThread() != getExclusiveOwnerThread())
                     throw new IllegalMonitorStateException();
                 boolean free = false;
+                // 支持锁重入,只有state减为0,才能释放成功
                 if (c == 0) {
                     free = true;
                     setExclusiveOwnerThread(null);
                 }
                 setState(c);
-                return free;
+              return free;
             }
     ```
-  
-    *  设置`exclusiveOwnerThread`为null;
-    *  `state`为0;
     
-    ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync7.png)
-
+    *  设置`exclusiveOwnerThread`为null;
+  *  `state`为0;
+  
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync7.png)
+  
 * 当队列不为null,并且`head`的`waitStatus`为-1,进入`unparkSuccessor`流程
 
     ```java
@@ -518,6 +526,8 @@ public class ReentrantLockTest {
              * traverse backwards from tail to find the actual
              * non-cancelled successor.
              */
+            // 找到需要unpark的节点,但本节点从AQS队列中脱离,是由唤醒节点完成
+            // 不考虑已取消的节点,从AQS队列从后至前找到队列最前面需要unpark的节点
             Node s = node.next;
             if (s == null || s.waitStatus > 0) {
                 s = null;
@@ -548,3 +558,211 @@ public class ReentrantLockTest {
   * `Thread-1`再次进入`acquireQueued`流程,获取锁失败,重新进入`park`阻塞
 
   ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync9.png)
+
+#### 可打断模式
+
+```java
+    /**
+     * Acquires in exclusive mode, aborting if interrupted.
+     * Implemented by first checking interrupt status, then invoking
+     * at least once {@link #tryAcquire}, returning on
+     * success.  Otherwise the thread is queued, possibly repeatedly
+     * blocking and unblocking, invoking {@link #tryAcquire}
+     * until success or the thread is interrupted.  This method can be
+     * used to implement method {@link Lock#lockInterruptibly}.
+     *
+     * @param arg the acquire argument.  This value is conveyed to
+     *        {@link #tryAcquire} but is otherwise uninterpreted and
+     *        can represent anything you like.
+     * @throws InterruptedException if the current thread is interrupted
+     */
+    public final void acquireInterruptibly(int arg)
+            throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+        // 如果没有获得锁
+        if (!tryAcquire(arg))
+            doAcquireInterruptibly(arg);
+    }
+```
+
+```java
+    /**
+     * Acquires in exclusive interruptible mode.
+     * @param arg the acquire argument
+     */
+    private void doAcquireInterruptibly(int arg)
+        throws InterruptedException {
+        final Node node = addWaiter(Node.EXCLUSIVE);
+        boolean failed = true;
+        try {
+            for (;;) {
+                // 获取node的前驱节点
+                final Node p = node.predecessor();
+                // 若上个节点是head,表示轮到自己(当前线程对应的Node)了,尝试获取锁
+                // 若前驱节点p为head节点,则再次尝试获取锁
+                if (p == head && tryAcquire(arg)) {
+                    // 获取成功,设置自己(当前线程对应的Node)为head
+                    setHead(node);
+                    p.next = null; // help GC
+                    failed = false;
+                    return;
+                }
+                // 判断是否应当park
+                if (shouldParkAfterFailedAcquire(p, node) &&
+                        // park等待,此时Node的状态被设置为Node.SIGNAL
+                        parkAndCheckInterrupt())
+                    throw new InterruptedException();
+            }
+        } finally {
+            if (failed)
+                cancelAcquire(node);
+        }
+    }
+```
+![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/acquireQueued%E5%92%8CdoAcquireInterruptibly%E5%AF%B9%E6%AF%94.png)
+
+#### 公平锁实现原理
+
+```java
+    /**
+     * Sync object for fair locks
+     */
+    static final class FairSync extends Sync {
+        private static final long serialVersionUID = -3000897897090466540L;
+
+        final void lock() {
+            acquire(1);
+        }
+
+        /**
+         * Fair version of tryAcquire.  Don't grant access unless
+         * recursive call or no waiters or is first.
+         */
+        protected final boolean tryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                // 先检查AQS队列中是否有前驱节点,没有才去竞争
+                if (!hasQueuedPredecessors() &&
+                    compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc < 0)
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+    }
+```
+
+```java
+	// java.util.concurrent.locks.AbstractQueuedSynchronizer#acquire
+	public final void acquire(int arg) {
+        if (!tryAcquire(arg) &&
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            selfInterrupt();
+    }
+```
+
+![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E5%85%AC%E5%B9%B3%E9%94%81%E4%B8%8E%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81tryAcquire%E5%AF%B9%E6%AF%94.png)
+
+```java
+    /**
+     * Queries whether any threads have been waiting to acquire longer
+     * than the current thread.
+     *
+     * <p>An invocation of this method is equivalent to (but may be
+     * more efficient than):
+     *  <pre> {@code
+     * getFirstQueuedThread() != Thread.currentThread() &&
+     * hasQueuedThreads()}</pre>
+     *
+     * <p>Note that because cancellations due to interrupts and
+     * timeouts may occur at any time, a {@code true} return does not
+     * guarantee that some other thread will acquire before the current
+     * thread.  Likewise, it is possible for another thread to win a
+     * race to enqueue after this method has returned {@code false},
+     * due to the queue being empty.
+     *
+     * <p>This method is designed to be used by a fair synchronizer to
+     * avoid <a href="AbstractQueuedSynchronizer#barging">barging</a>.
+     * Such a synchronizer's {@link #tryAcquire} method should return
+     * {@code false}, and its {@link #tryAcquireShared} method should
+     * return a negative value, if this method returns {@code true}
+     * (unless this is a reentrant acquire).  For example, the {@code
+     * tryAcquire} method for a fair, reentrant, exclusive mode
+     * synchronizer might look like this:
+     *
+     *  <pre> {@code
+     * protected boolean tryAcquire(int arg) {
+     *   if (isHeldExclusively()) {
+     *     // A reentrant acquire; increment hold count
+     *     return true;
+     *   } else if (hasQueuedPredecessors()) {
+     *     return false;
+     *   } else {
+     *     // try to acquire normally
+     *   }
+     * }}</pre>
+     *
+     * @return {@code true} if there is a queued thread preceding the
+     *         current thread, and {@code false} if the current thread
+     *         is at the head of the queue or the queue is empty
+     * @since 1.7
+     */
+    public final boolean hasQueuedPredecessors() {
+        // The correctness of this depends on head being initialized
+        // before tail and on head.next being accurate if the current
+        // thread is first in queue.
+        Node t = tail; // Read fields in reverse initialization order
+        Node h = head;
+        Node s;
+        // h != t 时表示队列中有Node
+        return h != t &&
+                //  (s = h.next) == null 表示队列中还有没有第二个节点
+                // 或者队列中第二个节点不是当前线程
+            ((s = h.next) == null || s.thread != Thread.currentThread());
+    }
+```
+
+####  条件变量实现原理
+
+> 每个条件变量其实就对应着一个等待队列,其实现类是`java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject`
+
+##### `await`流程
+
+* 开始`Thread-0`持有锁,调用`await`,进入`ConditionObject`的`addConditionWaiter`流程
+
+  ```java
+          /** waitStatus value to indicate thread is waiting on condition */
+          static final int CONDITION = -2;
+  		/**
+           * Adds a new waiter to wait queue.
+           * @return its new wait node
+           */
+          private Node addConditionWaiter() {
+              Node t = lastWaiter;
+              // If lastWaiter is cancelled, clean out.
+              if (t != null && t.waitStatus != Node.CONDITION) {
+                  unlinkCancelledWaiters();
+                  t = lastWaiter;
+              }
+              Node node = new Node(Thread.currentThread(), Node.CONDITION);
+              if (t == null)
+                  firstWaiter = node;
+              else
+                  t.nextWaiter = node;
+              lastWaiter = node;
+              return node;
+          }
+  ```
+
+  * 创建新的Node状态为-2(`Node.CONDITION`),关联`Thread-0`,加入等待队列尾部
+
