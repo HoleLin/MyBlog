@@ -842,4 +842,6 @@ public class ReentrantLockTest {
 
 * 假设`Thread-1`要唤醒`Thread-0`
 
-  
+  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-signal1.png)
+
+* 进入`ConditionObject`
