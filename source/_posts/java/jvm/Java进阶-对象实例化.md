@@ -82,7 +82,7 @@ highlight_shrink:
   * **启动类加载器(Bootstrap ClassLoader)**
   * **扩展类加载器(Extension ClassLoader)**
   * **应用程序类加载器(Application ClassLoader)**
-  * **自定义类加载器(User ClassLoader)**
+  * **自定义类加载器(Custom ClassLoader)**
   
   <img src="http://www.chenjunlin.vip/img/jvm/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt="img" style="zoom:67%;" />
 * 双亲委派模型
