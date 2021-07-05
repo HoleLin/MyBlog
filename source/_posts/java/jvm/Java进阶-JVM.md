@@ -114,7 +114,7 @@ categories:
   * jps
   * jmap
   * jconsole
-  * jvirsalvm
+  * jvisualvm
   
 * 辨析堆和栈
 
