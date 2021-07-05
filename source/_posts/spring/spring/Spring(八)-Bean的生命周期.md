@@ -26,7 +26,7 @@ categories:
 * Java源码被编译为class文件;
 * 等到类需要被初始化时(比如说new,反射等);
 * class文件被虚拟机通过类加载器加载到JVM;
-* 初始化对象供我们shiy9ong
+* 初始化对象供我们使用
 
 #### Bean的完整生命周期
 
@@ -2311,7 +2311,6 @@ public class XmlDependencyConstructorInjectionDemo {
 * `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean`**（实例化后属性注入）**
 
 * `org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)`**（初始化入口）**
-
 
 
 

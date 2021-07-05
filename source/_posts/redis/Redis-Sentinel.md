@@ -491,17 +491,18 @@ sentinel fail-over-timeout holelin 180000
   
   <img src="http://www.chenjunlin.vip/img/redis/Sentinel%E8%8A%82%E7%82%B9%E5%AE%9A%E6%97%B6%E6%89%A7%E8%A1%8Cinfo%E5%91%BD%E4%BB%A4.png" alt="img" style="zoom:67%;" />
   
-* **每隔2秒,每个Sentinel节点会向Redis数据节点的`_sentinel_:hello`频道发送该Sentinel节点对于主节点的判断以及当前Sentinel节点的信息**,同时每个Sentinel也会订阅该频道,来了解其他Sentinel节点以及它们对主节点的判断,所以这个定时任务完成一下两个工作:
-  * 发现新的Sentinel节点:通过订阅主节点的`_sentinel_:hello`了解其他的Sentinel节点信息,如果是新加入的Sentinel节点,将该Sentinel节点信息保存起来,并与该Sentinel节点创建连接;
-
-  * Sentinel节点之间交换主节点的状态,作为客观下线以及领导者选举的依据;
-
+* **每隔2秒,每个Sentinel节点会向Redis master节点的`_sentinel_:hello`频道发送该Sentinel节点对于主节点的判断以及当前Sentinel节点的信息,同时每个Sentinel也会订阅该频道,来了解其他Sentinel节点以及它们对主节点的判断,**所以这个定时任务完成一下两个工作:
+  
+  * **发现新的Sentinel节点**:通过订阅主节点的`_sentinel_:hello`了解其他的Sentinel节点信息,如果是新加入的Sentinel节点,将该Sentinel节点信息保存起来,并与该Sentinel节点创建连接;
+  
+  * **Sentinel节点之间交换主节点的状态,作为客观下线以及领导者选举的依据**;
+  
   * Sentinel节点的publish的消息格式如下:
-
+  
     ```
     <Sentinel节点Ip><Sentinel节点端口><Sentinel节点runId><Sentinel节点配置版本><主节点名字><主节点Ip><主节点端口><主节点配置版本>
     ```
-
+  
   <img src="http://www.chenjunlin.vip/img/redis/Sentinel%E8%8A%82%E7%82%B9%E5%8F%91%E5%B8%83%E5%92%8C%E8%AE%A2%E9%98%85_sentinel__hello%E9%A2%91%E9%81%93.png" alt="img" style="zoom:67%;" />
   
 * **每隔1秒,每个Sentinel节点会向主节点,从节点,其余Sentinel节点发送一条ping命令做一次心跳检测,来确认这些节点当前是否可达.**
