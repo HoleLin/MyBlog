@@ -7,6 +7,10 @@ tags: docker
 categories: Docker
 ---
 
+### 参考文献
+
+* [docker扫盲，面试连这都不会就等着挂吧！](https://www.cnblogs.com/chengxy-nds/p/12258801.html)
+
 ### Docker操作
 
 #### 常用命令
@@ -19,13 +23,7 @@ categories: Docker
   docker --help
   ```
 
-* 镜像命令
-
-  * docker images
-    * -a: 列出所有镜像
-    * -q: 只显示镜像ID
-    * --digests: 显示摘要信息
-    * --no-trunc：不截断输出，显示完整的镜像ID
+* * * 
 
 *  列出所有的容器 ID
 
@@ -103,14 +101,50 @@ categories: Docker
    
 *  容器管理
 
-   *  `docker cp`: 在同期和主机之间复制文件和目录
+   *  `docker cp`: 在容器和主机之间复制文件和目录
       *  `docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH`
+         *  容器向主机复制文件: `docker cp container_nginx:/usr/local/testA.txt  /usr/local/`
       *  ` docker cp [OPTIONS] SRC_PATH  CONTAINER:DEST_PATH`
+         *  主机向容器复制文件: `docker cp /usr/local/testB.txt  container_nginx:/usr/local/`
    *  `docker exec` : 在容器中运行一个命令
       *  `docker exec -it ${containerId} /bin/bash `
    *  `docker kill ${containerId}` : 发送信号给容器中的主进程(PID 1).默认发送SIGKILL信号,会使容器立即退出.
    *  `docker pause` 暂停容器内所有进程.进程不会接受到关于它们被暂停的任何信号,一次它们无法执行正常结束或清理的程序.进程可以通过`docker unpause`命令重启.`docker pause`的底层利用Linux的 cgroup freezer功能实现.这个命令与docker stop不同 docker stop会将所有进程停止,并对进程发送信号,让他们察觉到.
    *  `docker restart`: 重启一个或者多个容器.
+   
+* 镜像管理
+
+  * `docker images`
+
+    * -a: 列出所有镜像
+    * -q: 只显示镜像ID
+    * --digests: 显示摘要信息
+    * --no-trunc：不截断输出，显示完整的镜像ID
+
+  * 下载镜像:`docker pull  [OPTIONS] NAME[:TAG|@DIGEST]`
+
+  * 镜像的导入与导出
+
+    * 镜像压缩打包 (主机上进行操作)，有两种方式 `docker save` 与 `docker load` 和 `docker export 与 docker import`
+
+      ```sh
+      # 将现有的镜像压缩打包
+      docker save nginx | gzip > nginx_test_image.tar.gz  
+      # 压缩的镜像解压
+      docker load -i nginx_test_image.tar.gz  
+      # 进行查看
+      docker images 
+      ```
+
+    * `docker save` 是直接将镜像进行打包 `docker save <镜像名>或<镜像id>`
+
+      ```sh
+      docker export container_nginx> nginx_image.tar  
+      
+      cat nginx_image.tar | sudo docker import  - nginx_image:import
+      ```
+
+    * `docker export` 是直接将容器进行打包 `docker export <容器名>或<容器id>`
 
 ####  Docker日志文件导致磁盘满了,清理方法
 
@@ -133,7 +167,6 @@ categories: Docker
   ```shell
   docker run -it --log-opt max-size=10m --log-opt max-file=33 alpine ash
   ```
-  
   
 #### 理论 
 * ##### 寄存服务,仓库,镜像,标签
