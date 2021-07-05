@@ -3,8 +3,10 @@ title: Elasticsearch结构化搜索Search
 date: 2021-05-24 22:25:50
 index_img: /img/cover/Elasticsearch.jpg
 cover: /img/cover/Elasticsearch.jpg
-tags: elasticsearch
-categories: Elasticsearch
+tags: 
+- 结构化搜索
+categories:
+- Elasticsearch
 ---
 
 ## ElasticSearch

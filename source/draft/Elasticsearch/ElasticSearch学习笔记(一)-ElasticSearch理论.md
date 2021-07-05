@@ -1,10 +1,12 @@
 ---
-title: ElasticSearch理论
+title: ElasticSearch(一)-理论
 mermaid: true
 date: 2021-06-12 00:21:17
 cover: /img/cover/Elasticsearch.jpg
 tags:
+- 理论
 categories:
+- Elasticsearch
 updated:
 type:
 comments:
@@ -20,7 +22,6 @@ highlight_shrink:
 
 ### 参考文献
 
-* [Elasticsearch原理（三）：写入流程](https://blog.csdn.net/xiaoyu_BD/article/details/81950081)
 * [Elasticsearch 最佳运维实践 - 总结（二）](https://www.cnblogs.com/kevingrace/p/10682264.html)
 
 ### ElasticSerch使用场景
