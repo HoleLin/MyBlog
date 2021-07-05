@@ -1,13 +1,12 @@
 ---
 title: Nginx遇到问题
 date: 2021-05-24 23:33:33
-index_img: /img/cover/Redis.jpg
-cover: /img/cover/Redis.jpg
+index_img: /img/cover/Nginx.jpg
+cover: /img/cover/Nginx.jpg
 tags: 
-- Redis
-- 主从复制
+- 问题
 categories: 
-- Redis
+- Nginx
 mermaid: true
 ---
 
