@@ -395,6 +395,21 @@ UPDATE [LOW_PRIORITY][IGNORE] table_name SET column_name ={expr|DEFAULT}[,column
 {[INNER|CROSS] JOIN | {LEFT|RIGHT} {OUTER} JOIN}
 table_reference ON conditional_expr
 
+
+select语句获得的数据可以用insert插入。
+可以省略对列的指定，要求 values () 括号内，提供给了按照列顺序出现的所有字段的值。
+    或者使用set语法。
+    INSERT INTO tbl_name SET field=value,...；
+可以一次性使用多个值，采用(), (), ();的形式。
+    INSERT INTO tbl_name VALUES (), (), ();
+可以在列值指定时，使用表达式。
+    INSERT INTO tbl_name VALUES (field_value, 10+10, now());
+可以使用一个特殊值 DEFAULT，表示该列使用默认值。
+    INSERT INTO tbl_name VALUES (field_value, DEFAULT);
+可以通过一个查询的结果，作为需要插入的值。
+    INSERT INTO tbl_name SELECT ...;
+可以指定在插入的值出现主键（或唯一索引）冲突时，更新其他非主键列的信息。
+    INSERT INTO tbl_name VALUES/SET/SELECT ON DUPLICATE KEY UPDATE 字段=值, …;
 ```
 
 #### 删除记录
@@ -405,6 +420,13 @@ DELETE FROM table_name
 -- 多表删除
 DELETE FROM table_name[.*],[,table_name[.*]] 
 [WHERE where_condition]
+
+DELETE FROM tbl_name [WHERE where_definition] [ORDER BY ...] [LIMIT row_count]
+-- 按照条件删除。where
+-- 指定删除的最多记录数。limit
+-- 可以通过排序条件删除。order by + limit
+-- 支持多表删除，使用类似连接语法。
+delete from 需要删除数据多表1，表2 using 表连接操作 条件。
 ```
 
 #### 清空表数据
@@ -412,6 +434,12 @@ DELETE FROM table_name[.*],[,table_name[.*]]
 ```sql
 TRUNCATE [TABLE] 表名
 ```
+
+* **清空数据(DELETE)和删除重建表区别**
+  * truncate 是删除表再创建，delete 是逐条删除
+  * truncate 重置auto_increment的值。而delete不会
+  * truncate 不知道删除了几条，而delete知道。
+  * 当被用于带分区的表时，truncate 会保留分区
 
 #### 复制表结构
 
@@ -422,7 +450,7 @@ CREATE TABLE 表名 LIKE 要复制的表名
 CREATE TABLE 表名 [AS] SELECT * FROM 要复制的表名
 ```
 
-#### 优化表结构
+#### 表维护
 
 ```sql
 -- 检查表是否有错误
@@ -475,6 +503,66 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
     -- offset 从0开始
 	[LIMIT {[offset,] row_count|`row_count OFFSET offset`}]
 ]
+
+SELECT [ALL|DISTINCT] select_expr FROM -> WHERE -> GROUP BY [合计函数] -> HAVING -> ORDER BY -> LIMIT
+a. select_expr
+    -- 可以用 * 表示所有字段。
+        select * from tb;
+    -- 可以使用表达式（计算公式、函数调用、字段也是个表达式）
+        select stu, 29+25, now() from tb;
+    -- 可以为每个列使用别名。适用于简化列标识，避免多个列标识符重复。
+        - 使用 as 关键字，也可省略 as.
+        select stu+10 as add10 from tb;
+b. FROM 子句
+    用于标识查询来源。
+    -- 可以为表起别名。使用as关键字。
+        SELECT * FROM tb1 AS tt, tb2 AS bb;
+    -- from子句后，可以同时出现多个表。
+        -- 多个表会横向叠加到一起，而数据会形成一个笛卡尔积。
+        SELECT * FROM tb1, tb2;
+    -- 向优化符提示如何选择索引
+        USE INDEX、IGNORE INDEX、FORCE INDEX
+        SELECT * FROM table1 USE INDEX (key1,key2) WHERE key1=1 AND key2=2 AND key3=3;
+        SELECT * FROM table1 IGNORE INDEX (key3) WHERE key1=1 AND key2=2 AND key3=3;
+c. WHERE 子句
+    -- 从from获得的数据源中进行筛选。
+    -- 整型1表示真，0表示假。
+    -- 表达式由运算符和运算数组成。
+        -- 运算数：变量（字段）、值、函数返回值
+        -- 运算符：
+            =, <=>, <>, !=, <=, <, >=, >, !, &&, ||,
+            in (not) null, (not) like, (not) in, (not) between and, is (not), and, or, not, xor
+            is/is not 加上ture/false/unknown，检验某个值的真假
+            <=>与<>功能相同，<=>可用于null比较
+d. GROUP BY 子句, 分组子句
+    GROUP BY 字段/别名 [排序方式]
+    分组后会进行排序。升序：ASC，降序：DESC
+    以下[合计函数]需配合 GROUP BY 使用：
+    count 返回不同的非NULL值数目  count(*)、count(字段)
+    sum 求和
+    max 求最大值
+    min 求最小值
+    avg 求平均值
+    group_concat 返回带有来自一个组的连接的非NULL值的字符串结果。组内字符串连接。
+e. HAVING 子句，条件子句
+    与 where 功能、用法相同，执行时机不同。
+    where 在开始时执行检测数据，对原数据进行过滤。
+    having 对筛选出的结果再次进行过滤。
+    having 字段必须是查询出来的，where 字段必须是数据表存在的。
+    where 不可以使用字段的别名，having 可以。因为执行WHERE代码时，可能尚未确定列值。
+    where 不可以使用合计函数。一般需用合计函数才会用 having
+    SQL标准要求HAVING必须引用GROUP BY子句中的列或用于合计函数中的列。
+f. ORDER BY 子句，排序子句
+    order by 排序字段/别名 排序方式 [,排序字段/别名 排序方式]...
+    升序：ASC，降序：DESC
+    支持多个字段的排序。
+g. LIMIT 子句，限制结果数量子句
+    仅对处理好的结果进行数量限制。将处理好的结果的看作是一个集合，按照记录出现的顺序，索引从0开始。
+    limit 起始位置, 获取条数
+    省略第一个参数，表示从索引0开始。limit 获取条数
+h. DISTINCT, ALL 选项
+    distinct 去除重复记录
+    默认为 all, 全部记录
 ```
 
 <img src="http://www.chenjunlin.vip/img/mysql/MySQL%E5%AD%90%E5%8F%A5%E8%A7%A3%E6%9E%90%E9%A1%BA%E5%BA%8F.png" alt="img" style="zoom:80%;" />
@@ -560,6 +648,37 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
 >
 > 子查询的返回值可以是标量,一行,一列,或子查询
 
+```sql
+    - 子查询需用括号包裹。
+-- from型
+    from后要求是一个表，必须给子查询结果取个别名。
+    - 简化每个查询内的条件。
+    - from型需将结果生成一个临时表格，可用以原表的锁定的释放。
+    - 子查询返回一个表，表型子查询。
+    select * from (select * from tb where id>0) as subfrom where id>1;
+-- where型
+    - 子查询返回一个值，标量子查询。
+    - 不需要给子查询取别名。
+    - where子查询内的表，不能直接用以更新。
+    select * from tb where money = (select max(money) from tb);
+    -- 列子查询
+        如果子查询结果返回的是一列。
+        使用 in 或 not in 完成查询
+        exists 和 not exists 条件
+            如果子查询返回数据，则返回1或0。常用于判断条件。
+            select column1 from t1 where exists (select * from t2);
+    -- 行子查询
+        查询条件是一个行。
+        select * from t1 where (id, gender) in (select id, gender from t2);
+        行构造符：(col1, col2, ...) 或 ROW(col1, col2, ...)
+        行构造符通常用于与对能返回两个或两个以上列的子查询进行比较。
+    -- 特殊运算符
+    != all()    相当于 not in
+    = some()    相当于 in。any 是 some 的别名
+    != some()   不等同于 not in，不等于其中某一个。
+    all, some 可以配合其他运算符一起使用。
+```
+
 ##### 使用比较运算符的子查询
 
 > =,>,<,>=,<=,<>,!=,<=>
@@ -579,6 +698,18 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
   * `!=ALL`运算符与`NOT IN`等效
 * 使用`[NOT] EXISTS`子查询
   * 如果子查询返回任何行,EXISTS将会返回TRUE;否则为FALSE;
+
+#### 联合查询UNION
+
+```sql
+-- 将多个select查询的结果组合成一个结果集合。
+SELECT ... UNION [ALL|DISTINCT] SELECT ...
+-- 默认 DISTINCT 方式，即所有返回的行都是唯一的
+-- 建议，对每个SELECT查询加上小括号包裹。
+ORDER BY 排序时，需加上 LIMIT 进行结合。
+-- 需要各select查询的字段数量一样。
+-- 每个select查询的字段列表(数量、类型)应一致，因为结果中的字段名以第一条select语句为准。
+```
 
 ### 索引
 
@@ -677,7 +808,390 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
   ALTER TABLE user_index DROP PRIMARY KEY;
   ```
 
-#### 索引分析(explain)
+### 导出
 
-### 分区语法
+```sql
+-- 导出表数据
+select * into outfile 文件地址 [控制格式] from 表名; 
+-- 导入数据
+load data [local] infile 文件地址 [replace|ignore] into table 表名 [控制格式]; 
+    生成的数据默认的分隔符是制表符
+    local未指定，则数据文件必须在服务器上
+    replace 和 ignore 关键词控制对现有的唯一键记录的重复的处理
+-- 控制格式
+fields  控制字段格式
+默认：fields terminated by '	' enclosed by '' escaped by '\'
+    terminated by 'string'  -- 终止
+    enclosed by 'char'      -- 包裹
+    escaped by 'char'       -- 转义
+-- 示例：
+  SELECT a,b,a+b INTO OUTFILE '/tmp/result.text'
+  FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+  LINES TERMINATED BY ''
+  FROM test_table;
+lines   控制行格式
+默认：lines terminated by ''
+    terminated by 'string'  -- 终止
+```
+
+### 备份与还原
+
+```sql
+备份，将数据的结构与表内数据保存起来。
+利用 mysqldump 指令完成。
+-- 导出
+mysqldump [options] db_name [tables]
+mysqldump [options] ---database DB1 [DB2 DB3...]
+mysqldump [options] --all--database
+1. 导出一张表
+　　mysqldump -u用户名 -p密码 库名 表名 > 文件名(D:/a.sql)
+2. 导出多张表
+　　mysqldump -u用户名 -p密码 库名 表1 表2 表3 > 文件名(D:/a.sql)
+3. 导出所有表
+　　mysqldump -u用户名 -p密码 库名 > 文件名(D:/a.sql)
+4. 导出一个库
+　　mysqldump -u用户名 -p密码 --lock-all-tables --database 库名 > 文件名(D:/a.sql)
+可以-w携带WHERE条件
+-- 导入
+1. 在登录mysql的情况下：
+　　source  备份文件
+2. 在不登录的情况下
+　　mysql -u用户名 -p密码 库名 < 备份文件
+```
+
+### 视图
+
+```sql
+什么是视图：
+    视图是一个虚拟表，其内容由查询定义。同真实的表一样，视图包含一系列带有名称的列和行数据。但是，视图并不在数据库中以存储的数据值集形式存在。行和列数据来自由定义视图的查询所引用的表，并且在引用视图时动态生成。
+    视图具有表结构文件，但不存在数据文件。
+    对其中所引用的基础表来说，视图的作用类似于筛选。定义视图的筛选可以来自当前或其它数据库的一个或多个表，或者其它视图。通过视图进行查询没有任何限制，通过它们进行数据修改时的限制也很少。
+    视图是存储在数据库中的查询的sql语句，它主要出于两种原因：安全原因，视图可以隐藏一些数据，如：社会保险基金表，可以用视图只显示姓名，地址，而不显示社会保险号和工资数等，另一原因是可使复杂的查询易于理解和使用。
+-- 创建视图
+CREATE [OR REPLACE] [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}] VIEW view_name [(column_list)] AS select_statement
+    - 视图名必须唯一，同时不能与表重名。
+    - 视图可以使用select语句查询到的列名，也可以自己指定相应的列名。
+    - 可以指定视图执行的算法，通过ALGORITHM指定。
+    - column_list如果存在，则数目必须等于SELECT语句检索的列数
+-- 查看结构
+    SHOW CREATE VIEW view_name
+-- 删除视图
+    - 删除视图后，数据依然存在。
+    - 可同时删除多个视图。
+    DROP VIEW [IF EXISTS] view_name ...
+-- 修改视图结构
+    - 一般不修改视图，因为不是所有的更新视图都会映射到表上。
+    ALTER VIEW view_name [(column_list)] AS select_statement
+-- 视图作用
+    1. 简化业务逻辑
+    2. 对客户端隐藏真实的表结构
+-- 视图算法(ALGORITHM)
+    MERGE       合并
+        将视图的查询语句，与外部查询需要先合并再执行！
+    TEMPTABLE   临时表
+        将视图执行完毕后，形成临时表，再做外层查询！
+    UNDEFINED   未定义(默认)，指的是MySQL自主去选择相应的算法。
+```
+
+### 事务(transaction)
+
+```sql
+事务是指逻辑上的一组操作，组成这组操作的各个单元，要不全成功要不全失败。
+    - 支持连续SQL的集体成功或集体撤销。
+    - 事务是数据库在数据晚自习方面的一个功能。
+    - 需要利用 InnoDB 或 BDB 存储引擎，对自动提交的特性支持完成。
+    - InnoDB被称为事务安全型引擎。
+-- 事务开启
+    START TRANSACTION; 或者 BEGIN;
+    开启事务后，所有被执行的SQL语句均被认作当前事务内的SQL语句。
+-- 事务提交
+    COMMIT;
+-- 事务回滚
+    ROLLBACK;
+    如果部分操作发生问题，映射到事务开启前。
+-- 事务的特性
+    1. 原子性（Atomicity）
+        事务是一个不可分割的工作单位，事务中的操作要么都发生，要么都不发生。
+    2. 一致性（Consistency）
+        事务前后数据的完整性必须保持一致。
+        - 事务开始和结束时，外部数据一致
+        - 在整个事务过程中，操作是连续的
+    3. 隔离性（Isolation）
+        多个用户并发访问数据库时，一个用户的事务不能被其它用户的事物所干扰，多个并发事务之间的数据要相互隔离。
+    4. 持久性（Durability）
+        一个事务一旦被提交，它对数据库中的数据改变就是永久性的。
+-- 事务的实现
+    1. 要求是事务支持的表类型
+    2. 执行一组相关的操作前开启事务
+    3. 整组操作完成后，都成功，则提交；如果存在失败，选择回滚，则会回到事务开始的备份点。
+-- 事务的原理
+    利用InnoDB的自动提交(autocommit)特性完成。
+    普通的MySQL执行语句后，当前的数据提交操作均可被其他客户端可见。
+    而事务是暂时关闭“自动提交”机制，需要commit提交持久化数据操作。
+-- 注意
+    1. 数据定义语言（DDL）语句不能被回滚，比如创建或取消数据库的语句，和创建、取消或更改表或存储的子程序的语句。
+    2. 事务不能被嵌套
+-- 保存点
+    SAVEPOINT 保存点名称 -- 设置一个事务保存点
+    ROLLBACK TO SAVEPOINT 保存点名称 -- 回滚到保存点
+    RELEASE SAVEPOINT 保存点名称 -- 删除保存点
+-- InnoDB自动提交特性设置
+    SET autocommit = 0|1;   0表示关闭自动提交，1表示开启自动提交。
+    - 如果关闭了，那普通操作的结果对其他客户端也不可见，需要commit提交后才能持久化数据操作。
+    - 也可以关闭自动提交来开启事务。但与START TRANSACTION不同的是，
+        SET autocommit是永久改变服务器的设置，直到下次再次修改该设置。(针对当前连接)
+        而START TRANSACTION记录开启前的状态，而一旦事务提交或回滚后就需要再次开启事务。(针对当前事务)
+```
+
+### 锁表
+
+```sql
+表锁定只用于防止其它客户端进行不正当地读取和写入
+MyISAM 支持表锁，InnoDB 支持行锁
+-- 锁定
+    LOCK TABLES tbl_name [AS alias]
+-- 解锁
+    UNLOCK TABLES
+```
+
+### 触发器
+
+```sql
+    触发程序是与表有关的命名数据库对象，当该表出现特定事件时，将激活该对象
+    监听：记录的增加、修改、删除。
+-- 创建触发器
+CREATE TRIGGER trigger_name trigger_time trigger_event ON tbl_name FOR EACH ROW trigger_stmt
+    参数：
+    trigger_time是触发程序的动作时间。它可以是 before 或 after，以指明触发程序是在激活它的语句之前或之后触发。
+    trigger_event指明了激活触发程序的语句的类型
+        INSERT：将新行插入表时激活触发程序
+        UPDATE：更改某一行时激活触发程序
+        DELETE：从表中删除某一行时激活触发程序
+    tbl_name：监听的表，必须是永久性的表，不能将触发程序与TEMPORARY表或视图关联起来。
+    trigger_stmt：当触发程序激活时执行的语句。执行多个语句，可使用BEGIN...END复合语句结构
+-- 删除
+DROP TRIGGER [schema_name.]trigger_name
+可以使用old和new代替旧的和新的数据
+    更新操作，更新前是old，更新后是new.
+    删除操作，只有old.
+    增加操作，只有new.
+-- 注意
+    1. 对于具有相同触发程序动作时间和事件的给定表，不能有两个触发程序。
+```
+
+### SQL编程
+
+```sql
+-- 修改最外层语句结束符
+delimiter 自定义结束符号
+    SQL语句
+自定义结束符号
+delimiter ;     -- 修改回原来的分号
+
+-- 语句块包裹
+begin
+    语句块
+end
+
+-- 特殊的执行
+1. 只要添加记录，就会触发程序。
+2. Insert into on duplicate key update 语法会触发：
+    如果没有重复记录，会触发 before insert, after insert;
+    如果有重复记录并更新，会触发 before insert, before update, after update;
+    如果有重复记录但是没有发生更新，则触发 before insert, before update
+3. Replace 语法 如果有记录，则执行 before insert, before delete, after delete, after insert
+```
+
+```sql
+--// 局部变量 ----------
+-- 变量声明
+    declare var_name[,...] type [default value]
+    这个语句被用来声明局部变量。要给变量提供一个默认值，请包含一个default子句。值可以被指定为一个表达式，不需要为一个常数。如果没有default子句，初始值为null。
+-- 赋值
+    使用 set 和 select into 语句为变量赋值。
+    - 注意：在函数内是可以使用全局变量（用户自定义的变量）
+
+
+--// 全局变量 ----------
+-- 定义、赋值
+set 语句可以定义并为变量赋值。
+set @var = value;
+也可以使用select into语句为变量初始化并赋值。这样要求select语句只能返回一行，但是可以是多个字段，就意味着同时为多个变量进行赋值，变量的数量需要与查询的列数一致。
+还可以把赋值语句看作一个表达式，通过select执行完成。此时为了避免=被当作关系运算符看待，使用:=代替。（set语句可以使用= 和 :=）。
+select @var:=20;
+select @v1:=id, @v2=name from t1 limit 1;
+select * from tbl_name where @var:=30;
+select into 可以将表中查询获得的数据赋给变量。
+    -| select max(height) into @max_height from tb;
+-- 自定义变量名
+为了避免select语句中，用户自定义的变量与系统标识符（通常是字段名）冲突，用户自定义变量在变量名前使用@作为开始符号。
+@var=10;
+    - 变量被定义后，在整个会话周期都有效（登录到退出）
+
+
+
+--// 控制结构 ----------
+-- if语句
+if search_condition then
+    statement_list   
+[elseif search_condition then
+    statement_list]
+...
+[else
+    statement_list]
+end if;
+
+-- case语句
+CASE value WHEN [compare-value] THEN result
+[WHEN [compare-value] THEN result ...]
+[ELSE result]
+END
+
+-- while循环
+[begin_label:] while search_condition do
+    statement_list
+end while [end_label];
+- 如果需要在循环内提前终止 while循环，则需要使用标签；标签需要成对出现。
+    -- 退出循环
+        退出整个循环 leave
+        退出当前循环 iterate
+        通过退出的标签决定退出哪个循环
+
+--// 存储函数，自定义函数 ----------
+-- 新建
+    CREATE FUNCTION function_name (参数列表) RETURNS 返回值类型
+        函数体
+    - 函数名，应该合法的标识符，并且不应该与已有的关键字冲突。
+    - 一个函数应该属于某个数据库，可以使用db_name.funciton_name的形式执行当前函数所属数据库，否则为当前数据库。
+    - 参数部分，由"参数名"和"参数类型"组成。多个参数用逗号隔开。
+    - 函数体由多条可用的mysql语句，流程控制，变量声明等语句构成。
+    - 多条语句应该使用 begin...end 语句块包含。
+    - 一定要有 return 返回值语句。
+-- 删除
+    DROP FUNCTION [IF EXISTS] function_name;
+-- 查看
+    SHOW FUNCTION STATUS LIKE 'partten'
+    SHOW CREATE FUNCTION function_name;
+-- 修改
+    ALTER FUNCTION function_name 函数选项
+
+--// 存储过程，自定义功能 ----------
+-- 定义
+存储存储过程 是一段代码（过程），存储在数据库中的sql组成。
+一个存储过程通常用于完成一段业务逻辑，例如报名，交班费，订单入库等。
+而一个函数通常专注与某个功能，视为其他程序服务的，需要在其他语句中调用函数才可以，而存储过程不能被其他调用，是自己执行 通过call执行。
+-- 创建
+CREATE PROCEDURE sp_name (参数列表)
+    过程体
+参数列表：不同于函数的参数列表，需要指明参数类型
+IN，表示输入型
+OUT，表示输出型
+INOUT，表示混合型
+注意，没有返回值。
+
+
+/* 存储过程 */ ------------------
+存储过程是一段可执行性代码的集合。相比函数，更偏向于业务逻辑。
+调用：CALL 过程名
+-- 注意
+- 没有返回值。
+- 只能单独调用，不可夹杂在其他语句中
+-- 参数
+IN|OUT|INOUT 参数名 数据类型
+IN      输入：在调用过程中，将数据输入到过程体内部的参数
+OUT     输出：在调用过程中，将过程体处理完的结果返回到客户端
+INOUT   输入输出：既可输入，也可输出
+-- 语法
+CREATE PROCEDURE 过程名 (参数列表)
+BEGIN
+    过程体
+END
+```
+
+### 用户和权限管理
+
+```sql
+-- root密码重置
+1. 停止MySQL服务
+2.  [Linux] /usr/local/mysql/bin/safe_mysqld --skip-grant-tables &
+    [Windows] mysqld --skip-grant-tables
+3. use mysql;
+4. UPDATE `user` SET PASSWORD=PASSWORD("密码") WHERE `user` = "root";
+5. FLUSH PRIVILEGES;
+用户信息表：mysql.user
+-- 刷新权限
+FLUSH PRIVILEGES;
+-- 增加用户
+CREATE USER 用户名 IDENTIFIED BY [PASSWORD] 密码(字符串)
+    - 必须拥有mysql数据库的全局CREATE USER权限，或拥有INSERT权限。
+    - 只能创建用户，不能赋予权限。
+    - 用户名，注意引号：如 'user_name'@'192.168.1.1'
+    - 密码也需引号，纯数字密码也要加引号
+    - 要在纯文本中指定密码，需忽略PASSWORD关键词。要把密码指定为由PASSWORD()函数返回的混编值，需包含关键字PASSWORD
+-- 重命名用户
+RENAME USER old_user TO new_user
+-- 设置密码
+SET PASSWORD = PASSWORD('密码')  -- 为当前用户设置密码
+SET PASSWORD FOR 用户名 = PASSWORD('密码') -- 为指定用户设置密码
+-- 删除用户
+DROP USER 用户名
+-- 分配权限/添加用户
+GRANT 权限列表 ON 表名 TO 用户名 [IDENTIFIED BY [PASSWORD] 'password']
+    - all privileges 表示所有权限
+    - *.* 表示所有库的所有表
+    - 库名.表名 表示某库下面的某表
+    GRANT ALL PRIVILEGES ON `pms`.* TO 'pms'@'%' IDENTIFIED BY 'pms0817';
+-- 查看权限
+SHOW GRANTS FOR 用户名
+
+-- 查看当前用户权限
+SHOW GRANTS; 或 SHOW GRANTS FOR CURRENT_USER; 或 SHOW GRANTS FOR CURRENT_USER();
+-- 撤消权限
+REVOKE 权限列表 ON 表名 FROM 用户名
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 用户名   -- 撤销所有权限
+-- 权限层级
+-- 要使用GRANT或REVOKE，您必须拥有GRANT OPTION权限，并且您必须用于您正在授予或撤销的权限。
+全局层级：全局权限适用于一个给定服务器中的所有数据库，mysql.user
+    GRANT ALL ON *.*和 REVOKE ALL ON *.*只授予和撤销全局权限。
+数据库层级：数据库权限适用于一个给定数据库中的所有目标，mysql.db, mysql.host
+    GRANT ALL ON db_name.*和REVOKE ALL ON db_name.*只授予和撤销数据库权限。
+表层级：表权限适用于一个给定表中的所有列，mysql.talbes_priv
+    GRANT ALL ON db_name.tbl_name和REVOKE ALL ON db_name.tbl_name只授予和撤销表权限。
+列层级：列权限适用于一个给定表中的单一列，mysql.columns_priv
+    当使用REVOKE时，您必须指定与被授权列相同的列。
+    
+-- 权限列表
+ALL [PRIVILEGES]    -- 设置除GRANT OPTION之外的所有简单权限
+ALTER   -- 允许使用ALTER TABLE
+ALTER ROUTINE   -- 更改或取消已存储的子程序
+
+CREATE  -- 允许使用CREATE TABLE
+CREATE ROUTINE  -- 创建已存储的子程序
+CREATE TEMPORARY TABLES     -- 允许使用CREATE TEMPORARY TABLE
+CREATE USER     -- 允许使用CREATE USER, DROP USER, RENAME USER和REVOKE ALL PRIVILEGES。
+CREATE VIEW     -- 允许使用CREATE VIEW
+
+DELETE  -- 允许使用DELETE
+DROP    -- 允许使用DROP TABLE
+EXECUTE     -- 允许用户运行已存储的子程序
+FILE    -- 允许使用SELECT...INTO OUTFILE和LOAD DATA INFILE
+INDEX   -- 允许使用CREATE INDEX和DROP INDEX
+INSERT  -- 允许使用INSERT
+LOCK TABLES     -- 允许对您拥有SELECT权限的表使用LOCK TABLES
+PROCESS     -- 允许使用SHOW FULL PROCESSLIST
+REFERENCES  -- 未被实施
+RELOAD  -- 允许使用FLUSH
+REPLICATION CLIENT  -- 允许用户询问从属服务器或主服务器的地址
+REPLICATION SLAVE   -- 用于复制型从属服务器（从主服务器中读取二进制日志事件）
+SELECT  -- 允许使用SELECT
+SHOW DATABASES  -- 显示所有数据库
+SHOW VIEW   -- 允许使用SHOW CREATE VIEW
+SHUTDOWN    -- 允许使用mysqladmin shutdown
+SUPER   -- 允许使用CHANGE MASTER, KILL, PURGE MASTER LOGS和SET GLOBAL语句，mysqladmin debug命令；允许您连接（一次），即使已达到max_connections。
+UPDATE  -- 允许使用UPDATE
+USAGE   -- “无权限”的同义词
+GRANT OPTION    -- 允许授予权限
+```
+
+
 
