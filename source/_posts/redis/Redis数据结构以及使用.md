@@ -13,18 +13,16 @@ mermaid: true
 
 * [一口气说出Redis 5种数据结构及对应使用场景，面试要加分的](https://www.cnblogs.com/chengxy-nds/p/12322595.html)
 * 《Redis开发与运维》
+* [3w字深度好文|Redis面试全攻略，读完这个就可以和面试官大战几个回合了](https://mp.weixin.qq.com/s?__biz=Mzg2NzA4MTkxNQ==&mid=2247487073&idx=2&sn=28f48fc6de98b2a5c8382ad8e234ad5b&chksm=ce4045b5f937cca3450268ee8ad769a6818bbe97e0328a1dd065773a7a07a60eab9646a4c1fd&scene=126&sessionid=1583410944#rd)
 
 ### Redis数据结构以及使用场景
 
 #### 数据结构和内部编码
 
-* **对外的数据结构**
+* **对外常用的数据结构**: **string(字符串)**,**hash(哈希)**,**list(列表)**,**set(集合)**,**zset(有序集合)**;
 
-  * **string(字符串)**
-  * **hash(哈希)**
-  * **list(列表)**
-  * **set(集合)**
-  * **zset(有序集合)**
+* **Redis底层的数据结构**: **简单动态数组SDS、链表、字典、跳跃链表、整数集合、压缩列表、对象。**
+
 * **查看内部编码:**`object encoding key`
 
   | 数据结构 | 内部编码   |
