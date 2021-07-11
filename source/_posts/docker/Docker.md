@@ -23,8 +23,6 @@ categories: Docker
   docker --help
   ```
 
-* * * 
-
 *  列出所有的容器 ID
 
   ```sh
@@ -32,25 +30,6 @@ categories: Docker
   ```
 
 * 停止所有容器
-
-  ```shell
-  docker stop $(docker ps -aq)
-  ```
-
-* 删除所有容器
-
-  ```shell
-  docker rm $(docker ps -aq)
-  // 删除所有已停止的容器 -v的作用意味着当所有由Docker管理的数据卷已经没有和任何容器关联时,都会一律删除.
-  docker rm -v $(docker ps -aq -f status=exited)
-  // 为了避免已停止的容器的数量不断增加,可以在执行docker run 的时候加上--rm参数,它的作用是当容器退出时,容器和相关的文件系统会被一并删掉
-  ```
-
-* 删除所有镜像
-
-  ```shell
-  docker rmi $(docker images -q)
-  ```
 
 * 复制文件
 
@@ -68,7 +47,7 @@ categories: Docker
     docker cp /opt/file.txt container_id:/opt/local
     ```
 
-* Docker 1.13 增加了 docker system prune
+* Docker 1.13 增加了` docker system prune
 
   * 针对container
 
@@ -85,34 +64,51 @@ categories: Docker
     docker image prune --force -all / docker image prune -f -a : 删除所有不用镜像
     ```
   
-*  新建容器
+* 容器管理
 
-   *  `docker create`
-   *  使用docker create命令新建的容器处于停止状态,可以使用docker start命令来启动
-   *  启动容器有两种方式,一种是基于镜像新建一个容器并启动,另外一个是将终止状态(stopped)的容器重新启动.所需要的命令主要为`docker run`<==>先执行`docker create`命令,再执行`docker start`命令
-   *  `docker run`在创建并启动容器时,Docker在后台运行的标准操作包括:
-      *  检查本地是否存在指定的镜像,不存在就从公有仓库下载
-      *  利用镜像创建并启动一个容器
-      *  分配一个文件系统,并在只读的镜像层外面挂载一层可读层
-      *  从宿主主机配置的网桥接口中桥接一个虚拟接口道容器中去.
-      *  从地址池配置一个IP地址给容器
-      *  执行用户指定的应用程序
-      *  执行完毕后容器被终止
-   
-*  容器管理
+   *  新建容器
 
-   *  `docker cp`: 在容器和主机之间复制文件和目录
+      *  `docker create`
+      *  使用docker create命令新建的容器处于停止状态,可以使用docker start命令来启动
+      *  启动容器有两种方式,一种是基于镜像新建一个容器并启动,另外一个是将终止状态(stopped)的容器重新启动.所需要的命令主要为`docker run`<==>先执行`docker create`命令,再执行`docker start`命令
+      *  `docker run`在创建并启动容器时,Docker在后台运行的标准操作包括:
+         *  检查本地是否存在指定的镜像,不存在就从公有仓库下载
+         *  利用镜像创建并启动一个容器
+         *  分配一个文件系统,并在只读的镜像层外面挂载一层可读层
+         *  从宿主主机配置的网桥接口中桥接一个虚拟接口道容器中去.
+         *  从地址池配置一个IP地址给容器
+         *  执行用户指定的应用程序
+         *  执行完毕后容器被终止
+      
+   * `docker cp`: 在容器和主机之间复制文件和目录
       *  `docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH`
          *  容器向主机复制文件: `docker cp container_nginx:/usr/local/testA.txt  /usr/local/`
       *  ` docker cp [OPTIONS] SRC_PATH  CONTAINER:DEST_PATH`
          *  主机向容器复制文件: `docker cp /usr/local/testB.txt  container_nginx:/usr/local/`
-   *  `docker exec` : 在容器中运行一个命令
+
+   * `docker exec` : 在容器中运行一个命令
       *  `docker exec -it ${containerId} /bin/bash `
-   *  `docker kill ${containerId}` : 发送信号给容器中的主进程(PID 1).默认发送SIGKILL信号,会使容器立即退出.
-   *  `docker pause` 暂停容器内所有进程.进程不会接受到关于它们被暂停的任何信号,一次它们无法执行正常结束或清理的程序.进程可以通过`docker unpause`命令重启.`docker pause`的底层利用Linux的 cgroup freezer功能实现.这个命令与docker stop不同 docker stop会将所有进程停止,并对进程发送信号,让他们察觉到.
-   *  `docker restart`: 重启一个或者多个容器.
-   
+
+   * `docker kill ${containerId}` : 发送信号给容器中的主进程(PID 1).默认发送SIGKILL信号,会使容器立即退出.
+
+   * `docker pause` 暂停容器内所有进程.进程不会接受到关于它们被暂停的任何信号,一次它们无法执行正常结束或清理的程序.进程可以通过`docker unpause`命令重启.`docker pause`的底层利用Linux的 cgroup freezer功能实现.这个命令与docker stop不同 docker stop会将所有进程停止,并对进程发送信号,让他们察觉到.
+
+   *  重启一个或者多个容器: `docker restart`
+
+   * **删除所有容器:**
+
+     ```
+     docker rm $(docker ps -aq)
+     // 删除所有已停止的容器 -v的作用意味着当所有由Docker管理的数据卷已经没有和任何容器关联时,都会一律删除.
+     docker rm -v $(docker ps -aq -f status=exited)
+     // 为了避免已停止的容器的数量不断增加,可以在执行docker run 的时候加上--rm参数,它的作用是当容器退出时,容器和相关的文件系统会被一并删掉
+     ```
+
+   * **停止所有容器**: `docker stop $(docker ps -aq)`
+
 * 镜像管理
+
+  * `docker search 镜像名称`
 
   * `docker images`
 
@@ -145,6 +141,22 @@ categories: Docker
       ```
 
     * `docker export` 是直接将容器进行打包 `docker export <容器名>或<容器id>`
+    
+  * 删除所有镜像: `docker rmi $(docker images -q)`
+
+  * 构建Docker镜像:
+
+    ```
+    #其中 -t 对镜像进行命名，一般的命名法：仓库名字/镜像名字:版本号
+    #注意：其中 .号，代表当前目录下的dockerfile文件
+    docker build -t 仓库名字/镜像名字:版本号 .
+    ```
+
+  * 运行镜像容器
+
+    ```
+    docker run -d -p 8761:8761 --name=eureka registry-jackly/eureka-server:1.0.0
+    ```
 
 ####  Docker日志文件导致磁盘满了,清理方法
 
@@ -167,7 +179,6 @@ categories: Docker
   ```shell
   docker run -it --log-opt max-size=10m --log-opt max-file=33 alpine ash
   ```
-  
 #### 理论 
 * ##### 寄存服务,仓库,镜像,标签
 
