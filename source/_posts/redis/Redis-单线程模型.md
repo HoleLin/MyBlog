@@ -87,7 +87,7 @@ highlight_shrink:
 
 * **事件调度和执行流程**
 
-  
+  <img src="http://www.chenjunlin.vip/img/redis/Redis%E4%BA%8B%E4%BB%B6%E8%B0%83%E5%BA%A6%E5%92%8C%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt="img" style="zoom:67%;" />
 
 #### Redis为什么采用单线程?
 

@@ -20,6 +20,10 @@ aplayer:
 highlight_shrink:
 ---
 
+### 参考文献
+
+* [不藏了，我的一千行 MySQL 学习笔记（2万字长文）](https://mp.weixin.qq.com/s/gAoosK9vAGxeCB7rnik1GA)
+
 ### MySQL客户端
 
 * MySQL登录:`mysql 参数`
@@ -76,6 +80,10 @@ highlight_shrink:
                           order of preference, my.cnf, $MYSQL_TCP_PORT,
     /etc/my.cnf /etc/mysql/my.cnf /usr/local/mysql/etc/my.cnf ~/.my.cnf
     ```
+  
+* 显示哪些线程正在运行: `SHOW PROCESSLIST;`
+
+* 显示系统变量信息: `SHOW VARIABLES;`
 
 ### 操作数据库
 
@@ -195,10 +203,36 @@ mysql> select database();
 #### 创建表
 
 ```sql
-CREATE TABLE [IF NOT EXISTS] table_name(
+-- TEMPORARY 临时表，会话结束时表自动消失
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] [库名.]table_name(
 	column_name data_type;
+    -- 字段名 数据类型 [NOT NULL | NULL] [DEFAULT default_value] [AUTO_INCREMENT] [UNIQUE [KEY] | [PRIMARY] KEY] [COMMENT 'string']
 	....
-);
+) [ 表选项];
+-- 表选项
+    -- 字符集
+        CHARSET = charset_name
+        如果表没有设定，则使用数据库字符集
+    -- 存储引擎
+        ENGINE = engine_name
+        表在管理数据时采用的不同的数据结构，结构不同会导致处理方式、提供的特性操作等不同
+        常见的引擎：InnoDB MyISAM Memory/Heap BDB Merge Example CSV MaxDB Archive
+        不同的引擎在保存表的结构和数据时采用不同的方式
+        MyISAM表文件含义：.frm表定义，.MYD表数据，.MYI表索引
+        InnoDB表文件含义：.frm表定义，表空间数据和日志文件
+        SHOW ENGINES -- 显示存储引擎的状态信息
+        SHOW ENGINE 引擎名 {LOGS|STATUS} -- 显示存储引擎的日志或状态信息
+    -- 自增起始数
+        AUTO_INCREMENT = 行数
+    -- 数据文件目录
+        DATA DIRECTORY = '目录'
+    -- 索引文件目录
+        INDEX DIRECTORY = '目录'
+    -- 表注释
+        COMMENT = 'string'
+    -- 分区选项
+        PARTITION BY ... 
+        
 -- CREATE/SELECT
 CREATE TABLE [IF NOT EXISTS] table_name(
 	column_name data_type;
@@ -218,6 +252,14 @@ SHOW TABLES [FROM db_name] [LIKE 'patter'|WHERE expr];
 SHOW COLUMNS FROM table_name;
 
 DESC table_name;
+
+DESCRIBE table_name; 
+
+EXPLAIN table_name; 
+
+SHOW COLUMNS FROM table_name [LIKE 'PATTERN']
+
+SHOW TABLE STATUS [FROM db_name] [LIKE 'pattern']
 
 mysql> show columns from innodb1;
 +-------------+-------------+------+-----+---------+----------------+
@@ -258,17 +300,19 @@ mysql> desc innodb1;
 -- 添加单列
 -- FIRST 添加在首位
 -- AFTER 添加在末位
-ALTER TABLE table_name ADD [COLUMN] column_name column_definition [FIRST|AFTER column_name];
+ALTER TABLE table_name 
+	ADD [COLUMN] column_name column_definition [FIRST|AFTER column_name];
 
 -- 添加多列
-ALTER TABLE table_name ADD [COLUMN] (column_name column_defintion,......);
-
+ALTER TABLE table_name 
+	ADD [COLUMN] (column_name column_defintion,......);
 ```
 
 #### 删除字段
 
 ```sql
-ALTER TABLE table_name DROP [COLUMN] column_name;
+ALTER TABLE table_name 
+	DROP [COLUMN] column_name;
 ```
 
 #### 添加/删除约束
@@ -276,39 +320,43 @@ ALTER TABLE table_name DROP [COLUMN] column_name;
 ```sql
 -- 添加主键约束
 -- symbol 约束名称
-ALTER TABLE table_name ADD [CONSTRAINT] [symbol] PRIMARY KEY [index_name][index_type] (index_column_name,....);
+ALTER TABLE table_name 
+	ADD [CONSTRAINT] [symbol] PRIMARY KEY [index_name][index_type] (index_column_name,....);
 
 -- 添加唯一约束
-ALTER TABLE table_name ADD [CONSTRAINT] [symbol] UNIQUE [INDEX|KEY] [index_name] [index_type] (index_column_name,....);
+ALTER TABLE table_name 
+	ADD [CONSTRAINT] [symbol] UNIQUE [INDEX|KEY] [index_name] [index_type] (index_column_name,....);
 
 -- 添加外键约束
-ALTER TABLE table_name ADD [CONSTRAINT] [symbol] FOREIGN KEY [index_name] [index_type] (index_column_name,....) REFERENCE table_name(column);
+ALTER TABLE table_name 
+	ADD [CONSTRAINT] [symbol] FOREIGN KEY [index_name] [index_type] (index_column_name,....) REFERENCE table_name(column);
 
 -- 添加/删除默认约束
 -- literal 默认值
-ALTER TABLE table_name ALTER [COLUMN] column_name {SET DEFAULT literal|DROP DEFAULT};
+ALTER TABLE table_name
+	ALTER [COLUMN] column_name {SET DEFAULT literal|DROP DEFAULT};
 
 -- 删除主键约束
-ALTER TABLE table_name DROP PRIMARY KEY;
+ALTER TABLE table_name 
+	DROP PRIMARY KEY;
 
 -- 删除唯一约束
-ALTER TABLE table_name DROP {INDEX|KEY} index_name;
+ALTER TABLE table_name 
+	DROP {INDEX|KEY} index_name;
 
 -- 删除外键约束
 -- fk_symbol 约束名称
-ALTER TABLE table_name DROP FOREIGN KEY fk_symbol;
+ALTER TABLE table_name 
+	DROP FOREIGN KEY fk_symbol;
 ```
 
 #### 修改列定义
 
 ```sql
-ALTER TABLE table_name MODIFY [COLUMN] column_name column_definiton [FIRST|AFTER column_name];
-```
-
-#### 修改列定义
-
-```sql
-ALTER TABLE table_name CHANGE [COLUMN] old_column_name new_col_name column_definition [FIRST|AFTER column_name];
+ALTER TABLE table_name
+	MODIFY [COLUMN] column_name column_definiton [FIRST|AFTER column_name];
+ALTER TABLE table_name
+	CHANGE [COLUMN] old_column_name new_col_name column_definition [FIRST|AFTER column_name];
 ```
 
 #### 数据表名称更改
@@ -317,6 +365,7 @@ ALTER TABLE table_name CHANGE [COLUMN] old_column_name new_col_name column_defin
 ALTER TABLE table_name RENAME [TO|AS] new_table_name;
 -- 批量修改
 RENAME TABLE table_name TO new_table_name[,table_name2 TO new_table_name2]
+RENAME TABLE 原表名 TO 库名.表名 （可将表移动到另一个数据库）
 ```
 
 #### 插入数据
@@ -356,6 +405,56 @@ DELETE FROM table_name
 -- 多表删除
 DELETE FROM table_name[.*],[,table_name[.*]] 
 [WHERE where_condition]
+```
+
+#### 清空表数据
+
+```sql
+TRUNCATE [TABLE] 表名
+```
+
+#### 复制表结构
+
+```sql
+-- 复制表结构
+CREATE TABLE 表名 LIKE 要复制的表名
+-- 复制表结构和数据
+CREATE TABLE 表名 [AS] SELECT * FROM 要复制的表名
+```
+
+#### 优化表结构
+
+```sql
+-- 检查表是否有错误
+CHECK TABLE tbl_name [, tbl_name] ... [option] ...
+-- 优化表
+OPTIMIZE [LOCAL | NO_WRITE_TO_BINLOG] TABLE tbl_name [, tbl_name] ...
+-- 修复表
+REPAIR [LOCAL | NO_WRITE_TO_BINLOG] TABLE tbl_name [, tbl_name] ... [QUICK] [EXTENDED] [USE_FRM]
+-- 分析表
+ANALYZE [LOCAL | NO_WRITE_TO_BINLOG] TABLE tbl_name [, tbl_name] ...
+```
+
+### 字符集编码
+
+```sql
+-- MySQL、数据库、表、字段均可设置编码
+-- 数据编码与客户端编码不需一致
+SHOW VARIABLES LIKE 'character_set_%'   -- 查看所有字符集编码项
+    character_set_client        客户端向服务器发送数据时使用的编码
+    character_set_results       服务器端将结果返回给客户端所使用的编码
+    character_set_connection    连接层编码
+SET 变量名 = 变量值
+    SET character_set_client = gbk;
+    SET character_set_results = gbk;
+    SET character_set_connection = gbk;
+SET NAMES GBK;  -- 相当于完成以上三个设置
+-- 校对集
+    校对集用以排序
+    SHOW CHARACTER SET [LIKE 'pattern']/SHOW CHARSET [LIKE 'pattern']   查看所有字符集
+    SHOW COLLATION [LIKE 'pattern']     查看所有校对集
+    CHARSET 字符集编码     设置字符集编码
+    COLLATE 校对集编码     设置校对集编码
 ```
 
 ### 查询
