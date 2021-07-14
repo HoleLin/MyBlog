@@ -163,7 +163,9 @@ updated: 2021-07-13 22:41:24
   * 系统调用`write`和`fsync`说明:
 
     * `write`操作会触发延迟写(`delayed write`)机制.Linux在内核提供页缓冲区用来提高硬盘IO性能.write操作在写入系统缓冲区后直接返回.同步硬盘操作依赖于系统调用度机制,例如:缓冲区也空间写满或达到特定时间周期.同步文件之前,如果此时系统故障宕机,缓冲区内数据将丢失.
+    
     * `fsync`针对单个文件操作(比如AOF文件),做强制硬盘同步,fsync将阻塞知道写入硬盘完成后返回,保证了数据持久化.
+
 ##### **文件重写(rewrite)**
 
 * AOF是以文件的形式在记录接收到的所有写命令。随着接收的写命令越来越多，AOF文件会越来越大。这也就意味着，我们一定要小心AOF文件过大带来的性能问题。这里的“性能问题”，主要在于以下三个方面
@@ -211,7 +213,7 @@ updated: 2021-07-13 22:41:24
         子进程 -->|4| 新AOF文件
         新AOF文件 -->|5.3| 旧AOF文件
   ```
-  ​	![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
+  ![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
 
 * 1- 执行AOF重写请求
   * 若当前进程正在执行AOF重写,请求不执行并返回如下响应:
@@ -284,7 +286,6 @@ updated: 2021-07-13 22:41:24
   > \# AOF loaded anyway beacause aof-load-truncated is enabled
 
 ##### **AOF追加阻塞**
-
 * 当开启AOF持久化时,常用的同步硬盘的策略是`everysec`,用于平衡性能和数据安全性.对于这种方式,Redis使用另一条线程每秒fsync同步硬盘,当系统硬盘资源繁忙时,会造成Redis主线程阻塞.
 
   ``` mermaid
