@@ -26,7 +26,7 @@ highlight_shrink:
 
 <img src="http://www.chenjunlin.vip/img/mysql/join.png" alt="img" style="zoom: 67%;" />
 
-```
+```sql
  将多个表的字段进行连接，可以指定连接条件。
 -- 内连接(inner join)
     - 默认就是内连接，可省略inner。
