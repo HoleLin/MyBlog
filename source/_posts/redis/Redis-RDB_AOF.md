@@ -51,9 +51,9 @@ mermaid: true
 
   * `bgsave`命令:Redis进程执行fork操作创建子进程,RDB持久化过程有子进程负责,完成后自动结束.阻塞只发生在fork阶段,一般时间很短
 
-    <img src="http://www.chenjunlin.vip/img/redis/RDB%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6.png" alt="img" style="zoom:50%;" />
+    <img src="http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6.png" alt="img" style="zoom:50%;" />
 
-    ![img](http://www.chenjunlin.vip/img/redis/RDB%E5%85%A8%E9%87%8F%E5%BF%AB%E7%85%A7%E9%97%AE%E9%A2%98.jpg)
+    ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%85%A8%E9%87%8F%E5%BF%AB%E7%85%A7%E9%97%AE%E9%A2%98.jpg)
 
     * 虽然bgsave执行时不阻塞主线程，但是，**如果频繁地执行全量快照，也会带来两方面的开销**。
 
@@ -61,13 +61,13 @@ mermaid: true
       * 另一方面，bgsave子进程需要通过fork操作从主线程创建出来。虽然，子进程在创建后不会再阻塞主线程，但是，fork这个创建过程本身会阻塞主线程，而且主线程的内存越大，阻塞时间越长。如果频繁fork出bgsave子进程，这就会频繁阻塞主线程了;
       * 可以做**增量快照**，所谓增量快照，就是指，做了一次全量快照后，后续的快照只对修改的数据进行快照记录，这样可以避免每次全量快照的开销。
 
-      ![img](http://www.chenjunlin.vip/img/redis/RDB%E5%A2%9E%E9%87%8F%E5%BF%AB%E7%85%A7.jpg)
+      ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%A2%9E%E9%87%8F%E5%BF%AB%E7%85%A7.jpg)
 
     * Redis 4.0中提出了一个**混合使用AOF日志和内存快照**的方法。简单来说，内存快照以一定的频率执行，在两次快照之间，使用AOF日志记录这期间的所有命令操作。
 
       * 这样一来，快照不用很频繁地执行，这就避免了频繁fork对主线程的影响。而且，AOF日志也只用记录两次快照间的操作，也就是说，不需要记录所有操作了，因此，就不会出现文件过大的情况了，也可以避免重写开销。
 
-      ![img](http://www.chenjunlin.vip/img/redis/RDB%E6%B7%B7%E5%90%88%E4%BD%BF%E7%94%A8AOF%E6%97%A5%E5%BF%97%E5%92%8C%E5%86%85%E5%AD%98%E5%BF%AB%E7%85%A7.jpg)
+      ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E6%B7%B7%E5%90%88%E4%BD%BF%E7%94%A8AOF%E6%97%A5%E5%BF%97%E5%92%8C%E5%86%85%E5%AD%98%E5%BF%AB%E7%85%A7.jpg)
 
   
 
@@ -151,7 +151,7 @@ mermaid: true
   | `everysec` | 命令写入aof_buf后调用系统write操作,write完成后线程返回,fsync同步操作由专门线程每秒调用一次<br />**每秒写回** | **每秒写回**采用一秒写回一次的频率，避免了“同步写回”的性能开销，虽然减少了对系统性能的影响，但是如果发生宕机，上一秒内未落盘的命令操作仍然会丢失。所以，这只能算是，在避免影响主线程性能和避免数据丢失两者间取了个折中。 |
   | `no`       | 命令写入aof_buf后调用系统write操作,不对AOF文件做fsync同步,同步硬盘操作由操作系统负责,通常同步周期最长为30秒<br />**操作系统控制的写回** | 虽然**操作系统控制的写回**在写完缓冲区后，就可以继续执行后续的命令，但是落盘的时机已经不在Redis手中了，只要AOF记录没有写回磁盘，一旦宕机对应的数据就丢失了； |
 
-  ![img](http://www.chenjunlin.vip/img/redis/AOF%E9%85%8D%E7%BD%AE%E4%BC%98%E7%BC%BA%E7%82%B9.jpg)
+  ![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%85%8D%E7%BD%AE%E4%BC%98%E7%BC%BA%E7%82%B9.jpg)
 
   * **写会策略的选择**
 
@@ -198,8 +198,7 @@ mermaid: true
       * 因为主线程未阻塞，仍然可以处理新来的操作。此时，如果有写操作，第一处日志就是指正在使用的AOF日志，Redis会把这个操作写到它的缓冲区。这样一来，即使宕机了，这个AOF日志的操作仍然是齐全的，可以用于恢复。
       * 而第二处日志，就是指新的AOF重写日志。这个操作也会被写到重写日志的缓冲区。这样，重写日志也不会丢失最新的操作。等到拷贝数据的所有操作记录重写完成后，重写日志记录的这些最新操作也会写入新的AOF文件，以保证数据库最新状态的记录。此时，我们就可以用新的AOF文件替代旧文件了。
 
-
-     ```mermaid
+  ```mermaid
         graph TD
         bgrewriteaof -->|1|父进程
         父进程 -->|2| fork
@@ -210,32 +209,30 @@ mermaid: true
         子进程 -->|5.1 信号通知父进程| 父进程
         子进程 -->|4| 新AOF文件
         新AOF文件 -->|5.3| 旧AOF文件
-     ```
-  ​	![img](http://www.chenjunlin.vip/img/redis/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
+  ```
+  ​	![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
 
-     * 1- 执行AOF重写请求
-         
-          * 若当前进程正在执行AOF重写,请求不执行并返回如下响应:
-         
-            > ERR Backgroud append only file rewrite already in progress
-         
-         * 若当前进程正在执行`bgsave`操作们,重写命令延迟到bgsave完成之后再执行,返回如下响应:
-         
-           > Backgroud append only file rewriting sceduled
-
-  * 2-父进程执行fork创建子进程,开销等同于`bgsave`过程
-
-  * 3.1-主进程fork操作完成后,继续响应其他命令.所有修改命令依然写入AOF缓冲区并更具`appendfsync`策略同步到硬盘,保证原有AOF机制正确性.
-
-  * 3.2-由于fork操作运用**写时复制技术**,子进程只能共享fork操作时的内存数据.由于父进程依然响应命令,Redis使用"AOF重写缓冲区"保存这部分新数据,防止新AOF文件生成期间丢失这部分数据.
-
-  * 4-子进程根据内存快照,按照命令合并规则写入新的AOF文件.每次批量写入硬盘数据量由配置`aof-rewrite-incremental-fsync`控制,默认为32MB,单次刷盘数据过多造成硬盘阻塞.
+* 1- 执行AOF重写请求
+  * 若当前进程正在执行AOF重写,请求不执行并返回如下响应:
     
-  * 5.1-新AOF文件写入完成后,子进程发送信号给父进程,父进程更新统计信息,具体见`info persistence`下aof_*相关统计.
+     > ERR Backgroud append only file rewrite already in progress
+  * 若当前进程正在执行`bgsave`操作们,重写命令延迟到bgsave完成之后再执行,返回如下响应:
     
-  * 5.2-父进程把AOF重写缓冲区的数据写入到新的AOF文件.
-    
-  * 5.3-使用新AOF文件替换老文件,完成AOF重写;
+    >  Backgroud append only file rewriting scedule
+  
+* 2-父进程执行fork创建子进程,开销等同于`bgsave`过程
+
+* 3.1-主进程fork操作完成后,继续响应其他命令.所有修改命令依然写入AOF缓冲区并更具`appendfsync`策略同步到硬盘,保证原有AOF机制正确性.
+
+* 3.2-由于fork操作运用**写时复制技术**,子进程只能共享fork操作时的内存数据.由于父进程依然响应命令,Redis使用"AOF重写缓冲区"保存这部分新数据,防止新AOF文件生成期间丢失这部分数据.
+
+* 4-子进程根据内存快照,按照命令合并规则写入新的AOF文件.每次批量写入硬盘数据量由配置`aof-rewrite-incremental-fsync`控制,默认为32MB,单次刷盘数据过多造成硬盘阻塞.
+  
+* 5.1-新AOF文件写入完成后,子进程发送信号给父进程,父进程更新统计信息,具体见`info persistence`下aof_*相关统计.
+  
+* 5.2-父进程把AOF重写缓冲区的数据写入到新的AOF文件.
+  
+* 5.3-使用新AOF文件替换老文件,完成AOF重写;
 
 ##### **重启加载(load)**
 

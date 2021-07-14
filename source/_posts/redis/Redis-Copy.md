@@ -27,7 +27,7 @@ mermaid: true
 * **负载均衡**：在主从复制的基础上，配合读写分离，可以由主节点提供写服务，由从节点提供读服务，分担服务器负载；尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发量。
 * **高可用基石**：主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础。
 
-<img src="http://www.chenjunlin.vip/img/redis/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5.png" alt="img" style="zoom:80%;" />
+<img src="http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5.png" alt="img" style="zoom:80%;" />
 
 #### **Redis 的同步机制**
 
@@ -317,7 +317,7 @@ mermaid: true
          * 对于无法容忍数据不一致的应用场景可以设置no来关闭执行,此时从节点除了info和slaveof命令之外所有命令只返回"SYNC with master in progress"
     9. 从节点成功加载完RDB后,如果当前节点开启了AOF持久化功能,它会立刻做`bgrewirteaof`操作,为了保证全量复制后AOF持久化文件立刻可用.
 
-    ![img](http://www.chenjunlin.vip/img/redis/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6.png)
+    ![img](http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6.png)
 
   * **全量复制主要开销**
 
@@ -343,7 +343,7 @@ mermaid: true
     5. 主节点接到`psync`命令后首先核对参数runId是否与自身一致,如果一致,说明之前的是当前主节点,之后根据参数offset在自身**复制积压缓冲区**查找,如果偏移量之后的数据存在缓冲区中,则对从节点发送"+CONTINUE"响应,表示可以进行部分复制.从节点接到回复后打印日志;
     6. 主节点根据偏移量把复制积压区里的数据发送给从节点,保证主从复制进入正常状态.
     
-    <img src="http://www.chenjunlin.vip/img/redis/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6.png" alt="img" style="zoom:80%;" />
+    <img src="http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6.png" alt="img" style="zoom:80%;" />
 
 #### 心跳
 
