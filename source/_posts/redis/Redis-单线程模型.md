@@ -26,6 +26,11 @@ highlight_shrink:
 * [REDIS 单线程模型介绍](https://www.cnblogs.com/yrjns/p/12517784.html)
 * [redis单线程模型](https://www.cnblogs.com/ryjJava/p/14268079.html)
 * [3w字深度好文|Redis面试全攻略，读完这个就可以和面试官大战几个回合了](https://mp.weixin.qq.com/s?__biz=Mzg2NzA4MTkxNQ==&mid=2247487073&idx=2&sn=28f48fc6de98b2a5c8382ad8e234ad5b&chksm=ce4045b5f937cca3450268ee8ad769a6818bbe97e0328a1dd065773a7a07a60eab9646a4c1fd&scene=126&sessionid=1583410944#rd)
+* [极客时间专栏: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
+
+#### Redis单线程
+
+* Redis是单线程，主要是指**Redis的网络IO和键值对读写是由一个线程来完成的，这也是Redis对外提供键值存储服务的主要流程**。但Redis的其他功能，比如持久化、异步删除、集群数据同步等，其实是由额外的线程执行的。
 
 #### Redis的文件事件和时间事件
 
