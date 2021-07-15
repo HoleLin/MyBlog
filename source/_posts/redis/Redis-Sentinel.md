@@ -13,7 +13,8 @@ updated: 2021-07-13 22:41:24
 
 ### 参考文献
 
-
+* 《Redis开发与运维》
+* [极客时间专栏: Redis核心技术与实战](https://time.geekbang.org/column/intro/100056701)
 
 #### 为什么要引入哨兵模式?
 
@@ -480,20 +481,39 @@ sentinel fail-over-timeout holelin 180000
 
     ![img](http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF4.png)
 
+#### Redis Sentinel的任务
+
+- **监控**
+  - 监控是指哨兵进程在运行时，周期性地给所有的主从库发送PING命令，检测它们是否仍然在线运行。如果从库没有在规定时间内响应哨兵的PING命令，哨兵就会把它标记为“下线状态”；同样，如果主库也没有在规定时间内响应哨兵的PING命令，哨兵就会判定主库下线，然后开始**自动切换主库**的流程。
+- **选主（选择主库）**
+  - 主库挂了以后，哨兵就需要从很多个从库里，按照一定的规则选择一个从库实例，把它作为新的主库。这一步完成后，现在的集群里就有了新主库。
+- **通知**
+  - 在执行通知任务时，哨兵会把新主库的连接信息发给其他从库，让它们执行`replicaof`命令，和新主库建立连接，并进行数据复制。同时，哨兵会把新主库的连接信息通知给客户端，让它们把请求操作发到新主库上。
+
+![img](http://www.chenjunlin.vip/img/redis/sentinel/%E5%93%A8%E5%85%B5%E7%9A%84%E8%81%8C%E8%B4%A3.jpg)
+
+- 在这三个任务中，通知任务相对来说比较简单，哨兵只需要把新主库信息发给从库和客户端，让它们和新主库建立连接就行，并不涉及决策的逻辑。但是，在监控和选主这两个任务中，哨兵需要做出两个决策：
+  - 在监控任务中，哨兵需要判断主库是否处于下线状态；
+  - 在选主任务中，哨兵也要决定选择哪个从库实例作为主库。
+
 #### 哨兵模式原理
 
-> 一套合理的监控机制是Sentinel节点判断节点不可达的重要保证,Redis Sentinel通过**三个定时监控任务**完成对各个节点发现和监控
+> 一套合理的监控机制是Sentinel节点判断节点不可达的重要保证,Redis Sentinel通过**三个定时监控任务**完成对各个节点发现和监控.
 
 * **每隔10秒,每个Sentinel节点会向主节点和从节点发送info命令获取最新的拓扑结构;**
+  
   * 这个定时任务的作用可以表现在三个方面:
     * 通过向主节点执行info命令,获取从节点的信息,这也是为什么Sentinel节点不需要显示配置监控从节点;
     * 当有新的从节点加入时都可以立刻感知出来;
     * 节点不可达或者故障转移后,可以通过info命令实时更新节点拓扑信息
+    * 通过pub/sub机制，哨兵之间可以组成集群，同时，哨兵又通过INFO命令，获得了从库连接信息，也能和从库建立连接，并进行监控了
   
   <img src="http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E8%8A%82%E7%82%B9%E5%AE%9A%E6%97%B6%E6%89%A7%E8%A1%8Cinfo%E5%91%BD%E4%BB%A4.png" alt="img" style="zoom:67%;" />
   
 * **每隔2秒,每个Sentinel节点会向Redis master节点的`_sentinel_:hello`频道发送该Sentinel节点对于主节点的判断以及当前Sentinel节点的信息,同时每个Sentinel也会订阅该频道,来了解其他Sentinel节点以及它们对主节点的判断,**所以这个定时任务完成一下两个工作:
   
+  * **基于pub/sub机制的哨兵集群组成**
+    
   * **发现新的Sentinel节点**:通过订阅主节点的`_sentinel_:hello`了解其他的Sentinel节点信息,如果是新加入的Sentinel节点,将该Sentinel节点信息保存起来,并与该Sentinel节点创建连接;
   
   * **Sentinel节点之间交换主节点的状态,作为客观下线以及领导者选举的依据**;
@@ -512,9 +532,17 @@ sentinel fail-over-timeout holelin 180000
 
 * 三个定时任务,每隔Sentinel节点会每隔1秒对主节点,从节点,其他Sentinel节点发送ping命令做心跳检测,当这些节点`ping`命令的时间超过`down-after-milliseconds`没有进行有效回复,Sentinel节点就会对该节点做失败判定,这个行为叫做**主观下线**;
 
+* **哨兵进程会使用PING命令检测它自己和主、从库的网络连接情况，用来判断实例的状态**
+
   <img src="http://www.chenjunlin.vip/img/redis/sentinel/%E4%B8%BB%E8%A7%82%E4%B8%8B%E7%BA%BF.png" alt="img" style="zoom:67%;" />
 
 * 从节点、Sentinel在主观下线后,没有后续的故障转移操作;
+
+  * 如果检测的是从库，那么，哨兵简单地把它标记为“主观下线”就行了，因为从库的下线影响一般不太大，集群的对外服务不会间断。
+
+* 如果检测的是主库，那么，哨兵还不能简单地把它标记为“主观下线”，开启主从切换。因为很有可能存在这么一个情况：那就是哨兵误判了，其实主库并没有故障。可是，一旦启动了主从切换，后续的选主和通知操作都会带来额外的计算和通信开销。
+
+  * **误判**。很简单，就是主库实际并没有下线，但是哨兵误以为它下线了。误判一般会发生在集群网络压力较大、网络拥塞，或者是主库本身压力较大的情况下。
 
 ##### 客观下线
 
@@ -522,6 +550,11 @@ sentinel fail-over-timeout holelin 180000
 * 客观下线的含义比较明显,也就是大部分Sentinel节点都对主节点的下线做了同意的判定.
 
 #### 领导者Sentinel节点选举
+
+* 在投票过程中，任何一个想成为Leader的哨兵，要满足两个条件：
+  * 第一，拿到半数以上的赞成票；
+  * 第二，拿到的票数同时还需要大于等于哨兵配置文件中的quorum值。
+  * 以3个哨兵为例，假设此时的quorum设置为2，那么，任何一个想成为Leader的哨兵只要拿到2张赞成票，就可以了。
 
 * Redis采用`Raft`算法实现领导者选举,大致思路:
   * 在每个在线的Sentinel节点都有资格成为领导者,当它确认了主节点主观下线的时候,会向其他Sentinel节点发送`sentinel is-master-down-by-addr`命令要求将自己设置为领导者
@@ -531,13 +564,21 @@ sentinel fail-over-timeout holelin 180000
 
 #### 故障转移
 
+* 哨兵选择新主库的过程称为“**筛选+打分**”.简单来说，我们在多个从库中，先按照**一定的筛选条件**，把不符合条件的从库去掉。然后，我们再按照**一定的规则**，给剩下的从库逐个打分，将得分最高的从库选为新主库
+
+  ![img](http://www.chenjunlin.vip/img/redis/sentinel/%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E4%B8%BB%E5%BA%93%E9%80%89%E6%8B%A9.jpg)
+
+  * 设想一下，如果在选主时，一个从库正常运行，我们把它选为新主库开始使用了。可是，很快它的网络出了故障，此时，我们就得重新选主了。这显然不是我们期望的结果。
+  * 所以，在选主时，**除了要检查从库的当前在线状态，还要判断它之前的网络连接状态**。如果从库总是和主库断连，而且断连次数超出了一定的阈值，我们就有理由相信，这个从库的网络状况并不是太好，就可以把这个从库筛掉了。
+  * 具体怎么判断呢？你使用配置项`down-after-milliseconds * 10`。其中，`down-after-milliseconds`是我们认定主从库断连的最大连接超时时间。如果在`down-after-milliseconds`毫秒内，主从节点都没有通过网络联系上，我们就可以认为主从节点断连了。如果发生断连的次数超过了10次，就说明这个从库的网络状况不好，不适合作为新主库。
+
 * 被选举为的Sentinel领导者节点复制故障转移,具体步骤如下:
 
   * **在从节点列表中选出一个节点作为新的主节点**,选择方法如下:
     * 过滤"不健康"(主观下线,断线),5秒内没有回复过Sentinel节点ping响应,与主节点失联超过`down-after-miliseconds*10`秒的数据节点;
-    * 选择`slave-priority`(从节点优先级)最高的从节点列表,如果存在则返回,不存在则继续;
-    * 选择**复制偏移量最大**的从节点(复制的最完整的数据节点),如果存在则返回,不存在则继续
-    * 选择`runid`最小的从节点;
+    * **优先级最高的从库得分高**: 选择`slave-priority`(从节点优先级)最高的从节点列表,如果存在则返回,不存在则继续;
+    * **和旧主库同步程度最接近的从库得分高**:选择**复制偏移量最大**的从节点(复制的最完整的数据节点),如果存在则返回,不存在则继续
+    * **ID号小的从库得分高**: 每个实例都会有一个ID，这个ID就类似于这里的从库的编号。目前，Redis在选主库时，有一个默认的规定：**在优先级和复制进度都相同的情况下，ID号最小的从库得分最高，会被选为新主库**。
     
   * Sentinel领导者节点会让第一步选出的从节点执行`slave no one`命令让其成为主节点;
   * Sentinel领导者节点会向剩余的从节点发送命令,让它们成为新主节点的从节点,复制规则和`parallel-syncs`参数有关;
@@ -545,29 +586,29 @@ sentinel fail-over-timeout holelin 180000
 
 #### Sentinel节点发布订阅信息
 
-| 状态                                                         | 说明                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| +reset-master \<instance details>                            | 主节点被重置                                                 |
-| +slave \<instance details>                                   | 一个新的从节点被发现并关联                                   |
-| +failover-state-reconf-slaves \<instance details>            | 故障转移进入`reconf-slaves`状态                              |
-| +slave-reconf-sent \<instance details>                       | 领导者Sentinel节点命令其他从节点复制新的主节点               |
-| +slave-reconf-inprog \<instance details>                     | 从节点正在重新配置主节点的slave,但同步过程上未完成           |
-| +slave-reconf-done \<instance details>                       | 其余从节点完成了和新主节点的同步                             |
-| +sentinel \<instance details>                                | 一个新的sentinel节点被发现并关联                             |
-| +sdown \<instance details>                                   | 添加对某个节点被主观下线                                     |
-| -sdown \<instance details>                                   | 撤销对某个节点被主观下线                                     |
-| +odown \<instance details>                                   | 添加对某个节点被客观下线                                     |
-| -odown \<instance details>                                   | 撤销对某个节点被客观下线                                     |
-| +new-epoch \<instance details>                               | 当前纪元被更新                                               |
-| +try-failover \<instance details>                            | 故障转移开始                                                 |
-| +elected-leader \<instance details>                          | 选出了故障转移的Sentinel节点                                 |
-| +failover-state-select-slave \<instance details>             | 故障转移进入`select-slave`状态(寻找合适的从节点)             |
-| no-good-slave \<instance details>                            | 没有找到合适的从节点                                         |
-| selected-slave \<instance details>                           | 找到了合适的从节点                                           |
-| failover-state-send-slaveof-noone \<instance details>        | 故障转移进入`failover-state-send-slaveof-noone`(对找到的从节点执行`slave no one`) |
-| failover-end-for-timeout \<instance details>                 | 故障转移由于超时而终止                                       |
-| failover-end \<instance details>                             | 故障转移顺利完成                                             |
-| switch-master \<master-name>\<oldip>\<oldport>\<newip>\<newport> | 更新主节点信息,这个许多客户端重点关注的                      |
+| 事件             | 状态                                                         | 说明                                                         |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+|                  | `+reset-master <instance details>`                           | 主节点被重置                                                 |
+|                  | `+slave <instance details>`                                  | 一个新的从节点被发现并关联                                   |
+|                  | `+failover-state-reconf-slaves <instance details>`           | 故障转移进入`reconf-slaves`状态                              |
+| 从库重新配置事件 | `+slave-reconf-sent <instance details>`                      | 领导者Sentinel节点命令其他从节点复制新的主节点               |
+| 从库重新配置事件 | `+slave-reconf-inprog <instance details>`                    | 从节点正在重新配置主节点的slave,但同步过程上未完成           |
+| 从库重新配置事件 | `+slave-reconf-done <instance details>`                      | 其余从节点完成了和新主节点的同步                             |
+|                  | `+sentinel <instance details>`                               | 一个新的sentinel节点被发现并关联                             |
+| 主库下线事件     | `+sdown <instance details>`                                  | 添加对某个节点被主观下线                                     |
+| 主库下线事件     | `-sdown <instance details>`                                  | 撤销对某个节点被主观下线                                     |
+| 主库下线事件     | `+odown <instance details>`                                  | 添加对某个节点被客观下线                                     |
+| 主库下线事件     | `-odown <instance details>`                                  | 撤销对某个节点被客观下线                                     |
+|                  | `+new-epoch <instance details>`                              | 当前纪元被更新                                               |
+|                  | `+try-failover <instance details>`                           | 故障转移开始                                                 |
+|                  | `+elected-leader <instance details>`                         | 选出了故障转移的Sentinel节点                                 |
+|                  | `+failover-state-select-slave <instance details>`            | 故障转移进入`select-slave`状态(寻找合适的从节点)             |
+|                  | `no-good-slave <instance details>`                           | 没有找到合适的从节点                                         |
+|                  | `selected-slave <instance details>`                          | 找到了合适的从节点                                           |
+|                  | `failover-state-send-slaveof-noone <instance details>`       | 故障转移进入`failover-state-send-slaveof-noone`(对找到的从节点执行`slave no one`) |
+|                  | `failover-end-for-timeout <instance details>`                | 故障转移由于超时而终止                                       |
+|                  | `failover-end <instance details>`                            | 故障转移顺利完成                                             |
+| 新主库切换       | `switch-master <master-name><oldip> <oldport> <newip> <newport>` | 更新主节点信息,这个许多客户端重点关注的                      |
 
 * \<instance details>格式如下
 
@@ -618,4 +659,20 @@ sentinel fail-over-timeout holelin 180000
 #### Sentinel支持的命令
 
 ![img](http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E6%94%AF%E6%8C%81%E7%9A%84%E5%91%BD%E4%BB%A4.png)
+
+#### 哨兵在操作主从切换的过程中，客户端能否正常地进行请求操作？
+
+* 如果客户端使用了读写分离，那么读请求可以在从库上正常执行，不会受到影响。但是由于此时主库已经挂了，而且哨兵还没有选出新的主库，所以在这期间写请求会失败，**失败持续的时间 = 哨兵切换主从的时间 + 客户端感知到新主库** 的时间。
+* 如果不想让业务感知到异常，客户端只能把写失败的请求先缓存起来或写入消息队列中间件中，等哨兵切换完主从后，再把这些写请求发给新的主库，但这种场景只适合对写入请求返回值不敏感的业务，而且还需要业务层做适配，另外主从切换时间过长，也会导致客户端或消息队列中间件缓存写请求过多，切换完成之后重放这些请求的时间变长。
+* 哨兵检测主库多久没有响应就提升从库为新的主库，这个时间是可以配置的（`down-after-milliseconds`参数）。配置的时间越短，哨兵越敏感，哨兵集群认为主库在短时间内连不上就会发起主从切换，这种配置很可能因为网络拥塞但主库正常而发生不必要的切换，当然，当主库真正故障时，因为切换得及时，对业务的影响最小。如果配置的时间比较长，哨兵越保守，这种情况可以减少哨兵误判的概率，但是主库故障发生时，业务写失败的时间也会比较久，缓存写请求数据量越多。
+
+#### 应用程序不感知服务的中断，还需要哨兵和客户端做些什么？
+
+* 当哨兵完成主从切换后，客户端需要及时感知到主库发生了变更，然后把缓存的写请求写入到新库中，保证后续写请求不会再受到影响，具体做法如下：
+  * 哨兵提升一个从库为新主库后，哨兵会把新主库的地址写入自己实例的pubsub（switch-master）中。客户端需要订阅这个pubsub，当这个pubsub有数据时，客户端就能感知到主库发生变更，同时可以拿到最新的主库地址，然后把写请求写到这个新主库即可，这种机制属于哨兵主动通知客户端。
+  * 如果客户端因为某些原因错过了哨兵的通知，或者哨兵通知后客户端处理失败了，安全起见，客户端也需要支持主动去获取最新主从的地址进行访问。
+  * 所以，客户端需要访问主从库时，不能直接写死主从库的地址了，而是需要从哨兵集群中获取最新的地址（`sentinel get-master-addr-by-name`命令），这样当实例异常时，哨兵切换后或者客户端断开重连，都可以从哨兵集群中拿到最新的实例地址。
+  * 一般Redis的SDK都提供了通过哨兵拿到实例地址，再访问实例的方式，我们直接使用即可，不需要自己实现这些逻辑。当然，对于只有主从实例的情况，客户端需要和哨兵配合使用，而在分片集群模式下，这些逻辑都可以做在proxy层，这样客户端也不需要关心这些逻辑了，Codis就是这么做的。
+
+
 
