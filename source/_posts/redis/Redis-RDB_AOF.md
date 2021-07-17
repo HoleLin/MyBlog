@@ -186,11 +186,8 @@ updated: 2021-07-13 22:41:24
   * **自动触发**: 根据`auto-aof-rewrite-min-size`和`auto-aof-rewrite-percentage`参数确定自动触发时机;
     
     * `auto-aof-rewrite-min-size`: 表示运行AOF重写时文件最小体积,默认为64MB;
-    
     * `auto-aof-rewrite-percentage`: 代表**当前AOF文件空间(aof_curent_size)**和**上次重写后AOF文件空间(aof_base_size)**的比值
-    
     * 自动触发时机=**aof_current_size>auto-aof-rewrite-min-size&&(aof_current_size-aof_base_size)/aof_base_size>=auto-auto-aof-rewrite-percentage**
-    
     * 其中`aof_current_size`和`aof_base_size`可以在`info Persistence`统计信息中查看
   
 * **重写过程**    
@@ -355,7 +352,7 @@ updated: 2021-07-13 22:41:24
 * 如果允许分钟级别的数据丢失，可以只使用RDB；
 * 如果只用AOF，优先使用everysec的配置选项，因为它在可靠性和性能之间取了一个平衡。
 
-#### Redis采用fork子进程重写AOF文件时，潜在的阻塞风险
+#### Redis采用fork子进程重写AOF文件时，潜在的阻塞风险?
 
 >  AOF日志重写的时候，是由bgrewriteaof子进程来完成的，不用主线程参与，我们今天说的非阻塞也是指子进程的执行不阻塞主线程。但是，你觉得，这个重写过程有没有其他潜在的阻塞风险呢？如果有的话，会在哪里阻塞?
 

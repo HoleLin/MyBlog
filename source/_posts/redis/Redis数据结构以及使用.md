@@ -600,3 +600,12 @@ mermaid: true
 * HyperLogLog内存占用量非常小,但是存在错误率,故使用时要注意两点:
   * 只为了计算独立总数,不需要获取单条数据;
   * 可以容忍一定错误率
+
+### 进阶
+
+#### 数据结构分析
+
+#### Redis容量预估
+
+* http://www.redis.cn/redis_memory/
+
