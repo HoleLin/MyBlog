@@ -53,5 +53,116 @@ highlight_shrink:
 * **处理异常**
   * `catch`用于捕获从`try`中抛出的异常并作出处理;
 
+![img](http://www.chenjunlin.vip/img/java/exception/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86.png)
 
+* 当程序在运行的过程中出现异常后,那么会有`JVM`自动根据有一次的类型实例化一个与之类型匹配的异常类对象(用户不用关心`new`,由系统负责处理);
+* 产生了异常对象之后会判断当前语句是否存在异常处理,如果现在没有异常处理,就交给`JVM`进行默认处理(输出异常信息,结束程序调用);
+* 如果此时存在异常捕获操作,那么会有`try`语句来捕获异常类实例化对象,与`try`语句后的每一个`catch`的异常类对象进行比较,如果现在有符合的捕获类型,则使用当前`catch`的语句进行异常的处理,如果不匹配,则向下匹配其他的`catch`语句;
+* 不管最后异常处理是否能够匹配,那么都要向后执行,如果此时程序中存在`finally`语句,则执行`finally`中的代码,但执行完毕后需要根据之前`catch`匹配结果来决定如何执行,如果之前已经成功的捕获了异常,那么就执行`finally`之后的代码,如果之前没有成功的捕获异常,那么就将异常交给`JVM`处理(输出异常信息,结束程序调用)
+* **Tips: 在捕获异常的时候,捕获异常范围大的一定要放在捕获范围小的异常之后,否则程序编译错误;**
+
+#### `return`和`finally`
+
+```java
+@Slf4j
+public class ExceptionTest {
+    public static void main(String[] args) {
+        System.out.println(testReturnAndFinally());
+    }
+
+    public static int testReturnAndFinally() {
+        int x = 1;
+        try {
+            int temp = x / 0;
+            log.info("出现异常");
+            return ++x;
+        } catch (Exception e) {
+            log.info("捕获异常");
+        } finally {
+            log.info("finally..");
+            ++x;
+        }
+        log.info("返回..");
+        return ++x;
+    }
+}
+14:30:50.884 [main] INFO com.holelin.sundry.demo.ExceptionTest - 捕获异常
+14:30:50.886 [main] INFO com.holelin.sundry.demo.ExceptionTest - finally..
+14:30:50.886 [main] INFO com.holelin.sundry.demo.ExceptionTest - 返回..
+3
+```
+
+> [The `finally` block *always* executes when the `try` block exits. This ensures that the `finally` block is executed even if an unexpected exception occurs. But `finally` is useful for more than just exception handling — it allows the programmer to avoid having cleanup code accidentally bypassed by a `return`, `continue`, or `break`. Putting cleanup code in a `finally` block is always a good practice, even when no exceptions are anticipated.](https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html)
+>
+> **Note:** If the `JVM` exits while the `try` or `catch` code is being executed, then the `finally` block may not execute. Likewise, if the thread executing the `try` or `catch` code is interrupted or killed, the `finally` block may not execute even though the application as a whole continues.
+
+> `finally` 块总是在 `try` 块退出时执行。 这确保即使发生意外异常也能执行 finally 块。 但 finally 不仅仅用于异常处理——它允许程序员避免通过 return、continue 或 break 意外绕过清理代码。 将清理代码放在 finally 块中始终是一个好习惯，即使没有预料到异常也是如此。
+>
+>  注意：如果在执行 try 或 catch 代码时 JVM 退出，则 finally 块可能不会执行。 同样，如果执行 try 或 catch 代码的线程被中断或终止，即使应用程序作为一个整体继续运行，finally 块也可能不会执行。 
+
+##### 以下4中特殊情况下,`finally`块不会被执行:
+
+* 在`finally`语句块第一行发生异常.因为在其他行,`finally`块还是会得到执行.
+
+  ```java
+  @Slf4j
+  public class ExceptionTest {
+      public static void main(String[] args) {
+          System.out.println(testReturnAndFinally());
+      }
+  
+      public static int testReturnAndFinally() {
+          int x = 1;
+          try {
+              int temp = x / 0;
+              log.info("出现异常");
+              return ++x;
+          } catch (Exception e) {
+              log.info("捕获异常");
+          } finally {
+              int temp = x / 0;
+              log.info("finally..");
+              ++x;
+          }
+          log.info("返回..");
+          return ++x;
+      }
+  }
+  14:31:55.063 [main] INFO com.holelin.sundry.demo.ExceptionTest - 捕获异常
+  Exception in thread "main" java.lang.ArithmeticException: / by zero
+  	at com.holelin.sundry.demo.ExceptionTest.testReturnAndFinally(ExceptionTest.java:20)
+  	at com.holelin.sundry.demo.ExceptionTest.main(ExceptionTest.java:8)
+  ```
+
+* 在前面的代码中用了`System.exit(int)`退出程序.
+
+  ```
+  @Slf4j
+  public class ExceptionTest {
+      public static void main(String[] args) {
+          System.out.println(testReturnAndFinally());
+      }
+  
+      public static int testReturnAndFinally() {
+          int x = 1;
+          try {
+              int temp = x / 0;
+              log.info("出现异常");
+              return ++x;
+          } catch (Exception e) {
+              System.exit(0);
+              log.info("捕获异常");
+          } finally {
+              log.info("finally..");
+              ++x;
+          }
+          log.info("返回..");
+          return ++x;
+      }
+  }
+  ```
+
+* 程序所在线程死亡.
+
+* 关闭CPU.
 
