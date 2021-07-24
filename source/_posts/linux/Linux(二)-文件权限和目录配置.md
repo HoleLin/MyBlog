@@ -1,10 +1,10 @@
 ---
-title: Linux(二)-文件权限和目录配置
+title: Linux(二)-文件/目录权限管理
 date: 2021-07-18 15:39:54
 index_img: /img/cover/Linux.jpg
 cover: /img/cover/Linux.jpg
 tags:
-- 权限
+- 文件/目录权限
 categories:
 - Linux
 updated:
