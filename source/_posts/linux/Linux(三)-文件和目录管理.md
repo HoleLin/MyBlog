@@ -1,5 +1,5 @@
 ---
-title: Linux-文件和目录管理
+title: Linux(三)-文件和目录管理
 date: 2021-07-18 20:24:59
 index_img: /img/cover/Linux.jpg
 cover: /img/cover/Linux.jpg
@@ -136,6 +136,26 @@ highlight_shrink:
     * `-i`: 交互模式,在删除前会询问使用者是否操作
     * `-f`: 递归删除,最常用于目录的删除
 
+* `mkdir`: 创建目录
+
+  ```sh
+  mkdir /a
+  # 创建多个目录
+  mkdir b c d
+  # 创建多级目录
+  mkdir -p /e/f/g
+  ```
+
+* `rmdir`: 删除目录
+
+  ```sh
+  rmdir /a
+  ```
+  
+  
+  
+  
+  
     
 
 
