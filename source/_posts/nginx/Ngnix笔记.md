@@ -240,3 +240,16 @@ categories:
 
   * 解决方法：`ln -s /usr/local/lib/libGeoIP.so* /lib64/`
 
+* 出错三
+
+  ```sh
+  [root@holelin logs]# goaccess access.log  -o ../html/report.html --real-time-html --time-format='%H:%M:%S' --date-format='%d/%b/%Y' --log-format=COMBINED
+  Error Opening file /usr/local/share/GeoIP/GeoIP.dat
+  WebSocket server ready to accept new client connections
+  ```
+
+  * 原因： 缺少`GeoIP.dat`文件 GeoIP数据库文件
+  * 解决方法： 
+    * 补充[`GeoIP.dat`文件](http://www.chenjunlin.vip/file/GeoIP.dat.gz)
+    * [下载网址](https://www.miyuru.lk/geoiplegacy)
+
