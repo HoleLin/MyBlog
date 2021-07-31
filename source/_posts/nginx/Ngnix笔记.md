@@ -253,3 +253,68 @@ categories:
     * 补充[`GeoIP.dat`文件](http://www.chenjunlin.vip/file/GeoIP.dat.gz)
     * [下载网址](https://www.miyuru.lk/geoiplegacy)
 
+#### `SSL`协议
+
+* `SSL(Secure Sockets Layer)`
+
+* `TLS(Transport Layer Security)`
+
+* `SSL3.0`-->`TLS1.0`-->`TLS1.1`-->`TLS1.2`-->`TLS1.3`
+
+* `ISO/OSI`模型:**表示层**
+
+* `TCP/IP`模型:**应用层**
+
+  * 握手
+  * 交换密钥
+  * 告警
+  * 对称加密的应用数据
+  
+##### `TLS`安全密码套件
+
+* `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` 
+  * `ECDHE`: 密钥交换
+  * `RSA`: 身份验证
+  * `AES`: 算法
+  * `128`: 强度
+  * `GCM`: 模式
+  * `SHA256` : `MAC`或`PRF`
+* 密钥交换算法
+* 身份验证算法
+* 对称加密算法、强度、分组模式
+* 签名hash算法
+
+##### 证书类型
+
+* 域名验证（domain validated ,DV）证书
+* 组织验证（organization validated,OV）证书
+* 扩展验证（extended validation,EV）证书
+
+##### 给站点附加SSL证书实现HTTPS
+
+* `yum install python2-cerbot-nginx`
+
+* 修改`nginx.conf`文件的`server_name`为`域名`
+
+* `certbot --nginx --nginx-server-root=/usr/local/tengine/conf/ -d 域名`
+
+  ```sh
+  [root@holelin ~]# certbot --nginx --nginx-server-root=/usr/local/tengine/conf/ -d chenjunlin.vip
+  Saving debug log to /var/log/letsencrypt/letsencrypt.log
+  The nginx plugin is not working; there may be problems with your existing configuration.
+  The error was: PluginError('Nginx build is missing SSL module (--with-http_ssl_module).',)
+  [root@holelin ~]# nginx -V
+  Tengine version: Tengine/2.3.2
+  nginx version: nginx/1.17.3
+  built by gcc 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC) 
+  built with OpenSSL 1.0.2k-fips  26 Jan 2017
+  TLS SNI support enabled
+  configure arguments: --prefix=/usr/local/tengine
+  ```
+
+  * 缺少`--with-http_ssl_module`
+    * 参考文献：https://www.cnblogs.com/NGames/p/12078503.html
+    * 重新编译nginx服务器
+    * `./configure --prefix=/usr/local/tengine/  --with-http_ssl_module`
+    * `make`
+    * `make install` 此处因为我之前只是简单安装尚未指定任何模块，故而直接重新安装
