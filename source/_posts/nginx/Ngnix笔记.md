@@ -14,7 +14,7 @@ categories:
 
 * Nginx的优点
 * Nginx的三个应用场景
-* Ngnix的组成
+* Nginx的组成
 * Nginx版本
 * 编译安装Nginx
 
@@ -37,11 +37,11 @@ categories:
 * API服务
   * OpenResty
 
-### Ngnix的组成
+### Nginx的组成
 
 * Nginx二进制可执行文件
   * 由各个模块源码编辑出的一个文件
-* Ngnix.conf配置文件
+* Nginx.conf配置文件
   * 控制Nginx的行为
 * access.log访问日志
   * 记录每一条HTTP请求信息
@@ -52,7 +52,7 @@ categories:
 
 * 开源免费的Nginx http://www.nginx.org
 * 商业版的Nginx Plus http://www.nginx.com
-* 阿巴巴巴的Tenginehttp://tengine.taobao.org/
+* 阿巴巴巴的Tengine http://tengine.taobao.org/
 * 免费OpenResty http://openresty.org
 * 商业版OpenResty http://openresty.com
 
