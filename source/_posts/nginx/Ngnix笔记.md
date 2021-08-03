@@ -522,3 +522,61 @@ categories:
     * `./configure --prefix=/usr/local/tengine/  --with-http_ssl_module`
     * `make`
     * `make install` 此处因为我之前只是简单安装尚未指定任何模块，故而直接重新安装
+
+### Nginx进程结构
+
+* 一个Master进程
+* 多个Worker进程
+* 一个Cache Manager进程
+* 一个Cache Loader进程
+
+### Nginx信号量
+
+* Master进程
+  * 监控Worker进程
+    * `CHLD`
+  * 管理Worker进程
+  * 接受信号
+    * `TERM,INT`
+    * `QUIT`
+    * `HUP`
+    * `USR1`
+    * `USR2`
+    * `WINCH`
+* Worker进程
+  * 接受信号
+    * `TERM,INT`
+    * `QUIT`
+    * `USR1`
+    * `WINCH`
+* Nginx命令行
+  * `reload`: `HUP`
+  * `reopen`: `USR1`
+  * `stop`: `TERM`
+  * `quit`: `QUIT`
+
+### Nginx `reload` 流程
+
+* 向`master`进程发送`HUP`(`reload`命令)
+* `master`进程校验配置语法是否正确
+* `master`进程打开新的监听端口
+* `master`进程用新的配置启动新的`worker`子进程
+* `master`进程向老`worker`子进程发送`QUIT`信号
+* 老`worker`进程关闭监听句柄，处理完当前连接后结束进程
+
+### Nginx热升级流程
+
+* 将旧Nginx文件换成新Nginx文件（注意备份）
+* 向`master`进程发送`USR2`信号
+* `master`进程修改`pid`文件名，加上`.oldbin`
+* `master`进程用新Nginx文件启动新`master`进程
+* 向老`master`进程发送`QUIT`信号，关闭老`master`进程
+* 回滚：向老`master`发送`HUP`，向新`master`发送`QUIT`
+
+### Worker进程：优雅的关闭适合HTTP请求
+
+* 设置定时器:`worker_shutdown_timeout`
+* 关闭监听句柄
+* 关闭空闲连接
+* 在循环中等待全部连接关闭
+* 退出进程
