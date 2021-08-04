@@ -10,13 +10,10 @@ categories:
 - Nginx
 ---
 
-## 目录
+### 参考文献
 
-* Nginx的优点
-* Nginx的三个应用场景
-* Nginx的组成
-* Nginx版本
-* 编译安装Nginx
+* 深入理解Nginx模块开发与架构解析 陶辉
+* 极客时间 Nginx核心知识150讲 陶辉
 
 ### Nginx的优点
 
@@ -56,6 +53,39 @@ categories:
 * 免费OpenResty http://openresty.org
 * 商业版OpenResty http://openresty.com
 
+### 使用Nginx的必备软件
+
+* `GCC`编译器
+
+  * `GCC(GNU Complier Collection)`可以用来编译C语言程序
+
+  ```sh
+  yum install -y gcc
+  yum install -y gcc-c++
+  ```
+
+* `PCRE`库
+
+  * `PRCE`(`Perl Compatible Regular Expressions`, Perl 兼容正则表达式)
+
+  ```sh
+  yum install -y pcre pcre-devel
+  ```
+
+* `zilb`库
+
+  * `zilb`库用于对HTTP包内容做gzip格式的压缩
+
+  ```sh
+  yum install -y zilb zlib-devel
+  ```
+
+* `OpenSSL`开发库
+
+  ```sh
+  yum install -y openssl openssl-devel
+  ```
+
 ### 编译安装Nginx
 
 * 下载Ngnix
@@ -82,91 +112,90 @@ categories:
 
   * `make install`
 
+### Linux内核参数优化
+
+```tcl
+# 表示进程（如一个worker进程）可以同时打开的最大句柄数，这个参数直接限制最大并发连接数，需要根据实际情况配置
+fs.file.max = 99999
+# 这个参数设置为1，表示允许将TIME-WAIT状态的socket重新用于新的TCP连接
+net.ipv4.tcp_tw_resuse = 1
+# 这个参数表示当keepalive启用事，TCP发送keepalive消息的频度。默认为2小时。若将其设置得小一点，可以更快的清理无效连接
+net.ipv4.tcp_keepalive_time = 600
+# 这个参数表示当服务器主动关闭连接时，socket保持在FIN-WAIT-2的状态的最大时间
+net.ipv4.tcp_fin_timeout = 30
+# 表示操作系统允许TIME_WAIT套接字数量的最大值，若超过这个数字，TIME_WAIT将立即被清除并打印告警信息。该参数默认为18000，过多的TIME_WAIT套接字会使WEB服务器变慢
+net.ipv4.tcp_max_tw_buckets = 5000
+# 这个参数定义了在UDP和TCP连接中本地（不包括连接的远端）端口的取值范围
+net.ipv4.ip_local_port_range = 1024 610000
+# 这个参数定义了TCP接收缓存（用于TCP接收滑动窗口）的最小值，默认值，最大值
+net.ipv4.tcp_rmem = 4096 32768 262142
+# 这个参数定义了TCP发送缓存（用于TCP接收滑动窗口）的最小值，默认值，最大值
+net.ipv4.tcp_wmem = 4096 32768 262142
+
+# 当网卡接收数据包的速度大于内核处理的速度时，会有一个队列保存这些数据包，这个参数表示该队列的最大值。
+net.core.netdev_max_backlog = 8096
+# 这个参数表示内核套接字接收缓存区默认的大小
+net.core.rmem_default= = 262144
+# 这个参数表示内核套接字发送缓存区默认的大小
+net.core.wmem_default= = 262144
+# 这个参数表示内核套接字接收缓存区的最大大小
+net.core.rmem_max = 2097152
+# 这个参数表示内核套接字发送缓存区的最大大小
+net.core.wmem_max = 2097152
+
+# 该参数与性能无关 用于解决TCP的SYN攻击
+net.ipv4.tcp_syncookies = 1
+# 这个参数表示TCP三次握手建立阶段接收SYN请求队列的最大长度，默认为1024，将其设置得大一些可以使出现Nginx繁忙来不及accept新连接的情况时，Linux不至于丢失客户端发起的连接请求。
+net.ipv4.tcp_max_syn.backlog = 1024
+
+# 编辑完成后执行sysctl -p使之失效
+```
+
 ### Nginx编译参数详解
 
-> **–prefix= 指向安装目录**
-> –sbin-path 指向（执行）程序文件（nginx）
-> **–conf-path= 指向配置文件（nginx.conf）**
-> **–error-log-path= 指向错误日志目录**
-> **–pid-path= 指向 pid文件（nginx.pid）**
-> –lock-path= 指向lock文件（nginx.lock）（安装文件锁定，防止安装文件被别人利用，或自己误操作。）
-> **–user= 指定程序运行时的非特权用户**
-> –group= 指定程序运行时的非特权用户组
-> –builddir= 指向编译目录
-> –with-rtsig_module 启用 rtsig模块支持（实时信号）
-> –with-select_module 启用 select模块支持（一种轮询模式,不推荐在高载环境下使用）禁用：–without- select_module
-> –with-poll_module 启用 poll模块支持（功能与 select相同，与select特性相同，为一种轮询模式,不推荐在 高载环境下使用）
-> –with-file-aio 启用 file aio支持（一种 APL文件传输格式） –with-ipv6 启用 ipv6支持
-> **–with-http_ssl_module 启用 ngx_http_ssl_module 支持（使支持https请求，需已安装openssl）**
-> –with-http_realip_module 启用 ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的 IP 地 址值，默认为关）
->
-> –with-http_addition_module 启用ngx_http_addition_module支持（作为一个输出过滤器，支持不完全缓冲， 分部分响应请求）
-> –with-http_xslt_module 启用ngx_http_xslt_module 支持（过滤转换XML请求）
-> –with-http_image_filter_module 启用ngx_http_image_filter_module支持（传输JPEG/GIF/PNG 图片的一个 过滤器）（默认为不启用。gd库要用到）
-> –with-http_geoip_module 启用 ngx_http_geoip_module支持（该模块创建基于与 MaxMind GeoIP 二进制文件相 配的客户端 IP地址的ngx_http_geoip_module 变量）
-> –with-http_sub_module 启用 ngx_http_sub_module 支持（允许用一些其他文本替换nginx响应中的一些文本） –with-http_dav_module 启用 ngx_http_dav_module 支持（增加 PUT,DELETE,MKCOL：创建集合,COPY和MOVE方 法）默认情况下为关闭，需编译开启
-> –with-http_flv_module 启用 ngx_http_flv_module 支持（提供寻求内存使用基于时间的偏移量文件） –with-http_gzip_static_module 启用 ngx_http_gzip_static_module支持（在线实时压缩输出数据流） –with-http_random_index_module 启用ngx_http_random_index_module支持（从目录中随机挑选一个目录索 引）
-> –with-http_secure_link_module 启用 ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网 址）
-> –with-http_degradation_module  启用 ngx_http_degradation_module支持（允许在内存不足的情况下返回 204 或444码）
-> –with-http_stub_status_module 启用 ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作 状态）
-> –without-http_charset_module 禁用 ngx_http_charset_module支持（重新编码web页面，但只能是一个方向 –服务器端到客户端，并且只有一个字节的编码可以被重新编码）
-> –without-http_gzip_module 禁用 ngx_http_gzip_module支持（该模块同-with-http_gzip_static_module功能 一样）
-> –without-http_ssi_module 禁用 ngx_http_ssi_module支持（该模块提供了一个在输入端处理处理服务器包含 文件（SSI）的过滤器，目前支持SSI命令的列表是不完整的）
-> –without-http_userid_module 禁用 ngx_http_userid_module支持（该模块用来处理用来确定客户端后续请求 的 cookies）
-> –without-http_access_module 禁用 ngx_http_access_module支持（该模块提供了一个简单的基于主机的访问 控制。允许/拒绝基于ip地址）
-> –without-http_auth_basic_module禁用ngx_http_auth_basic_module（该模块是可以使用用户名和密码基于 http基本认证方法来保护你的站点或其部分内容）
-> –without-http_autoindex_module 禁用disable ngx_http_autoindex_module支持（该模块用于自动生成目录 列表，只在 ngx_http_index_module模块未找到索引文件时发出请求。）
-> –without-http_geo_module 禁用 ngx_http_geo_module支持（创建一些变量，其值依赖于客户端的 IP地址） –without-http_map_module 禁用 ngx_http_map_module支持（使用任意的键/值对设置配置变量）
-> –without-http_split_clients_module 禁用ngx_http_split_clients_module支持（该模块用来基于某些条件 划分用户。条件如：ip地址、报头、cookies等等）
-> –without-http_referer_module 禁用 disable ngx_http_referer_module支持（该模块用来过滤请求，拒绝报 头中 Referer 值不正确的请求）
-> –without-http_rewrite_module 禁用 ngx_http_rewrite_module支持（该模块允许使用正则表达式改变URI，并 且根据变量来转向以及选择配置。如果在 server级别设置该选项，那么他们将在 location之前生效。如果在 location还有更进一步的重写规则，location部分的规则依然会被执行。如果这个URI重写是因为 location部 分的规则造成的，那么 location部分会再次被执行作为新的 URI。 这个循环会执行10次，然后Nginx会返回一 个 500错误。）
-> –without-http_proxy_module 禁用ngx_http_proxy_module支持（有关代理服务器）
-> –without-http_fastcgi_module 禁用 ngx_http_fastcgi_module支持（该模块允许Nginx 与 FastCGI 进程交 互，并通过传递参数来控制 FastCGI 进程工作。 ）FastCGI一个常驻型的公共网关接口。
->
-> –without-http_uwsgi_module 禁用ngx_http_uwsgi_module支持（该模块用来医用 uwsgi协议，uWSGI服务器相 关）
-> –without-http_scgi_module 禁用 ngx_http_scgi_module支持（该模块用来启用 SCGI协议支持，SCGI协议是 CGI 协议的替代。它是一种应用程序与 HTTP服务接口标准。它有些像 FastCGI但他的设计 更容易实现。）
-> –without-http_memcached_module 禁用ngx_http_memcached_module支持（该模块用来提供简单的缓存，以提 高系统效率）
-> -without-http_limit_zone_module 禁用ngx_http_limit_zone_module支持（该模块可以针对条件，进行会话的 并发连接数控制）
-> –without-http_limit_req_module 禁用ngx_http_limit_req_module支持（该模块允许你对于一个地址进行请 求数量的限制用一个给定的 session或一个特定的事件）
-> –without-http_empty_gif_module 禁用ngx_http_empty_gif_module支持（该模块在内存中常驻了一个 1*1的 透明 GIF 图像，可以被非常快速的调用）
-> –without-http_browser_module 禁用 ngx_http_browser_module支持（该模块用来创建依赖于请求报头的值。 如果浏览器为 modern ，则$modern_browser等于modern_browser_value 指令分配的值；如 果浏览器为old，则 $ancient_browser等于 ancient_browser_value指令分配的值；如果浏览器为 MSIE中的任意版本，则 $msie等 于 1）
-> –without-http_upstream_ip_hash_module 禁用 ngx_http_upstream_ip_hash_module支持（该模块用于简单的 负载均衡）
-> –with-http_perl_module 启用ngx_http_perl_module 支持（该模块使nginx可以直接使用perl或通过 ssi调 用 perl）
-> –with-perl_modules_path= 设定 perl模块路径
-> –with-perl= 设定perl库文件路径
-> –http-log-path= 设定access log路径
-> –http-client-body-temp-path= 设定 http客户端请求临时文件路径
-> –http-proxy-temp-path= 设定http代理临时文件路径
-> –http-fastcgi-temp-path= 设定 http fastcgi临时文件路径
-> –http-uwsgi-temp-path= 设定http uwsgi 临时文件路径
-> –http-scgi-temp-path= 设定 http scgi临时文件路径 -without-http 禁用 http server功能
-> –without-http-cache 禁用 http cache功能
-> –with-mail 启用 POP3/IMAP4/SMTP代理模块支持 –with-mail_ssl_module 启用 ngx_mail_ssl_module 支持
-> –without-mail_pop3_module 禁用 pop3协议（POP3即邮局协议的第 3个版本,它是规定个人计算机如何连接到互 联网上的邮件服务器进行收发邮件的协议。是因特网电子邮件的第一个离线协议标 准,POP3协议允许用户从服务 器上把邮件存储到本地主机上,同时根据客户端的操作删除或保存在邮件服务器上的邮件。POP3协议是TCP/IP协 议族中的一员，主要用于 支持使用客户端远程管理在服务器上的电子邮件）
-> –without-mail_imap_module 禁用 imap协议（一种邮件获取协议。它的主要作用是邮件客户端可以通过这种协 议从邮件服务器上获取邮件的信息，下载邮件等。IMAP协议运行在TCP/IP协议之上， 使用的端口是143。它与 POP3协议的主要区别是用户可以不用把所有的邮件全部下载，可以通过客户端直接对服务器上的邮件进行操 作。）
-> –without-mail_smtp_module 禁用 smtp协议（SMTP即简单邮件传输协议,它是一组用于由源地址到目的地址传送 邮件的规则，由它来控制信件的中转方式。SMTP协议属于TCP/IP协议族，它帮助每台计算机在发送或中转信件时 找到下一个目的地。）
-> –with-google_perftools_module 启用 ngx_google_perftools_module支持（调试用，剖析程序性能瓶颈） –with-cpp_test_module 启用 ngx_cpp_test_module 支持
-> –add-module= 启用外部模块支持 –with-cc= 指向 C编译器路径 –with-cpp= 指向 C预处理路径
->
-> –with-cc-opt= 设置 C编译器参数（PCRE库，需要指定–with-cc-opt=”-I /usr/local/include”，如果使用 select()函数则需要同时增加文件描述符数量，可以通过–with-cc- opt=”-D FD_SETSIZE=2048”指定。） –with-ld-opt= 设置连接文件参数。（PCRE库，需要指定–with-ld-opt=”-L /usr/local/lib”。） –with-cpu-opt= 指定编译的CPU，可用的值为: pentium, pentiumpro, pentium3, pentium4, athlon, opteron, amd64, sparc32, sparc64, ppc64
-> –without-pcre 禁用 pcre库
-> –with-pcre 启用 pcre库
-> –with-pcre= 指向pcre库文件目录
-> –with-pcre-opt= 在编译时为pcre库设置附加参数
-> –with-md5= 指向 md5库文件目录（消息摘要算法第五版，用以提供消息的完整性保护）
-> –with-md5-opt= 在编译时为md5库设置附加参数
-> –with-md5-asm 使用 md5汇编源
-> –with-sha1= 指向sha1库目录（数字签名算法，主要用于数字签名）
-> –with-sha1-opt= 在编译时为sha1库设置附加参数
-> –with-sha1-asm 使用 sha1汇编源
-> –with-zlib= 指向zlib库目录
-> –with-zlib-opt= 在编译时为zlib设置附加参数
-> –with-zlib-asm= 为指定的CPU使用 zlib汇编源进行优化，CPU 类型为pentium, pentiumpro
-> –with-libatomic 为原子内存的更新操作的实现提供一个架构
-> –with-libatomic= 指向 libatomic_ops安装目录
-> –with-openssl= 指向 openssl安装目录
-> –with-openssl-opt 在编译时为openssl设置附加参数
-> –with-debug 启用debug日志
+* 路径相关的参数
+
+| 参数名称                          | 含义                                                         | 默认值                                                       |
+| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `--prefix=PATH`                   | Nginx安装部署后的根目录                                      | 默认为`/usr/local/nginx`目录。注意：这个目录的设置会影响其他参数重的相对目录。例如，如果设置了`--sbin-path=sbin/nginx`那么实际上可执行文件会被放到`/usr/local/nginx/sbin/nginx`中 |
+| --sbin-path=PATH                  | 可执行文件的 放置路径                                        | `<prefix>/sbin/nginx`                                        |
+| --conf-path=PATH                  | 配置文件的放置路径                                           | `<prefix>/conf/nginx.conf`                                   |
+| --error-log-path=PATH             | error日志文件的放置路径。error日志用于定位问题，可输出多种级别（包括debug调试级别）的日志。它的配置非常灵活，可以在nginx.conf里面配置为不同请求的日志输出到不同的log文件中，这里是默认的Nginx核心日志路径 | `<prefix>/logs/error.log`                                    |
+| --pid-path=PATH                   | pid存放路径。这个文件里仅以ASCII存放着Nginx master的进程ID，有了这个进程ID，在使用命令行（如 nginx -s reload）通过读取master进程ID向master进程发送信号时，才能对运行中的Nginx服务产生作用 | `<prefix>/logs/nginx.pid`                                    |
+| --lock-path=PATH                  | lock文件的放置路径                                           | `<prefix>/logs/nginx.lock`                                   |
+| --builddir=DIR                    | configure执行时与编译期间产生的临时文件放置的目录，包括产生的Makefile，C源文件，目标文件，可执行文件 | `<nginx source path>/objs`                                   |
+| --with-perl_modules_path=PATH     | perl module放置的路径，只有使用了第三方的perl module，才需要配置这个路径 | 无                                                           |
+| --with-perl=PATH                  | perl binary 放置的路径，如果配置的Nginx会执行Perl脚本，那么就必须要设置此路径 | 无                                                           |
+| --http-log-path=PATH              | access日志放置的位置。每一个HTTP请求在结束时都会记录的访问日志 | `<prefix>/logs/access.log`                                   |
+| --http-client-body-temp-path=PATH | 处理HTTP请求时如果请求的包体需要暂时存放到临时磁盘文件中，则把这样的临时文件放置到该路径下 | `<prefix>/client_body_temp`                                  |
+| --http-proxy-temp-path=PATH       | Nginx作为HTTP反向代理服务器时，上游服务器产生的HTTP包体在需要临时存放到磁盘文件时，这样的临时文件将放到该路径下 | `<prefix>/proxy_temp`                                        |
+| --http-fastcgi-temp-path=PATH     | Fastcgi所使用临时文件放置目录                                | `<prefix>/fastcgi_temp`                                      |
+| --http-uwsgi-temp-path=PATH       | uWSGI所使用临时文件的放置目录                                | `<prefix>/uwsgi_temp`                                        |
+| --http-scgi-temp-path=PATH        | SCGI所使用临时文件的放置目录                                 | `<prefix>/scgi_temp`                                         |
+
+* 编译相关的参数
+
+| 编译参数              | 含义                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| --with-cc=PATH        | C编译器的路径                                                |
+| --with-cpp=PATH       | C预编译的路径                                                |
+| --with-cc-opt=OPTIONS | 如果希望在Nginx编译期间指定加入一些编译选项，如指定宏或者使用-I加入某些需要包含的目录，这时可以使用该参数达成目的 |
+| --with-ID-opt=OPTIONS | 最终的二进制可执行文件是由编译后生成的目标文件与一些第三方库链接生成的，在执行链接操作时可能会需要指定链接参数，--with-Id-opt就是用于加入链接时的参数。如要将某个库链接到Nginx程序中，需要在这里加入--with-Id-opt=librayName -LlibaryPath,其中libaryName是目标库的名称，libraryPath则是目标库所在的路径 |
+| --with-cpu-opt=CPU    | 指定CPU处理架构，只能从以下取值：`pentium`,`pentiumpro`,`pentium3`,`pentium4`,`athlon`,`opteron`,`sparc32`,`sparc64`,`ppc64` |
+
+* 依赖软件的相关参数
+
+| PCRE库的设置参数        | 意义                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| --without-pcre          | 如果确认Nginx不用解析正则表达式，也就是说，nginx.conf配置文件中不会出现正则表达式，那么可以使用这个参数 |
+| --with-pcre             | 强制使用PCRE库                                               |
+| --with-pcre=DIR         | 指定PCRE库源码位置，在编译Nginx时会进入该目录编译PCRE源码    |
+| --with-pcre-opt=OPTIONS | 编译PCRE源码时希望加入的编译选项                             |
+
+| OpenSSL库的设置参数    | 意义                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| --with-openssl=DIR     | 指定OpenSSL库的源码位置，在编译Nginx时会进入该目录编译OpenSSL源码 |
+| --with-openssl=OPTIONS | 编译OpenSSL源码时希望加入的编译选项                          |
 
 ### Nginx配置语法
 
@@ -252,7 +281,7 @@ categories:
 
   * 使用alias时，目录名后面一定要加上**“/”**；
   * alias可以指定任何名称。
-  * alias在使用正则匹配时，必须捕捉品牌的内容并指定的内容处使用；
+  * alias在使用正则匹配时，必须捕捉匹配的内容并指定的内容处使用；
   * alias只能位于location块中；
 
 ### Nginx `ngx_http_core_module`变量说明
