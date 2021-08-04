@@ -197,6 +197,21 @@ net.ipv4.tcp_max_syn.backlog = 1024
 | --with-openssl=DIR     | 指定OpenSSL库的源码位置，在编译Nginx时会进入该目录编译OpenSSL源码 |
 | --with-openssl=OPTIONS | 编译OpenSSL源码时希望加入的编译选项                          |
 
+* 其他参数
+
+* | 其他参数             | 含义                                              |
+  | -------------------- | ------------------------------------------------- |
+  | --with-debug         | 将Nginx需要打印debug调试级别日志的代码编译进Nginx |
+  | --add-module=PATH    |                                                   |
+  | --without-http       |                                                   |
+  | --without-http-cache |                                                   |
+  | --with-file-aio      |                                                   |
+  | --with-ipv6          |                                                   |
+  | --user=USER          |                                                   |
+  | --group=GROUP        |                                                   |
+
+  
+
 ### Nginx配置语法
 
 * 配置文件由指令与指令块构成;
