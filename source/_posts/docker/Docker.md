@@ -31,6 +31,10 @@ categories: Docker
 
 * 停止所有容器
 
+   ```sh
+   docker stop $(docker ps -aq)
+   ```
+
 * 复制文件
 
   * 从容器中复制文件
