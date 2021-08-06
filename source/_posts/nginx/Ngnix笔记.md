@@ -155,62 +155,61 @@ net.ipv4.tcp_max_syn.backlog = 1024
 
 * 路径相关的参数
 
-| 参数名称                          | 含义                                                         | 默认值                                                       |
-| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `--prefix=PATH`                   | Nginx安装部署后的根目录                                      | 默认为`/usr/local/nginx`目录。注意：这个目录的设置会影响其他参数重的相对目录。例如，如果设置了`--sbin-path=sbin/nginx`那么实际上可执行文件会被放到`/usr/local/nginx/sbin/nginx`中 |
-| --sbin-path=PATH                  | 可执行文件的 放置路径                                        | `<prefix>/sbin/nginx`                                        |
-| --conf-path=PATH                  | 配置文件的放置路径                                           | `<prefix>/conf/nginx.conf`                                   |
-| --error-log-path=PATH             | error日志文件的放置路径。error日志用于定位问题，可输出多种级别（包括debug调试级别）的日志。它的配置非常灵活，可以在nginx.conf里面配置为不同请求的日志输出到不同的log文件中，这里是默认的Nginx核心日志路径 | `<prefix>/logs/error.log`                                    |
-| --pid-path=PATH                   | pid存放路径。这个文件里仅以ASCII存放着Nginx master的进程ID，有了这个进程ID，在使用命令行（如 nginx -s reload）通过读取master进程ID向master进程发送信号时，才能对运行中的Nginx服务产生作用 | `<prefix>/logs/nginx.pid`                                    |
-| --lock-path=PATH                  | lock文件的放置路径                                           | `<prefix>/logs/nginx.lock`                                   |
-| --builddir=DIR                    | configure执行时与编译期间产生的临时文件放置的目录，包括产生的Makefile，C源文件，目标文件，可执行文件 | `<nginx source path>/objs`                                   |
-| --with-perl_modules_path=PATH     | perl module放置的路径，只有使用了第三方的perl module，才需要配置这个路径 | 无                                                           |
-| --with-perl=PATH                  | perl binary 放置的路径，如果配置的Nginx会执行Perl脚本，那么就必须要设置此路径 | 无                                                           |
-| --http-log-path=PATH              | access日志放置的位置。每一个HTTP请求在结束时都会记录的访问日志 | `<prefix>/logs/access.log`                                   |
-| --http-client-body-temp-path=PATH | 处理HTTP请求时如果请求的包体需要暂时存放到临时磁盘文件中，则把这样的临时文件放置到该路径下 | `<prefix>/client_body_temp`                                  |
-| --http-proxy-temp-path=PATH       | Nginx作为HTTP反向代理服务器时，上游服务器产生的HTTP包体在需要临时存放到磁盘文件时，这样的临时文件将放到该路径下 | `<prefix>/proxy_temp`                                        |
-| --http-fastcgi-temp-path=PATH     | Fastcgi所使用临时文件放置目录                                | `<prefix>/fastcgi_temp`                                      |
-| --http-uwsgi-temp-path=PATH       | uWSGI所使用临时文件的放置目录                                | `<prefix>/uwsgi_temp`                                        |
-| --http-scgi-temp-path=PATH        | SCGI所使用临时文件的放置目录                                 | `<prefix>/scgi_temp`                                         |
+| 参数名称                            | 含义                                                         | 默认值                                                       |
+| ----------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `--prefix=PATH`                     | Nginx安装部署后的根目录                                      | 默认为`/usr/local/nginx`目录。注意：这个目录的设置会影响其他参数重的相对目录。例如，如果设置了`--sbin-path=sbin/nginx`那么实际上可执行文件会被放到`/usr/local/nginx/sbin/nginx`中 |
+| `--sbin-path=PATH`                  | 可执行文件的 放置路径                                        | `<prefix>/sbin/nginx`                                        |
+| `--conf-path=PATH`                  | 配置文件的放置路径                                           | `<prefix>/conf/nginx.conf`                                   |
+| `--error-log-path=PATH`             | error日志文件的放置路径。error日志用于定位问题，可输出多种级别（包括debug调试级别）的日志。它的配置非常灵活，可以在nginx.conf里面配置为不同请求的日志输出到不同的log文件中，这里是默认的Nginx核心日志路径 | `<prefix>/logs/error.log`                                    |
+| `--pid-path=PATH`                   | pid存放路径。这个文件里仅以ASCII存放着Nginx master的进程ID，有了这个进程ID，在使用命令行（如 nginx -s reload）通过读取master进程ID向master进程发送信号时，才能对运行中的Nginx服务产生作用 | `<prefix>/logs/nginx.pid`                                    |
+| `--lock-path=PATH`                  | lock文件的放置路径                                           | `<prefix>/logs/nginx.lock`                                   |
+| `--builddir=DIR`                    | configure执行时与编译期间产生的临时文件放置的目录，包括产生的Makefile，C源文件，目标文件，可执行文件 | `<nginx source path>/objs`                                   |
+| `--with-perl_modules_path=PATH`     | perl module放置的路径，只有使用了第三方的perl module，才需要配置这个路径 | 无                                                           |
+| `--with-perl=PATH`                  | perl binary 放置的路径，如果配置的Nginx会执行Perl脚本，那么就必须要设置此路径 | 无                                                           |
+| `--http-log-path=PATH`              | access日志放置的位置。每一个HTTP请求在结束时都会记录的访问日志 | `<prefix>/logs/access.log`                                   |
+| `--http-client-body-temp-path=PATH` | 处理HTTP请求时如果请求的包体需要暂时存放到临时磁盘文件中，则把这样的临时文件放置到该路径下 | `<prefix>/client_body_temp`                                  |
+| `--http-proxy-temp-path=PATH`       | Nginx作为HTTP反向代理服务器时，上游服务器产生的HTTP包体在需要临时存放到磁盘文件时，这样的临时文件将放到该路径下 | `<prefix>/proxy_temp`                                        |
+| `--http-fastcgi-temp-path=PATH`     | Fastcgi所使用临时文件放置目录                                | `<prefix>/fastcgi_temp`                                      |
+| `--http-uwsgi-temp-path=PATH`       | uWSGI所使用临时文件的放置目录                                | `<prefix>/uwsgi_temp`                                        |
+| `--http-scgi-temp-path=PATH`        | SCGI所使用临时文件的放置目录                                 | `<prefix>/scgi_temp`                                         |
 
 * 编译相关的参数
 
-| 编译参数              | 含义                                                         |
-| --------------------- | ------------------------------------------------------------ |
-| --with-cc=PATH        | C编译器的路径                                                |
-| --with-cpp=PATH       | C预编译的路径                                                |
-| --with-cc-opt=OPTIONS | 如果希望在Nginx编译期间指定加入一些编译选项，如指定宏或者使用-I加入某些需要包含的目录，这时可以使用该参数达成目的 |
-| --with-ID-opt=OPTIONS | 最终的二进制可执行文件是由编译后生成的目标文件与一些第三方库链接生成的，在执行链接操作时可能会需要指定链接参数，--with-Id-opt就是用于加入链接时的参数。如要将某个库链接到Nginx程序中，需要在这里加入--with-Id-opt=librayName -LlibaryPath,其中libaryName是目标库的名称，libraryPath则是目标库所在的路径 |
-| --with-cpu-opt=CPU    | 指定CPU处理架构，只能从以下取值：`pentium`,`pentiumpro`,`pentium3`,`pentium4`,`athlon`,`opteron`,`sparc32`,`sparc64`,`ppc64` |
+| 编译参数                | 含义                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `--with-cc=PATH`        | C编译器的路径                                                |
+| `--with-cpp=PATH`       | C预编译的路径                                                |
+| `--with-cc-opt=OPTIONS` | 如果希望在Nginx编译期间指定加入一些编译选项，如指定宏或者使用-I加入某些需要包含的目录，这时可以使用该参数达成目的 |
+| `--with-ID-opt=OPTIONS` | 最终的二进制可执行文件是由编译后生成的目标文件与一些第三方库链接生成的，在执行链接操作时可能会需要指定链接参数，--with-Id-opt就是用于加入链接时的参数。如要将某个库链接到Nginx程序中，需要在这里加入--with-Id-opt=librayName -LlibaryPath,其中libaryName是目标库的名称，libraryPath则是目标库所在的路径 |
+| `--with-cpu-opt=CPU`    | 指定CPU处理架构，只能从以下取值：`pentium`,`pentiumpro`,`pentium3`,`pentium4`,`athlon`,`opteron`,`sparc32`,`sparc64`,`ppc64` |
 
 * 依赖软件的相关参数
 
-| PCRE库的设置参数        | 意义                                                         |
-| ----------------------- | ------------------------------------------------------------ |
-| --without-pcre          | 如果确认Nginx不用解析正则表达式，也就是说，nginx.conf配置文件中不会出现正则表达式，那么可以使用这个参数 |
-| --with-pcre             | 强制使用PCRE库                                               |
-| --with-pcre=DIR         | 指定PCRE库源码位置，在编译Nginx时会进入该目录编译PCRE源码    |
-| --with-pcre-opt=OPTIONS | 编译PCRE源码时希望加入的编译选项                             |
+| PCRE库的设置参数          | 意义                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| `--without-pcre`          | 如果确认Nginx不用解析正则表达式，也就是说，nginx.conf配置文件中不会出现正则表达式，那么可以使用这个参数 |
+| `--with-pcre`             | 强制使用PCRE库                                               |
+| `--with-pcre=DIR`         | 指定PCRE库源码位置，在编译Nginx时会进入该目录编译PCRE源码    |
+| `--with-pcre-opt=OPTIONS` | 编译PCRE源码时希望加入的编译选项                             |
 
-| OpenSSL库的设置参数    | 意义                                                         |
-| ---------------------- | ------------------------------------------------------------ |
-| --with-openssl=DIR     | 指定OpenSSL库的源码位置，在编译Nginx时会进入该目录编译OpenSSL源码 |
-| --with-openssl=OPTIONS | 编译OpenSSL源码时希望加入的编译选项                          |
+| OpenSSL库的设置参数      | 意义                                                         |
+| ------------------------ | ------------------------------------------------------------ |
+| `--with-openssl=DIR`     | 指定OpenSSL库的源码位置，在编译Nginx时会进入该目录编译OpenSSL源码 |
+| `--with-openssl=OPTIONS` | 编译OpenSSL源码时希望加入的编译选项                          |
 
 * 其他参数
 
-* | 其他参数             | 含义                                              |
-  | -------------------- | ------------------------------------------------- |
-  | --with-debug         | 将Nginx需要打印debug调试级别日志的代码编译进Nginx |
-  | --add-module=PATH    |                                                   |
-  | --without-http       |                                                   |
-  | --without-http-cache |                                                   |
-  | --with-file-aio      |                                                   |
-  | --with-ipv6          |                                                   |
-  | --user=USER          |                                                   |
-  | --group=GROUP        |                                                   |
+* | 其他参数               | 含义                                              |
+  | ---------------------- | ------------------------------------------------- |
+  | `--with-debug`         | 将Nginx需要打印debug调试级别日志的代码编译进Nginx |
+  | `--add-module=PATH`    |                                                   |
+  | `--without-http`       |                                                   |
+  | `--without-http-cache` |                                                   |
+  | `--with-file-aio`      |                                                   |
+  | `--with-ipv6`          |                                                   |
+  | `--user=USER`          |                                                   |
+  | `--group=GROUP`        |                                                   |
 
-  
 
 ### Nginx配置语法
 
@@ -594,10 +593,10 @@ net.ipv4.tcp_max_syn.backlog = 1024
     * `USR1`
     * `WINCH`
 * Nginx命令行
-  * `reload`: `HUP`
-  * `reopen`: `USR1`
-  * `stop`: `TERM`
-  * `quit`: `QUIT`
+  * `nginx -s reload`: `kill -s SIGHUP <master pid>`
+  * `nginx -s reopen`: `kill -s SIGUSR1 <master pid>`
+  * `nginx -s stop`: `kill -s SIGTERM <master pid>`
+  * `nginx -s quit`: `kill -s SIGQUIT <master pid>`
 
 ### Nginx `reload` 流程
 
@@ -624,3 +623,18 @@ net.ipv4.tcp_max_syn.backlog = 1024
 * 关闭空闲连接
 * 在循环中等待全部连接关闭
 * 退出进程
+
+### Nginx日志级别
+
+* 从上至下级别依次增大，当设定为一个级别时，大于或等于该级别的日志都会被输出到日志文件中，小于该级别的日志则不会输出。
+  * `debug`
+  * `Info`
+  * `notice`
+  * `warn`
+  * `error`
+  * `crit`
+  * `alert`
+  * `emerg`
+* 如果日志级别设定到`debug`，必须在`configure`时加入`--with-debug`配置项
+  
+  
