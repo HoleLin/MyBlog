@@ -1,5 +1,5 @@
 ---
-title: Linux-Shell脚本编程
+title: Linux-Shell脚本编程(一)
 date: 2021-08-06 16:55:13
 index_img: /img/cover/Linux.jpg
 cover: /img/cover/Linux.jpg
@@ -361,4 +361,75 @@ fi
 
 * 如果给定的变量包含正常的文件路径或文件名,则返回真: `[ -f $file_var ]`
 * 如果给定的变量包含的文件可执行,则返回真: `[ -x $var ]`
-* 如果
+* 如果给定的变量包含的是目录，则返回真:`[ -d $var]`
+* 如果给定的变量包含的是文件存在，则返回真:`[ -e $var ]`
+* 如果给定的变量包含的是一个字符设备文件的路径，则返回真:`[ -c $var ]`
+* 如果给定的变量包含的是一个块设备文件的路径，则返回真:`[ -b $var ]`
+* 如果给定的变量的文件可写，则返回真:`[ -w $var ]`
+* 如果给定的变量的文件可读，则返回真:`[-r $var ]`
+
+* 如果给定的变量包含的是一个符合链接，则返回真:`[ -L $var ]`
+
+```sh
+sh# !/bin/bash
+if [ -f $1 ] ; then 
+echo this is file.
+  if [ -e $1 ] ; then 
+  echo this file is exist.
+    if [ -w $1 ] ; then
+        echo this file can be wirte.
+    fi
+    if [ -r $1 ] ; then 
+        echo this file can be read.
+    fi
+  fi
+fi
+if [ -x $1 ] ; then
+echo this can be execute.
+fi
+if [ -d $1 ] ; then
+echo this is directory.
+fi
+if [ -c $1 ] ; then
+echo this is char file.
+fi
+if [ -b $1 ] ; then
+echo this is block file.
+fi
+if [ -L $1 ] ; then 
+echo this is link file.
+fi
+```
+
+#### 字符串比较
+
+* 检查两个文件是否相同
+  * `[[ $str1 = $str2 ]]`
+    * `=`前后有各有一个空格
+  * `[[ $str1 == $str2 ]]`
+* 检查两个文件是否不同
+  * `[[ $str1 != $str2 ]]`
+* 大于｜小于
+  * `[[ $str1 > $str2 ]]`
+  * `[[ $str1 < $str2 ]]`
+
+* 检查字符串是否是空字符串:`[[ -z $str1 ]]`
+* 检查字符串是否是非空字符串:`[[ -n $str1 ]]`
+
+```sh
+# !/bin/bash -x
+if [[ -z $1 ]] ; then 
+ echo this str is  empty
+fi
+if [[ -n $1 ]] ; then 
+ echo this str is not  empty
+ if [[ -n $2 ]] ; then 
+  if [[ $1 == $2 ]] ; then 
+   echo str1 equals str2
+  else
+   echo str1 not equals str2
+  fi 
+ fi  
+fi
+```
+
