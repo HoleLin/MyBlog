@@ -58,16 +58,16 @@ highlight_shrink:
     _=/usr/local/jdk1.8/bin/java
     ```
 
-### 补充内容
 
-##### 获取字符串长度
+
+#### 获取字符串长度
 
 ```sh
 [root@holelin ~]# echo ${#USER}
 4
 ```
 
-##### 识别当前的shell版本
+#### 识别当前的shell版本
 
 ```sh
 [root@holelin ~]# echo $SHELL
@@ -76,7 +76,7 @@ highlight_shrink:
 -bash
 ```
 
-##### 检查是否为超级用户
+#### 检查是否为超级用户
 
 ```sh
 # !/bin/bash
@@ -87,7 +87,7 @@ echo "Root user"
 fi
 ```
 
-### 文件描述符和重定向
+#### 文件描述符和重定向
 
 * **标准输入(stdin--0)**
 
@@ -204,3 +204,161 @@ fi
     * `set -v`:当命令进行读取时显示输入；
     * `set +v`:禁止打印输入；
 
+* 函数和参数
+
+  ```sh
+  function fname(){
+  	statements;
+  }
+  fname2(){
+  	stattements;
+  }
+  
+  # 执行函数
+  fname;
+  # 传递参数
+  fname arg1 arg2;
+  
+  fname3(){
+   # 访问参数1和参数2
+   echo $1, $2;
+   # 以列表的方式一次性打印所有参数
+   echo "$@";
+   # 类似于$@,但是参数被作为单个实体
+   echo "$*";
+   return 0;
+  }
+  ```
+
+* 导出函数
+
+  * 函数也能像环境变量一样用export导出,这样一来,函数的作用域就可以扩展到子进程中
+
+  ```sh
+  export -f fname
+  ```
+
+* 利用子shell生成一个独立的进程
+
+  * 子shell本身就是独立的进程,可以使用`()`操作符来定义一个子shell
+
+  ```sh
+  pwd;
+  (cd /bin; ls);
+  pwd;
+  ```
+
+* 通过引用子shell的方式保留空格和换行符
+
+  ```
+  # 假设在使用子shell或反引用的方法将命令的输出的读入一个变量中,可以将它放入双引号中,以保留空格和换行符(\n)
+  out = "$(cat text.txt)"
+  ```
+
+#### 以不按回车键的当时读取字符"n"
+
+* 语法
+
+  ```sh
+  # 从输入中读取n个字符并存入变量variable_name
+  read -n number_of_chars variable_name
+  # 用不回显的方式读取密码
+  read -s var
+  # 显示提示信息
+  read -p "Enter input:" var
+  # 在特定时限内读取输入
+  read -t timeout var
+  # 用定界符结束输入行
+  read -d delim_charvar
+  ```
+
+#### 字段分割符合迭代器
+
+* **内部字段分割符(Internal Field Separator,IFS)**
+
+  ```sh
+  # !/bin/bash
+  line="root:x:0:0:root:/root:/bin/bash"
+  oldIFS=$IFS
+  IFS=":"
+  count=0
+  for item in $line;
+  do
+    [ $count -eq 0 ] && user=$item;
+    [ $count -eq 6 ] && shell=$item;
+    let count++
+  done;
+  IFS=$oldIFS
+  echo $user\'s shell is $shell
+  ```
+
+#### 循环
+
+* for循环
+
+  ```sh
+  for var in list;
+  do 
+  	commands;
+  done
+  ```
+
+* while循环
+
+  ```sh
+  while condition
+  do 
+  	commands
+  done
+  ```
+
+#### 分支
+
+* if
+
+  ```
+  if condition
+  then
+   commands;
+  fi
+  ```
+
+* if else
+
+  ```
+  if condition
+  then
+   commands;
+  elif condition
+  then
+   commands
+  else
+   commands
+  fi
+  ```
+
+#### 算术比较
+
+* 条件通常被放置在一个封闭的中括号内,一定要注意在`[ 或 ]`与操作数之间有一个空格.
+
+  ```sh
+  [ $var -eq 0 ] or [ $var -eq 0 ]
+  ```
+
+* `-gt`:大于
+
+* `-lt`:小于
+
+* `-ge`:大于或等于
+
+* `le`:小于或等于
+
+* `-a`:逻辑与
+
+* `-o`:逻辑或
+
+#### 文件系统相关
+
+* 如果给定的变量包含正常的文件路径或文件名,则返回真: `[ -f $file_var ]`
+* 如果给定的变量包含的文件可执行,则返回真: `[ -x $var ]`
+* 如果
