@@ -1,5 +1,5 @@
 ---
-title: Linux-shell编程二
+title: Linux-shell脚本编程(二)
 date: 2021-08-07 22:19:09
 index_img: /img/cover/Linux.jpg
 cover: /img/cover/Linux.jpg
