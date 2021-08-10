@@ -1,10 +1,10 @@
 ---
-title: Spring注解-@NestedConfigurationProperty
+title: SpringBoot注解-@NestedConfigurationProperty
 date: 2021-08-10 09:46:47
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
-- @NestedConfigurationProperty
+- NestedConfigurationProperty
 categories:
 - SpringBoot
 updated:
