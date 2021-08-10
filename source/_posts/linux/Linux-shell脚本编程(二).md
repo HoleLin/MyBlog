@@ -222,7 +222,176 @@ highlight_shrink:
   args1#
   args2#
   args3#
+  # xargs有一个选项-I，可以用-I指定一个替换字符串，这个字符串在xargs扩展时被替换掉，当-I与xargs结合使用时，对于每一个参数，命令都会被执行一次
+  [root@holelin shellLearning]# cat cat.txt | xargs -I {} ./xargs1.sh -p {} -1
+  -p args1 -1#
+  -p args2 -1#
+  -p args3 -1#
   ```
+  
+
+#### 用tr进行转换
+
+* `tr`可以对来自标准输入的字符进行替换，删除以及压缩。可以将一组字符变为另一组字符，因而通常也被称为转换(translate)命令
+
+* `tr`只能通过`stdin`，而无法通过命令行参数来接受输入
+
+  ```sh
+  # 将来自stdin的输入字符从set1映射到set2，并将其输出写入stdout。set1和set2是字符类或字符集。
+  # 如果两个字符集到长度不相等，那么set2会不断重复其最后一个字符，直到长度与set1相同。
+  # 如果set2长度大于set1，那么在set2中超出set1长度的那部分字符则全部被忽略
+  tr [options] set1 set2
+  
+  [root@holelin shellLearning]# echo  "HELLO WHO IS THIS" | tr 'A-Z' 'a-z'
+  hello who is this
+  [root@holelin shellLearning]# echo  "HELLO WHO IS THIS" | tr 'A-C' 'a-b'
+  bbbbb bbb bb bbbb
+  [root@holelin shellLearning]# echo  "HELLO WHO IS THIS" | tr 'A-B' 'a-z'
+  HELLO WHO IS THIS
+  [root@holelin shellLearning]# echo  "HELLO WHO IS THIS" | tr 'A-H' 'a-z'
+  heLLO WhO IS ThIS
+  ```
+
+* 用tr删除字符
+
+  * `-d`可以通过指定需要被删除的字符集合，将出现在stdin中的特殊字符清除掉
+
+  ```sh
+  # 将stdin中的数字删除并打印出来
+  echo "Hello 123 word 456" | tr -d '0-9'
+  ```
+
+* 字符集补集
+
+  * set1的补集意味着这个集合中包含set1中没有的所有字符
+
+  ```sh
+  tr -c [set1] [set2] 
+  
+  # 从输入文本中将不再补集中的所有字符全部删除
+  echo hello 1 char 2 next 4 | tr -d -c '0-9 \n'
+  ```
+
+* 用tr压缩字符
+
+  * tr命令在很多文本处理环境中相当有用。多数情况下，连续的重复字符应该被压缩成单个字符
+  * tr的`-s`选项可以压缩输入中重复的字符
+
+  ```sh
+  [root@holelin shellLearning]# echo "GUN is   not  UNIX. Recursive right ?" | tr -s ' '
+  GUN is not UNIX. Recursive right ?
+  
+  [root@holelin shellLearning]# cat sum.txt 
+  1
+  2
+  3
+  4
+  5
+  6
+  [root@holelin shellLearning]# cat sum.txt | echo $[ $(tr '\n' '+' ) 0 ]
+  21
+  ```
+
+  * 字符类
+
+    * `alnum`:字母和数字
+
+    * `alpha`:字母
+
+    * `cntrl`:控制(非打印)字符
+
+    * `digit`:数字
+
+    * `graph`:图形字符
+
+    * `lower`:小写字母
+
+    * `print`: 可打印字符
+
+    * `punct`:标点符号
+
+    * `space`:空白字符
+
+    * `upper`:大写字母
+
+    * `xdigit`:十六进制字符
+
+    * 使用格式
+
+      ```sh
+      tr [:class:] [:class:]
+      
+      tr '[:lower:]' '[:upper:]'
+      
+      [root@holelin shellLearning]# echo "Hello 123 word 456" | tr '[:upper:]' '[:lower:]'
+      hello 123 word 456
+      ```
+
+#### 校验和与核实
+
+  * `md5sum`和`sha1sum`
+
+    ```sh
+    [root@holelin shellLearning]# md5sum cat.md5 cat.txt > cats.md5
+    # 输出校验和是否匹配的消息
+    [root@holelin shellLearning]# md5sum -c cats.md5 
+    cat.md5: OK
+    cat.txt: OK
+    
+    [root@holelin shellLearning]# sha1sum cat.md5  cat.txt > cats.sha1
+    [root@holelin shellLearning]# sha1sum -c cats.sha1 
+    cat.md5: OK
+    cat.txt: OK
+    ```
+
+* 对目录进行校验
+
+  * `md5deep`或`sha1deep`
+
+  ```sh
+  # -r 使用递归方式
+  # -l 使用相对路径，默认情况下，md5deep会输出文件的绝对路径
+  md5deep -rl directory_path > directory.md5
+  # 结合find来递归计算校验和
+  find direcotry_path -type f -print0 | xargs -0 md5sum >> direcotry.md5
+  ```
+
+#### 排序，单一与重复
+
+* `sort`对文本文件和stdin进行排序操作
+
+```sh
+[root@holelin md5andsha1]# sort  1.txt 2.txt 3.txt  > sorted.txt
+[root@holelin md5andsha1]# cat  sorted.txt 
+12312
+12312
+12312
+[root@holelin md5andsha1]# cat  sorted.txt | uniq > uniq_line.txt
+[root@holelin md5andsha1]# cat uniq_line.txt 
+12312
+```
+
+* 按数字进行排序:`sort -n file.txt`
+
+* 按逆序进行排序:`sort -r file.txt`
+
+* 按照月份进行排序(按照一月，二月，三月....):`sort -M months.txt`
+
+* 检测一个文件是否被排过序
+
+  ```sh
+  #!/bin/bash
+  sort -C file;
+  if [ $? -eq 0 ] ; then
+  	echo Sorted;
+  else
+  	echo Unsorted;
+  fi
+  ```
+
+* 若需要合并两个排过序的文件，而且不需要对合并后的文件在进行排序:`sort -m sorted1 sorted2`
+
+  
 
   
 
