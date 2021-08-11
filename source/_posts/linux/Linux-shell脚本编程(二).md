@@ -391,6 +391,78 @@ highlight_shrink:
 
 * 若需要合并两个排过序的文件，而且不需要对合并后的文件在进行排序:`sort -m sorted1 sorted2`
 
+#### 分割文件和数据
+
+* 生成一个大小为100KB的测试文件(data.file)
+
+  ```sh
+  dd if=/dev/zero bs=10k count=1 of=data.file
+  ```
+
+* 给分割后的文件设置数字尾缀
+
+  ```sh
+  # -a length指定后缀长度
+  [root@holelin split]# split -b 10k data.file -d -a 4
+  # 指定文件前缀lin_
+  [root@holelin split]# split -b 1k data.file -d -a 4 lin_
+  [root@holelin split]# ll
+  total 92
+  -rw-r--r-- 1 root root 10240 Aug 11 16:00 data.file
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0000
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0001
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0002
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0003
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0004
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0005
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0006
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0007
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0008
+  -rw-r--r-- 1 root root  1024 Aug 11 16:02 lin_0009
+  # 按照行进行分割文件
+  [root@holelin split]# split -l 10 data.file 
+  # /[REGEX]/表示文本样式，包括从当前行(第一行)直到(但不包括)包含“SERVER”的匹配行
+  # {*}表示根据匹配重复执行分割，直到文件末尾为止，可以用{整数}的形式来指定分割执行行术
+  # -s使命令进入静默模式，不打印其他信息
+  # -n指定分割后的文件名后缀的数字个数
+  # -f指定分割后的文件名前缀
+  # -b指定后缀格式
+  [root@holelin split]# csplit data.file /SERVER/ -n 2 -s {*} -f data -b "%02d.log%" ; rm data00.log
+  ```
+
+* 提取文件名
+
+  ```sh
+  file_jpg="sample.jpg"
+  name=${file_jpg%.*}
+  echo File name is :$name
+  ```
+
+* 提取扩展名
+
+  ```sh
+  extension=${file_jpg#*.}
+  echo Extension is :$extension
+  ```
+
+  ```sh
+  [root@holelin split]# URL=www.baidu.com
+  # 移除.*所匹配的最右边的内容
+  [root@holelin split]# echo ${URL%.*}
+  www.baidu
+  # 将从右边开始一直匹配到最左边的*.移除（贪婪操作符）
+  [root@holelin split]# echo ${URL%%.*}
+  www
+  # 移除*.所匹配的最左边的内容
+  [root@holelin split]# echo ${URL#*.}
+  baidu.com
+  # 将从左边开始一直匹配到最右边的*.移除（贪婪操作符）
+  [root@holelin split]# echo ${URL##*.}
+  com
+  ```
+
+  
+
   
 
   

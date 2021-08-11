@@ -58,8 +58,6 @@ highlight_shrink:
     _=/usr/local/jdk1.8/bin/java
     ```
 
-
-
 #### 获取字符串长度
 
 ```sh
@@ -250,7 +248,7 @@ fi
 
 * 通过引用子shell的方式保留空格和换行符
 
-  ```
+  ```sh
   # 假设在使用子shell或反引用的方法将命令的输出的读入一个变量中,可以将它放入双引号中,以保留空格和换行符(\n)
   out = "$(cat text.txt)"
   ```
@@ -294,7 +292,7 @@ fi
 
 #### 循环
 
-* for循环
+* **for循环**
 
   ```sh
   for var in list;
@@ -303,29 +301,51 @@ fi
   done
   ```
 
-* while循环
+* **while循环**
 
   ```sh
-  while condition
+  while condition;
   do 
-  	commands
+  	commands;
+  done
+  ```
+  
+* **until循环**
+
+  ```sh
+  until condition;
+  do
+  	commands;
   done
   ```
 
+  * until 循环执行一系列命令直至条件为 true 时停止。until 循环与 while 循环在处理方式上刚好相反。一般while循环优于until循环，但在某些时候，也只是极少数情况下，until 循环更加有用。
+
 #### 分支
 
-* if
+* **if...fi**
 
-  ```
-  if condition
+  ```sh
+  if condition;
   then
    commands;
   fi
   ```
 
-* if else
+* **if...else...fi**
 
+  ```sh
+  if condition;
+  then
+   commands;
+  else
+   commands;
+  fi
   ```
+  
+* **if...elif...else...fi**
+
+  ```sh
   if condition
   then
    commands;
@@ -336,6 +356,27 @@ fi
    commands
   fi
   ```
+
+* case语句:`case...esac`
+
+  ```sh
+  #!/bin/bash/
+  
+  grade="B"
+  
+  case $grade in 
+  	"A") echo "Very Good!";;
+  	"B") echo "Good!";;
+  	"C") echo "Come On!";;
+  	*) 
+  		echo "You Must Try!"
+  		echo "Sorry!";;
+  esac
+  
+  ```
+
+  * 需要注意的是： **取值后面必须为关键字 in，每一模式必须以右括号结束。取值可以为变量或常数。匹配发现取值符合某一模式后，其间所有命令开始执行直至 `;;`。**`;;` 与其他语言中的 `break` 类似，意思是跳到整个 `case` 语句的最后。
+  * 取值将检测匹配的每一个模式。一旦模式匹配，则执行完匹配模式相应命令后不再继续其他模式。如果无一匹配模式，使用星号 `*` 捕获该值，再执行后面的命令。
 
 #### 算术比较
 
@@ -359,19 +400,39 @@ fi
 
 #### 文件系统相关
 
-* 如果给定的变量包含正常的文件路径或文件名,则返回真: `[ -f $file_var ]`
-* 如果给定的变量包含的文件可执行,则返回真: `[ -x $var ]`
-* 如果给定的变量包含的是目录，则返回真:`[ -d $var]`
-* 如果给定的变量包含的是文件存在，则返回真:`[ -e $var ]`
-* 如果给定的变量包含的是一个字符设备文件的路径，则返回真:`[ -c $var ]`
-* 如果给定的变量包含的是一个块设备文件的路径，则返回真:`[ -b $var ]`
-* 如果给定的变量的文件可写，则返回真:`[ -w $var ]`
-* 如果给定的变量的文件可读，则返回真:`[-r $var ]`
+```sh
+操作符	说明	举例
 
-* 如果给定的变量包含的是一个符合链接，则返回真:`[ -L $var ]`
+-b file	检测文件是否是块设备文件，如果是，则返回 true。	[ -b $file ] 返回 false。
+
+-c file	检测文件是否是字符设备文件，如果是，则返回 true。	[ -c $file ] 返回 false。
+
+-d file	检测文件是否是目录，如果是，则返回 true。	[ -d $file ] 返回 false。
+
+-f file	检测文件是否是普通文件（既不是目录，也不是设备文件），如果是，则返回 true。	[ -f $file ] 返回 true。
+
+-g file	检测文件是否设置了 SGID 位，如果是，则返回 true。	[ -g $file ] 返回 false。
+
+-k file	检测文件是否设置了粘着位(Sticky Bit)，如果是，则返回 true。	[ -k $file ] 返回 false。
+
+-p file	检测文件是否是具名管道，如果是，则返回 true。	[ -p $file ] 返回 false。
+
+-u file	检测文件是否设置了 SUID 位，如果是，则返回 true。	[ -u $file ] 返回 false。
+
+-r file	检测文件是否可读，如果是，则返回 true。	[ -r $file ] 返回 true。
+
+-w file	检测文件是否可写，如果是，则返回 true。	[ -w $file ] 返回 true。
+
+-x file	检测文件是否可执行，如果是，则返回 true。	[ -x $file ] 返回 true。
+
+-s file	检测文件是否为空（文件大小是否大于0），不为空返回 true。	[ -s $file ] 返回 true。
+
+-e file	检测文件（包括目录）是否存在，如果是，则返回 true。	[ -e $file ] 返回 true。
+
+```
 
 ```sh
-sh# !/bin/bash
+# !/bin/bash
 if [ -f $1 ] ; then 
 echo this is file.
   if [ -e $1 ] ; then 
@@ -412,19 +473,19 @@ fi
 * 大于｜小于
   * `[[ $str1 > $str2 ]]`
   * `[[ $str1 < $str2 ]]`
-
-* 检查字符串是否是空字符串:`[[ -z $str1 ]]`
-* 检查字符串是否是非空字符串:`[[ -n $str1 ]]`
+* 检测字符串长度是否为0，为0返回 true:`[[ -z $str1 ]]`
+* 检测字符串长度是否为0，不为0返回 true:`[[ -n $str1 ]]`
+* 检测字符串是否为空，不为空返回 true:`[ $str1 ]`
 
 ```sh
 # !/bin/bash -x
-if [[ -z $1 ]] ; then 
+if [[ -z $1 ]]  then 
  echo this str is  empty
 fi
-if [[ -n $1 ]] ; then 
+if [[ -n $1 ]]  then 
  echo this str is not  empty
- if [[ -n $2 ]] ; then 
-  if [[ $1 == $2 ]] ; then 
+ if [[ -n $2 ]]  then 
+  if [[ $1 == $2 ]]  then 
    echo str1 equals str2
   else
    echo str1 not equals str2
