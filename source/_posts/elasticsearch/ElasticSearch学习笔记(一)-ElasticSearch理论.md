@@ -151,81 +151,17 @@ highlight_shrink:
 
 > 代表ElasticSearch内部节点或集群与客户端的交互方式，默认内部是使用tcp协议进行交互，同时它支持http协议（json格式）、thrift、servlet、memcached、zeroMQ等的传输协议（通过插件方式集成）。
 
-### ElasticSearch配置
+### Elasticsearch常用插件
 
-**1.** 数据目录和日志目录，生产环境下应与软件分离
+#### [elasticsearch-head](https://github.com/mobz/elasticsearch-head)
 
-```yaml
-#注意：数据目录可以有多个，可以通过逗号分隔指定多个目录。一个索引数据只会放入一个目录中！！
-path.data: /path/to/data1,/path/to/data2
-   
-# Path to log files:
-path.logs: /path/to/logs
-   
-# Path to where plugins are installed:
-path.plugins: /path/to/plugins
-```
+#### [bigdesk](https://github.com/hlstudio/bigdesk)
 
-**2.** 所属的集群名，默认为 elasticsearch ，可自定义（最好给生产环境的ES集群改个名字，改名字的目的其实就是防止某台服务器加入了集群这种意外）
+* Elasticsearch的一个集群监控工具，可以通过它来查看es集群的各种状态，如：cpu、内存使用情况，索引数据、搜索情况，http连接数等。
 
-```yaml
-cluster.name: kevin_elasticsearch　
-```
+[**Kopf**](https://github.com/lmenezes/elasticsearch-kopf) 
 
-**3.** 节点名，默认为 UUID前7个字符，可自定义
-
-```yaml
-node.name: kevin_elasticsearch_node01
-```
-
-**4.** network.host IP绑定，默认绑定的是["127.0.0.1", "[::1]"]回环地址，集群下要服务间通信，需绑定一个ipv4或ipv6地址或0.0.0.0
-
-```yaml
-network.host: 172.16.60.11
-```
-
-**5.** http.port: 9200-9300
-对外服务的http 端口， 默认 9200-9300 。可以为它指定一个值或一个区间，当为区间时会取用区间第一个可用的端口。
-
-**6.** transport.tcp.port: 9300-9400
-节点间交互的端口， 默认 9300-9400 。可以为它指定一个值或一个区间，当为区间时会取用区间第一个可用的端口。
-
-**7.** Discovery Config 节点发现配置
-ES中默认采用的节点发现方式是 zen（基于组播（多播）、单播）。在应用于生产前有两个重要参数需配置
-
-**8.** discovery.zen.ping.unicast.hosts: ["host1","host2:port","host3[portX-portY]"]
-单播模式下，设置具有master资格的节点列表，新加入的节点向这个列表中的节点发送请求来加入集群。
-
-**9.** discovery.zen.minimum_master_nodes: 1
-这个参数控制的是，一个节点需要看到具有master资格的节点的最小数量，然后才能在集群中做操作。官方的推荐值是(N/2)+1，其中N是具有master资格的节点的数量。
-
-**10.** transport.tcp.compress: false
-是否压缩tcp传输的数据，默认false
-
-**11.** http.cors.enabled: true
-是否使用http协议对外提供服务，默认true
-
-**12.** http.max_content_length: 100mb
-http传输内容的最大容量，默认100mb
-
-**13.** node.master: true
-指定该节点是否可以作为master节点，默认是true。ES集群默认是以第一个节点为master，如果该节点出故障就会重新选举master。
-
-**14.** node.data: true
-该节点是否存索引数据，默认true。
-
-**15.** discover.zen.ping.timeout: 3s
-设置集群中自动发现其他节点时ping连接超时时长，默认为3秒。在网络环境较差的情况下，增加这个值，会增加节点等待响应的时间，从一定程度上会减少误判。
-
-**16.** discovery.zen.ping.multicast.enabled: false
-是否启用多播来发现节点。
-
-**17.** Jvm heap 大小设置
-生产环境中一定要在jvm.options中调大它的jvm内存。
-
-**18.** JVM heap dump path 设置
-生产环境中指定当发生OOM异常时，heap的dump path，好分析问题。在jvm.options中配置：
--XX:HeapDumpPath=/var/lib/elasticsearch
+* 一个ElasticSearch的管理工具，它也提供了对ES集群操作的API。
 
 ### Elasticsearch 的fielddata内存控制、预加载以及circuit breaker断路器
 
@@ -277,5 +213,5 @@ http传输内容的最大容量，默认100mb
 > 2) 不超过32G
 > 如果堆小于32GB，JVM能够使用压缩的指针，这会节省许多内存：每个指针就会使用4字节而不是8字节。把对内存从32GB增加到34GB将意味着你将有更少的内存可用，因为所有的指针占用了双倍的空间。同样，更大的堆，垃圾回收变得代价更大并且可能导致节点不稳定；这个限制主要是大内存对fielddata影响比较大。
 
-### ElasticSearch 写入流程
+
 
