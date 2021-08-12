@@ -225,7 +225,7 @@ highlight_shrink:
 | --------------------------------------------------- | ------------------------------------------------------------ |
 | `discovery.zen.minimum_master_nodes: 3`             | 预防脑裂（split brain）通过配置大多数节点（总节点数/2+1）。默认为3。 |
 | `discovery.zen.ping.multicast.enabled: false`       | 设置是否打开组播发现节点。默认false。                        |
-| `discovery.zen.ping.unicast.host`                   | 单播发现所使用的主机列表，可以设置一个属组，或者以逗号分隔。每个值格式为 host:port 或 host（端口默认为：9300）。默认为 127.0.0.1，[::1]。 |
+| `discovery.zen.ping.unicast.hosts`                  | 单播发现所使用的主机列表，可以设置一个属组，或者以逗号分隔。每个值格式为 host:port 或 host（端口默认为：9300）。默认为 127.0.0.1，[::1]。 |
 | `discovery.zen.ping.timeout: 3s`                    | 设置集群中自动发现其它节点时ping连接超时时间，默认为3秒，对于比较差的网络环境可以高点的值来防止自动发现时出错。 |
 | `discovery.zen.join_timeout`                        | 节点加入到集群中后，发送请求到master的超时时间，默认值为ping.timeout的20倍。 |
 | `discovery.zen.master_election.filter_client：true` | 当值为true时，所有客户端节点（node.client：true或node.date，node.master值都为false）将不参加master选举。默认值为：true。 |
