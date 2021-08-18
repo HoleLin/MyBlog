@@ -499,6 +499,7 @@ SELECT [DISTINCT] select_expr[,select_expr.....]
     -- DESC 降序
 	[GROUP BY {column_name|position} [ASC|DESC],...]
 	[HAVING having_coditon]
+  -- ORDER BY可以使用非选择列进行排序（即SELECT后面没有这个列名）
 	[ORDER BY {column_name|expr|position} [ASC|DESC],...]
     -- offset 从0开始
 	[LIMIT {[offset,] row_count|`row_count OFFSET offset`}]

@@ -30,6 +30,52 @@ highlight_shrink:
 - 第二范式：在第一范式的基础上，非主键列完全依赖于主键，而不能是依赖于主键的一部分。
 - 第三范式：在第二范式的基础上，非主键列只依赖于主键，不依赖于其他非主键。
 
+### SQL如何执行
+
+#### Oracle
+
+```
+SQL语句-->
+语法检查-->
+语义检查-->
+权限检查-->
+共享池检查
+	-->硬解析-->优化器-->执行
+	-->软解析-->执行
+```
+
+#### MySQL
+
+```
+SQL语句-->
+缓存查询
+-->没找到
+  解析器-->
+  优化器-->
+  执行器-->
+  输出
+-->找到
+输出
+
+```
+
+* 查看一条SQL语句到执行时间分析
+
+  ```mysql
+  -- 查看是否开启，开启后可以让MySQL收集在SQL执行时所使用的资源情况
+  SELECT @@profiling;
+  -- 0代表关闭，1代表打开 
+  SET profiling=1;
+  
+  show profile;
+  
+  show profile for query 2;
+  ```
+
+  ![img](https://www.chenjunlin.vip/img/mysql/show_profile.png)
+
+
+
 ### **MySQL有关权限的表**
 
 >  MySQL服务器通过权限表来控制用户对数据库的访问，权限表存放在mysql数据库里，由`mysql_install_db`脚本初始化。这些权限表分别`user，db，table_priv，columns_priv和host`。
