@@ -165,7 +165,7 @@ FROM < left_table >
 ON < join_condition > 
 < join_type > JOIN < right_table > 
 WHERE < where_condition > 
-GROUP BY < group_by_list > 
+GROUP BY < group_by_list > 使用聚集函数计算
 HAVING < having_condition > 
 SELECT 
 DISTINCT < select_list > 
@@ -173,3 +173,27 @@ ORDER BY < order_by_condition >
 LIMIT < limit_number>
 ```
 
+#### `EXISTS`和`IN`的比较
+
+```mysql
+select * from where cc IN (select cc from b)
+select * from a where EXISTS (select c from b where b.cc=a.cc)
+```
+
+* 当表a的数据量小于b，用`EXISTS`,因为`EXISTS`相当于外表循环，实现的逻辑类似于：
+
+  ```
+  for i in a
+  	for j in b
+  		if j.cc == i.cc
+  ```
+
+* 当表a的数据量大于b，用`IN`实现的逻辑类似于：
+
+  ```
+  for i in b
+  	for j in a
+  	 	if j.cc == i.cc
+  ```
+
+  

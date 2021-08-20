@@ -7,7 +7,7 @@ tags:
 - 事务
 categories:
 - MySQL
-updated:
+updated: 2021-08-20 15:43:29
 type:
 comments:
 description:
@@ -20,11 +20,20 @@ aplayer:
 highlight_shrink:
 ---
 
-### 事务
+#### 事务
 
 * 事务是一个不可分割的数据库操作序列，也是数据库并发控制的基本单位，其执行的结果必须使数据库从一种一致性状态变到另一种一致性状态。事务是逻辑上的一组操作，要么都执行，要么都不执行;
-
 * 事务支持在引擎层实现的;
+
+#### 事务常用控制语句
+
+* `START TRANSACTION`或`BEGIN`:显示开启一个事务;
+
+* `COMMIT` 提交事务。当提交事务后，对数据库的修改是永久性的
+* `ROLLABACK`或者`ROLLBACK TO [SAVEPOINT]`为回滚，即撤销正在进行的所有没有提交的修改，或者将事务回滚到某个保存点;
+* `SAVEPOINT`:再事务中创建保存点，方便后续针对保存点进行回滚。一个事务可以存在多个保存。
+* `RELEASE SAVEPOINT`:删除某个保存点
+* `SET TRANSACTION`:设置事务的隔离级别
 
 #### 全局锁与表锁
 
@@ -62,7 +71,9 @@ highlight_shrink:
 
   > 一个事务被提交之后。它对数据库中数据的改变是持久的，即使数据库发生故障也不应该对其有任何影响。
 
-#### 事务中可能出现的问题
+* **在这个四个特性中，原子性是基础，隔离性是手段，一致性是约束条件，而持久性是目的。**
+
+#### 事务中常出现3个的问题
 
 * **脏读(Dirty Read)**
 
@@ -75,25 +86,28 @@ highlight_shrink:
   > 在一个事务的两次查询之中数据不一致，这可能是两次查询过程中间插入了一个事务更新的原有的数据。
   >
   > **当前事务先进行了一次数据读取，然后再次读取到的数据是别的事务修改成功的数据，导致两次读取到的数据不匹配.**
+  >
+  > 同一条记录的内容被修改了，重点在于UPDATE或DELETE
 
 * **幻读(Phantom Read)**
 
   > 在一个事务的两次查询中数据笔数不一致，例如有一个事务查询了几列(Row)数据，而另一个事务却在此时插入了新的几列数据，先前的事务在接下来的查询中，就会发现有几列数据是它先前所没有的
   >
   > **当前事务读第一次取到的数据比后来读取到数据条目不一致。**
+  >
+  > 查询某一个范围的数据行变多了或变少了，重点在与INSERT
 
 #### SQL标准的事务隔离级别
 
 ![img](http://www.chenjunlin.vip/img/mysql/%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.png)
 
 * **读未提交(Read Uncommitted)**
-
   * 一个事务还没提交时,它做的变更就能被别的事务看到;
-
+  
   * 别人改数据的事务尚未提交,我在我的事务中也能读到;
-
+  
   * 最低的隔离级别，允许读取尚未提交的数据变更，可能会导致脏读、幻读或不可重复读。
-
+  
 * **读提交(Read Committed)**
 
   * 一个事务提交之后,他的变更才能被其他事务看到;
@@ -144,14 +158,23 @@ highlight_shrink:
 ##### 查询MySQL全局事务隔离级别
 
 ```sql
-select @@global.tx_isolation;
+SELECT @@global.tx_isolation;
 ```
 
 ##### 查询当前会话事务隔离级别
 
-```sql
- select @@tx_isolation;
+```mysql
+ SELECT @@tx_isolation;
+ SHOW VARIABLES LIKE 'transaction_isolation'
 ```
+
+##### 设置当前会话的隔离级别
+
+```mysql
+SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+```
+
+
 
 #### **隔离级别与锁的关系**
 
