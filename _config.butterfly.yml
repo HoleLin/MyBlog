@@ -653,7 +653,7 @@ aside:
       link: https://github.com/HoleLin
   card_announcement:
     enable: true
-    content: 面试中.....
+    content: 得之我幸,失之我命
   card_recent_post:
     enable: true
     limit: 5 # if set 0 will show all
