@@ -7,6 +7,7 @@ tags:
 - 注解
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

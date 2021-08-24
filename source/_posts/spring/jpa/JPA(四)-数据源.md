@@ -7,6 +7,7 @@ tags:
 - 数据源
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

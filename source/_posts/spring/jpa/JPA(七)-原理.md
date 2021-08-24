@@ -7,6 +7,7 @@ tags:
 - 原理
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

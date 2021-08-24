@@ -7,6 +7,7 @@ tags:
 - 高级查询
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

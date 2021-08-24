@@ -7,6 +7,7 @@ tags:
 - 审计
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

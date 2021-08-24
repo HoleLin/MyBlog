@@ -7,6 +7,7 @@ tags:
 - 基础理论
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:

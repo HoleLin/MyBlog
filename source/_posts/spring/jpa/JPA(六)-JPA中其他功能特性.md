@@ -9,6 +9,7 @@ tags:
 - WebMVC
 categories:
 - Spring
+- JPA
 updated:
 type:
 comments:
