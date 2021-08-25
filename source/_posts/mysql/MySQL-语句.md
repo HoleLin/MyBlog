@@ -372,7 +372,7 @@ RENAME TABLE 原表名 TO 库名.表名 （可将表移动到另一个数据库�
 
 ```sql
 -- 自增字段可以使NULL/DEFAULT设置
-INSERT [INTO] table_name [(columns_name,....)] {VALUES|VALUE} ({expr|DEFAULT},....) ;
+INSERT [INTO] table_name [(columns_name,....)] {VALUES|VALUE} ({expr|DEFAULT},....),[({expr|DEFAULT},....)];
 
 -- INSERT/SET语句
 INSERT [INTO] table_name SET column_name={expr|DEFAULT},....;
