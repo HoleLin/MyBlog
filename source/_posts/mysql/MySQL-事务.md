@@ -197,3 +197,103 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 > - 当查询的索引含有唯一属性时，将next-key lock降级为record key
 > - Gap锁设计的目的是为了阻止多个事务将记录插入到同一范围内，而这会导致幻读问题的产生
 > - 有两种方式显式关闭gap锁：（除了外键约束和唯一性检查外，其余情况仅使用record lock） A. 将事务隔离级别设置为RC B. 将参数innodb_locks_unsafe_for_binlog设置为1
+
+#### MVCC
+
+##### 含义
+
+> MVCC的英文全称为Multiversion Concurrency Control 即多版本并发控制技术.MVCC是通过数据行的多个版本管理来实现数据库的并发控制,简单来说它的思想就是保存数据的历史版本,这样就可以通过比较版本号决定数据是否显示出来,读取数据的时候不需要加锁也可以保证事务的隔离效果.
+
+##### MVCC可以解决哪些问题
+
+* 读写之间阻塞的问题,通过MVCC可以让读写互相不阻塞,即读不阻塞写,写不阻塞读,这样就可以提高事务的并发处理能力;
+* 降低了死锁的概率,这是因为MVCC采用了乐观锁的方式,读取数据并不需要加锁,对与写操作,也只锁定必要的行;
+* 解决一致性读的问题.一致性读也被称为快照读,当我们查询数据库在某个时间点的快照时,只能看到这个时间点之前的事务提交更新的结果,而不能看到这个时间点之后事务提交的更新结果.
+
+##### 快照读 当前读
+
+* 快照读读取的是快照数据,不加锁的简单SELECT都属于快照读.
+
+* 当前读就是读取最新数据,而不是历史版本的数据.加锁的SELECT或者对数据进行增删改都会进行当前读.
+
+  ```mysql
+  SELECT * FROM test LOCK IN SHARE MODE;
+  SELECT * FROM test FOR UPDATE;
+  INSERT INTO test VALUES ....;
+  DELETE FROM test WHERE ...;
+  UPDATE test SET ...;
+  ```
+
+  * **快照读就是普通的读操作,而当前读包括了加锁的读取和DML操作**
+
+##### InnoDb中MVCC是如何实现的
+
+###### 事务版本号
+
+* 每开启一个事务,我们都会从数据库中获得一个事务ID(也就是事务版本号),这个事务ID是自增长的,通过ID大小,就可以判断事务的时间顺序.
+
+###### 行记录的隐藏列
+
+* InnoDB的叶子段存储了数据页,数据页中保存了行记录,而在行记录中有一些重要的隐藏字段
+  * `db_row_id`:隐藏的行ID,用来生成默认聚集索引.若我们创建数据表的时候没有指定聚簇索引,这时InnoDB就会用这个隐藏ID来创建聚簇索引.采用聚簇索引的方式可以提升数据的查找效率;
+  * `db_trx_id`:操作这个数据的事务ID,也就是最后一个对该数据进行插入或更新的事务ID;
+  * `db_roll_prt`:回滚指针,也就是指向这个记录的`Undo Log`信息;
+  
+  <img src="https://www.chenjunlin.vip/img/mysql/%E8%A1%8C%E8%AE%B0%E5%BD%95%E7%9A%84%E9%9A%90%E8%97%8F%E5%88%97.png" alt="img"  />
+
+###### Undo Log
+
+* InnoDB将航记录快照保存在Undo Log里,可以在回滚段中找到.
+
+<img src="https://www.chenjunlin.vip/img/mysql/UndoLog%E5%9B%9E%E6%BB%9A.png" alt="img" style="zoom:67%;" />
+
+##### Read View是如何工作
+
+* 在MVCC机制,多个事务对同一个行记录进行更新会产生多个历史快照,这些历史快照保存在Undo Log里.若一个事务想要查询这个行记录,想要读取哪个版本的行记录呢?
+
+  * 这时需要用到ReadViewl ,它可以帮助我们解决行的可见性问题.**ReadView保存了当前事务开启时所有活跃(还没提交)的事务列表**,也可以理解为ReadView保存了不应该让这个事务看到的其他的事务ID列表.
+
+* 在Read View中有几个重要的属性:
+
+  * `trx_ids`:系统当前正在活跃的事务ID集合;
+  * `low_limit_id`:活跃的事务中最大的事务ID;
+  * `up_limit_id`:活跃的事务中最小的事务ID;
+  * `creator_trx_id`:创建这个Read View的事务ID;
+
+* 示例:如下图,`trx_ids`为`trx2`,`trx3`,`trx5`和`trx8`的集合,活跃的最大事务ID(`low_limit_id`)为`trx8`,活跃的最小的事务ID(`up_limit_id`)为`trx2`
+
+  ![img](https://www.chenjunlin.vip/img/mysql/Read%20View.png)
+  
+* 假设当前有事务`creator_trx_id`想要读取某个行记录,这个行记录的事务ID为`trx_id`,那么会出现以下几种情况:
+
+  * 如果`trx_id`<活跃的最小的事务ID(`up_limit_id`),也就是说这个行记录在这些活跃的事务创建之前就已经提交了,那么这个行记录对该事务是可见的.
+  * 通过`trx_id`>活跃的最大的事务ID(`low_limit_id`),这说明该行记录在这些活跃的事务创建之后才创建,那么这个行记录对当前事务不可见.
+  * 如果`up_limit_id<trx_id<low_limit_id`,说明该行记录所在事务`trx_id`在目前`creator_trx_id`这个事务创建的时候,可能还处于活跃的状态,因此需要在`trx_ids`集合中进行遍历,如果`trx_id`存在于`trx_ids`集合中,证明这个事务`trx_id`还处于活跃状态,不可见.否则,如果`trx_id`不存在与`trx_ids`集合中,证明事务`trx_id`已经提交了,该行记录可见.
+
+* 查询一条记录的时候,系统如何通过多版本并发控制技术找到它:
+
+  * 首先获取事务自己的版本号,也就是事务ID;
+  * 获取Read View
+  * 查询得到的数据,然后与Read View中的事务版本号进行比较;
+  * 如果不符合Read View规则,就需要从Undo Log中获取历史快照;
+  * 最后返回符合规则的数据;
+
+* 在InnoDB中,MVCC是通过Undo Log+Read View进行数据读取,Undo Log保存了历史快照,而Read View规则帮助我们判断当前版本的数据是否可见.
+
+* 需要说明的是,在隔离级别为读已提交(Read Commit)时,一个事务中的每一次SELECT查询都会获取依次Read View.
+
+  * 在读已提交的隔离级别下,同时的查询语句都会重新获取一次Read View,这是如果Read View不同,就可能产生不可重复读或者幻读的情况.
+
+* 当隔离级别为可重复读的时候,就避免了不可重复读,这是因为一个事务只在第一次的SELECT的时候获取依次ReadView,而在后面的所有SELECT都会复用这个ReadView.
+
+##### InnoDB是如何解决幻读的
+
+* 在可重复读的情况下,InnoDB可以通过Next-Key锁+MVCC来解决幻读问题.
+* 在读已提交的情况下,及时采用了MVCC方式也会出先幻读.
+  * 若同时开始事务A和事务B,现在事务A中进行某个条件范围的查询,读取的时候采用排它锁,在事务B中加一条符合条件范围的数据,并进行提交,然后我们在事务A中再次查询该条件范围的数据,就会发现结果集中多出了一个符合条件的数据,这样就出现了幻读.
+* 出现幻读的原因是在读已提交的情况下,InnoDB只采用记录锁(Record Locking)
+  * 记录锁:针对单个行记录添加锁
+  * 间隙锁(Gap Locking): 可以帮我们锁住一个范围(索引之间的空隙),但不包括记录本身.采用间隙锁的方式可以防止幻读情况的产生.
+  * Next-Key锁:帮我们锁住了一个范围,同时锁定记录本身,相当于间隙锁+记录锁,可以解决幻读的问题.
+* 在隔离级别为可重复读时,InnoDB会采用Next-Key锁的机制,帮我们解决幻读问题.
+
