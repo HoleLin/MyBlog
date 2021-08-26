@@ -30,6 +30,13 @@ highlight_shrink:
 - 第二范式：在第一范式的基础上，非主键列完全依赖于主键，而不能是依赖于主键的一部分。
 - 第三范式：在第二范式的基础上，非主键列只依赖于主键，不依赖于其他非主键。
 
+### MySQL架构
+
+<img src="https://www.chenjunlin.vip/img/mysql/MySQL%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:67%;" />
+
+* 大体来说,MySQL可分为Server层和存储引擎层两部分
+  * Server层包括连接器,查询缓存,分析器,优化器,执行器等,涵盖MySQL的大多数核心服务功能,以及所有的内置函数(如日期,时间,数字和加密函数等),所有跨存储引擎的功能都在这一层实现,如存储过程,触发器,视图等.
+
 ### SQL如何执行
 
 #### Oracle
