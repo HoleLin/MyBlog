@@ -612,7 +612,7 @@ public class Address extends BaseEntity {
   | argument name | 执行上下文 | 当前被调用的方法的参数，如 findById(Long id)，我们可以通过 #id 拿到参数 | #user.id<br/>表示参数 user 里面的 id |
   | result        | 执行上下文 | 方法执行后的返回值（仅当方法执行之后的判断有效，如‘unless’，’cache evict’的 beforeInvocation=false） | #result                              |
 
-### 解决 In 查询条件内存泄漏的方法
+#### 解决 In 查询条件内存泄漏的方法
 
 * 第一种方法：修改缓存的最大条数限制
 
