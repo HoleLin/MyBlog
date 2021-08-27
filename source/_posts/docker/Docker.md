@@ -51,7 +51,7 @@ categories: Docker
     docker cp /opt/file.txt container_id:/opt/local
     ```
 
-* Docker 1.13 增加了` docker system prune
+* Docker 1.13 增加了`docker system prune`
 
   * 针对container
 
