@@ -26,7 +26,7 @@ highlight_shrink:
 
 ### IoC主要实现策略
 
-![img](http://www.chenjunlin.vip/img/spring/ioc/IoC%E4%B8%BB%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%AD%96%E7%95%A5.png)
+![img](https://www.holelin.cn/img/spring/ioc/IoC%E4%B8%BB%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%AD%96%E7%95%A5.png)
 
 * **使用服务定位模式(Service locator pattern)**
   * Java EE 中使用的模式，一般通过 JNDI 技术获取Java EE组件，如获取 EJB 组件，或者DataSource相关数据源。
@@ -45,7 +45,7 @@ highlight_shrink:
 > * 实现与执行的任务之间要解耦;
 > * 实现bean的管理,让应用程序不用过渡关注bean的生命周期以及依赖;
 
-![img](http://www.chenjunlin.vip/img/spring/ioc/IoC%E4%B8%BB%E8%A6%81%E8%81%8C%E8%B4%A3.png)
+![img](https://www.holelin.cn/img/spring/ioc/IoC%E4%B8%BB%E8%A6%81%E8%81%8C%E8%B4%A3.png)
 
 ### 通用职责
 

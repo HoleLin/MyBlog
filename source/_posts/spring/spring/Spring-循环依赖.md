@@ -30,19 +30,19 @@ highlight_shrink:
 
 * 自己依赖自己的直接依赖;
 
-  <img src="http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%961.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%961.png" alt="img" style="zoom:80%;" />
 
 * 两个对象之间的直接依赖;
 
-  <img src="http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%962.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%962.png" alt="img" style="zoom:80%;" />
 
 * 多个对象之间的间接依赖;
 
-  <img src="http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%963.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%963.png" alt="img" style="zoom:80%;" />
 
 #### 循环依赖的N种场景
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E4%B8%BB%E8%A6%81%E5%9C%BA%E6%99%AF.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E4%B8%BB%E8%A6%81%E5%9C%BA%E6%99%AF.png)
 
 ##### 单例的Setter注入
 
@@ -90,7 +90,7 @@ publicclass TestService2 {
   - **earlySingletonObjects** 二级缓存，用于保存实例化完成的bean实例
   - **singletonFactories** 三级缓存，用于保存bean创建工厂，以便于后面扩展有机会创建代理对象。
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E6%B3%A8%E5%85%A5Spring%E5%A4%84%E7%90%86%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E6%B3%A8%E5%85%A5Spring%E5%A4%84%E7%90%86%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
 
 ```java
     protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
@@ -344,7 +344,7 @@ publicclass TestService2 {
 
 * 启动报错`Requested bean is currently in creation: Is there an unresolvable circular reference?`
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E6%9E%84%E9%80%A0%E5%99%A8%E6%B3%A8%E5%85%A5Spring%E5%A4%84%E7%90%86%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E6%9E%84%E9%80%A0%E5%99%A8%E6%B3%A8%E5%85%A5Spring%E5%A4%84%E7%90%86%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
 
 ##### 单例的代理对象Setter注入
 
@@ -379,7 +379,7 @@ publicclass TestService2 {
   org.springframework.beans.factory.BeanCurrentlyInCreationException: Error creating bean with name 'testService1': Bean with name 'testService1' has been injected into other beans [testService2] in its raw version as part of a circular reference, but has eventually been wrapped. This means that said other beans do not use the final version of the bean. This is often the result of over-eager type matching - consider using 'getBeanNamesOfType' with the 'allowEagerInit' flag turned off, for example.
 ```
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A5.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A5.png)
 
 * 如果这时候把TestService1改个名字，改成：TestService6，其他的都不变。再重新启动一下程序，神奇般的好了。
 
@@ -398,9 +398,9 @@ publicclass TestService2 {
 
 * 这就要从spring的bean加载顺序说起了，默认情况下，spring是按照文件完整路径递归查找的，按路径+文件名排序，排在前面的先加载。所以TestService1比TestService2先加载，而改了文件名称之后，TestService2比TestService6先加载。
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A5%E5%BC%82%E5%B8%B8.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A5%E5%BC%82%E5%B8%B8.png)
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A52.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/%E5%8D%95%E4%BE%8B%E7%9A%84%E4%BB%A3%E7%90%86%E5%AF%B9%E8%B1%A1Setter%E6%B3%A8%E5%85%A52.png)
 
 ##### DependsOn循环依赖
 
@@ -441,7 +441,7 @@ Circular depends-on relationship between 'testService2' and 'testService1'
 * 这个个例子中本来如果TestService1和TestService2都没有加`@DependsOn`注解是没问题的，反而加了这个注解会出现循环依赖问题。
 * 它会检查dependsOn的实例有没有循环依赖，如果有循环依赖则抛异常。
 
-![img](http://www.chenjunlin.vip/img/spring/circular-dependency/DependsOn%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
+![img](https://www.holelin.cn/img/spring/circular-dependency/DependsOn%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96.png)
 
 ### 循环处理的解决方案
 

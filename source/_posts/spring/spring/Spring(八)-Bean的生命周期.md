@@ -19,7 +19,7 @@ categories:
 
 * [小马哥讲Spring核心编程思想](https://time.geekbang.org/course/intro/100042601)
 
-<img src="http://www.chenjunlin.vip/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" style="zoom: 25%;" />
+<img src="https://www.holelin.cn/img/geektime/%E5%B0%8F%E9%A9%AC%E5%93%A5Spring%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3.jpg" style="zoom: 25%;" />
 
 #### 普通Java对象实例化过程
 
@@ -52,7 +52,7 @@ public class XmlDependencyConstructorInjectionDemo {
 
 * 面向资源 **BeanDefinitionReader** 
 
-  ![BeanDefinitionReader](http://www.chenjunlin.vip/img/spring/BeanDefinitionReader类图.png)
+  ![BeanDefinitionReader](https://www.holelin.cn/img/spring/BeanDefinitionReader类图.png)
 
   ```java
   /*
@@ -501,7 +501,7 @@ public class XmlDependencyConstructorInjectionDemo {
 
   * XML解析器: **BeanDefinitionParser**
 
-    ![BeanDefinitionParser类图](http://www.chenjunlin.vip/img/spring/BeanDefinitionParser类图.png)
+    ![BeanDefinitionParser类图](https://www.holelin.cn/img/spring/BeanDefinitionParser类图.png)
 
     ```java
     
@@ -1241,7 +1241,7 @@ public class XmlDependencyConstructorInjectionDemo {
 > * 传统实例化方式
 >   * 实例化策略: org.springframework.beans.factory.support.**InstantiationStrategy**
 >   
->   ![img](http://www.chenjunlin.vip/img/spring/InstantiationStrategy类图.png)
+>   ![img](https://www.holelin.cn/img/spring/InstantiationStrategy类图.png)
 >   
 > * 构造器依赖注入
 
@@ -2282,7 +2282,7 @@ public class XmlDependencyConstructorInjectionDemo {
 > * 执行GC
 > * SpringBean覆盖finalize()方法被回调
 
-![img](http://www.chenjunlin.vip/img/spring/SpringBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
+![img](https://www.holelin.cn/img/spring/SpringBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.jpg)
 
 #### 结合容器内Spring生命周期
 

@@ -59,7 +59,7 @@ categories:
     >   * `unmodifed`的文件还有一种可能是已经不再需要了，那么可以`remove`它不再追踪变为`untracked`状态
     > * 未跟踪(untracked): 未被纳入版本控制的文件
     >
-    > ![文件状态的生命周期](http://www.chenjunlin.vip/img/git/文件状态的生命周期.png)
+    > ![文件状态的生命周期](https://www.holelin.cn/img/git/文件状态的生命周期.png)
     >
     > ```sh
     > git init 初始化git生成git仓库
@@ -74,11 +74,11 @@ categories:
   
   * 提交更新,找到暂存区域中的文件,将快照永久性存储到Git仓库目录中;
   
-  <img src="http://www.chenjunlin.vip/img/git/Git三个区域.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/git/Git三个区域.png" alt="img" style="zoom:67%;" />
 
 #### Git操作流程图
 
-<img src="http://www.chenjunlin.vip/img/git/工作流程原理.png" alt="工作流程原理" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/git/工作流程原理.png" alt="工作流程原理" style="zoom:80%;" />
 
 #### Git命令
 

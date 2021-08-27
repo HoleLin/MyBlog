@@ -36,9 +36,9 @@ highlight_shrink:
 * `Exception`:这个属于应用程序级别的异常，这类异常必须捕捉。
 * `RuntimeException`:`RuntimeException`继承了`Exception`，而不是直接继Error,这个表示系统异常，比较严重
 
-![img](http://www.chenjunlin.vip/img/java/exception/Throwable.png)
+![img](https://www.holelin.cn/img/java/exception/Throwable.png)
 
-<img src="http://www.chenjunlin.vip/img/java/exception/exception.webp" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/java/exception/exception.webp" alt="img" style="zoom:67%;" />
 
 > 图中红色部分为受检查异常,他们必须被捕获或者在函数中声明为抛出异常;
 
@@ -53,7 +53,7 @@ highlight_shrink:
 * **处理异常**
   * `catch`用于捕获从`try`中抛出的异常并作出处理;
 
-![img](http://www.chenjunlin.vip/img/java/exception/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86.png)
+![img](https://www.holelin.cn/img/java/exception/%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86.png)
 
 * 当程序在运行的过程中出现异常后,那么会有`JVM`自动根据有一次的类型实例化一个与之类型匹配的异常类对象(用户不用关心`new`,由系统负责处理);
 * 产生了异常对象之后会判断当前语句是否存在异常处理,如果现在没有异常处理,就交给`JVM`进行默认处理(输出异常信息,结束程序调用);

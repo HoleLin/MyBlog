@@ -24,6 +24,7 @@ highlight_shrink:
 
 * [MySQL EXPLAIN结果集分析 - 附带大量案例](https://juejin.cn/post/6844903938081161229)
 * [MySQL 性能优化神器 Explain 使用分析](https://juejin.cn/post/6844903592776695821)
+* MySQL排错指南
 
 ### MySQL Explain简介
 
@@ -410,3 +411,41 @@ highlight_shrink:
   ```
 
 * **using index condition：** 是mysql 5.6 之后新加的特性，结合mysql的ICP（Index Condition Pushdown）特性使用。主要是优化了可以在索引（仅限二级索引）上进行 like 查找
+
+### SHOW STAUS
+
+* 在查询计划前后查询Handler_%的状态可以检查是否使用了索引:`show status like 'Handler_%;'`
+
+  ```mysql
+  mysql> show status like 'Handler_%';
+  +----------------------------+-------+
+  | Variable_name              | Value |
+  +----------------------------+-------+
+  | Handler_commit             | 0     |
+  | Handler_delete             | 0     |
+  | Handler_discover           | 0     |
+  | Handler_external_lock      | 0     |
+  | Handler_mrr_init           | 0     |
+  | Handler_prepare            | 0     |
+  | Handler_read_first         | 0     |
+  | Handler_read_key           | 0     |
+  | Handler_read_last          | 0     |
+  | Handler_read_next          | 0     |
+  | Handler_read_prev          | 0     |
+  | Handler_read_rnd           | 0     |
+  | Handler_read_rnd_next      | 0     |
+  | Handler_rollback           | 0     |
+  | Handler_savepoint          | 0     |
+  | Handler_savepoint_rollback | 0     |
+  | Handler_update             | 0     |
+  | Handler_write              | 0     |
+  +----------------------------+-------+
+  18 rows in set (0.00 sec)
+  ```
+
+  * `Handler_read_rnd_next`代表从datafile中读取下一个值的频繁程度.过高的值一般代表了全表扫描.
+  * `Handler_read_key`表示读取索引的请求数目.正常情况下该值相对于`Handler_read_rnd_next`不应该很低,相差很多则表示大部分行的读取没有使用索引.
+  * `Handler_commit`表示事务提交的次数
+  * `Handler_read_first`表示读取索引中第一项的次数,`Handler_read_first`,表明请求服务器读取索引中第一条记录,这可以当做全索引扫描的标志.
+
+* 重置这些变量:`flush status`

@@ -81,7 +81,7 @@ highlight_shrink:
   }
   ```
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/volatile%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C.png" alt="img" style="zoom: 67%;" />
+  <img src="https://www.holelin.cn/img/java/thread/volatile%E8%AF%BB%E5%86%99%E5%B1%8F%E9%9A%9C.png" alt="img" style="zoom: 67%;" />
 
 ###### 如何保证有序性
 

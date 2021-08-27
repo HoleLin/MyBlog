@@ -28,7 +28,7 @@ highlight_shrink:
 
 > 所有集合实现类的最顶层接口为`Iterable`和`Collection`接口，再向下`Collection`分为了三种不同的形式，分别是`List`，`Queue`和`Set`接口，然后就是对应的不同的实现方式。
 
-<img src="http://www.chenjunlin.vip/img/java/collection/集合类总类图.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/collection/集合类总类图.png" alt="img" style="zoom:80%;" />
 
 #### **顶层接口`Iterable`**
 
@@ -266,7 +266,7 @@ public interface List<E> extends Collection<E> {
 
 > `ArrayList`是List接口最常用的一个实现类，支持List接口的一些列操作
 
-<img src="http://www.chenjunlin.vip/img/java/collection/ArrayList类图.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/collection/ArrayList类图.png" alt="img" style="zoom:80%;" />
 
 ##### `ArrayList`常量
 
@@ -491,7 +491,7 @@ public interface List<E> extends Collection<E> {
 
 #### `LinkedList`
 
-<img src="http://www.chenjunlin.vip/img/java/collection/LinkedList类图.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/collection/LinkedList类图.png" alt="img" style="zoom:80%;" />
 
 > `LinkedList`是一种链表结构,`LinkedList`既是List接口的实现也是Queue的实现（`Dequ`e），故其和`ArrayList`相比`LinkedList`支持的功能更多，其可视作队列来使用
 
@@ -728,7 +728,7 @@ public interface List<E> extends Collection<E> {
 
 > **Vector是线程安全的动态数组**
 
-<img src="http://www.chenjunlin.vip/img/java/collection/Vector.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/collection/Vector.png" alt="img" style="zoom:80%;" />
 
 ##### `Vector`常量
 
@@ -967,7 +967,7 @@ public interface List<E> extends Collection<E> {
 
 #### `Stack`
 
-<img src="http://www.chenjunlin.vip/img/java/collection/Stack.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/collection/Stack.png" alt="img" style="zoom:80%;" />
 
 ```java
 package java.util;
@@ -1293,7 +1293,7 @@ public interface Queue<E> extends Collection<E> {
 
 #### `HashMap` 
 
-> [HashMap分析](http://www.chenjunlin.vip/2021/05/25/java/collection/HashMap/)
+> [HashMap分析](https://www.holelin.cn/2021/05/25/java/collection/HashMap/)
 
 #### `LinkedHashMap`
 

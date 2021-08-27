@@ -23,7 +23,7 @@ categories:
 >
 > 另外,HashMap是非线程安全的,也就是说多线程同时对HashMap中的某个元素进行增删改操作时,是不能保证数据的一致性的.
 
-![image-20210417194922322](http://www.chenjunlin.vip/img/hashmap/image-20210417194922322.png)
+![image-20210417194922322](https://www.holelin.cn/img/hashmap/image-20210417194922322.png)
 
 > 在JDK1.7中,首先是把元素放在一个个数组里面,后来存放的数据元素越来越多,于是就出现了链表,对数组中的每个元素,都可以有一条链表来存储元素.这就是有名的"拉链式"存储方法
 >
@@ -37,7 +37,7 @@ categories:
 > - 致命缺点是哈希值的碰撞(collision)
 >   - 哈希碰撞：元素通过哈希函数计算后，被映射到同一个桶中。例如上图中的桶1, 5中的元素就发生了哈希碰撞
 
-![image-20210417195442294](http://www.chenjunlin.vip/img/hashmap/image-20210417195442294.png)
+![image-20210417195442294](https://www.holelin.cn/img/hashmap/image-20210417195442294.png)
 
 * **链表变成红黑树的条件:只有链表的长度不小于8,而且数组的长度不小于64的时候才会将链表转化为红黑树.**
 
@@ -201,7 +201,7 @@ categories:
 
 #### 存储元素(put)
 
-![image-20210417201703380](http://www.chenjunlin.vip/img/hashmap/image-20210417201703380.png)
+![image-20210417201703380](https://www.holelin.cn/img/hashmap/image-20210417201703380.png)
 
 ```java
 public class Main {
@@ -374,7 +374,7 @@ public class Main {
 
 #### 扩容(resize)
 
-![image-20210417204637243](http://www.chenjunlin.vip/img/hashmap/image-20210417204637243.png)
+![image-20210417204637243](https://www.holelin.cn/img/hashmap/image-20210417204637243.png)
 
 > HashMap扩容就是先计算,新的hash表容量和新的容量阀值,然后初始化新的hash表,将旧的键值对重新映射到新的hash表里面.若在就的hash表里面涉及到红黑树,那么在映射到新的hash表中还涉及红黑树的拆分.
 
@@ -659,7 +659,7 @@ public class Main {
 
 ### LinkedHashMap,HashMap,TreeMap的区别
 
-![img](http://www.chenjunlin.vip/img/hashmap/Map类图.png)
+![img](https://www.holelin.cn/img/hashmap/Map类图.png)
 
 > (1) **HashMap**：它根据键的hashCode值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却是不确定的。 **HashMap最多只允许一条记录的键为null，允许多条记录的值为null**。HashMap非线程安全，即任一时刻可以有多个线程同时写HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections的synchronizedMap方法使HashMap具有线程安全的能力，或者使用ConcurrentHashMap。
 >

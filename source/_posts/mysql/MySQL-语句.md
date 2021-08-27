@@ -85,6 +85,197 @@ highlight_shrink:
 
 * 显示系统变量信息: `SHOW VARIABLES;`
 
+* 在执行`explain`后面显示告警
+
+  * 开启:`\W`
+  * 关闭:`\w`
+
+  ```mysql
+  mysql> \W
+  Show warnings enabled.
+  mysql> explain select * from user\G
+  *************************** 1. row ***************************
+             id: 1
+    select_type: SIMPLE
+          table: user
+     partitions: NULL
+           type: ALL
+  possible_keys: NULL
+            key: NULL
+        key_len: NULL
+            ref: NULL
+           rows: 1
+       filtered: 100.00
+          Extra: NULL
+  1 row in set, 1 warning (0.00 sec)
+  
+  Note (Code 1003): /* select#1 */ select `auth`.`user`.`u_id` AS `u_id`,`auth`.`user`.`name` AS `name`,`auth`.`user`.`nick_name` AS `nick_name`,`auth`.`user`.`password` AS `password`,`auth`.`user`.`delete_flag` AS `delete_flag` from `auth`.`user`
+  
+  mysql> \w
+  Show warnings disabled.
+  mysql> explain select * from user\G
+  *************************** 1. row ***************************
+             id: 1
+    select_type: SIMPLE
+          table: user
+     partitions: NULL
+           type: ALL
+  possible_keys: NULL
+            key: NULL
+        key_len: NULL
+            ref: NULL
+           rows: 1
+       filtered: 100.00
+          Extra: NULL
+  1 row in set, 1 warning (0.00 sec)
+  ```
+
+* 查看服务器已启动的时间,单位是秒:`show global status like 'uptime';`
+
+  ```mysql
+  mysql> show global status like 'uptime';
+  +---------------+---------+
+  | Variable_name | Value   |
+  +---------------+---------+
+  | Uptime        | 1911726 |
+  +---------------+---------+
+  1 row in set (0.00 sec)
+  ```
+
+* InnoDB监控器:`show engine innodb status\G`
+
+  ```mysql
+  mysql> show engine innodb status\G
+  *************************** 1. row ***************************
+    Type: InnoDB
+    Name: 
+  Status: 
+  =====================================
+  2021-08-27 18:05:50 140320345196288 INNODB MONITOR OUTPUT
+  =====================================
+  Per second averages calculated from the last 10 seconds
+  -----------------
+  BACKGROUND THREAD
+  -----------------
+  srv_master_thread loops: 188 srv_active, 0 srv_shutdown, 1914135 srv_idle
+  srv_master_thread log flush and writes: 0
+  ----------
+  SEMAPHORES
+  ----------
+  OS WAIT ARRAY INFO: reservation count 139
+  OS WAIT ARRAY INFO: signal count 138
+  RW-shared spins 0, rounds 0, OS waits 0
+  RW-excl spins 0, rounds 0, OS waits 0
+  RW-sx spins 0, rounds 0, OS waits 0
+  Spin rounds per wait: 0.00 RW-shared, 0.00 RW-excl, 0.00 RW-sx
+  ------------
+  TRANSACTIONS
+  ------------
+  Trx id counter 6900
+  Purge done for trx's n:o < 6897 undo n:o < 0 state: running but idle
+  History list length 0
+  LIST OF TRANSACTIONS FOR EACH SESSION:
+  ---TRANSACTION 421795506855320, not started
+  0 lock struct(s), heap size 1136, 0 row lock(s)
+  ---TRANSACTION 421795506856176, not started
+  0 lock struct(s), heap size 1136, 0 row lock(s)
+  ---TRANSACTION 421795506854464, not started
+  0 lock struct(s), heap size 1136, 0 row lock(s)
+  ---TRANSACTION 421795506853608, not started
+  0 lock struct(s), heap size 1136, 0 row lock(s)
+  --------
+  FILE I/O
+  --------
+  I/O thread 0 state: waiting for completed aio requests (insert buffer thread)
+  I/O thread 1 state: waiting for completed aio requests (log thread)
+  I/O thread 2 state: waiting for completed aio requests (read thread)
+  I/O thread 3 state: waiting for completed aio requests (read thread)
+  I/O thread 4 state: waiting for completed aio requests (read thread)
+  I/O thread 5 state: waiting for completed aio requests (read thread)
+  I/O thread 6 state: waiting for completed aio requests (write thread)
+  I/O thread 7 state: waiting for completed aio requests (write thread)
+  I/O thread 8 state: waiting for completed aio requests (write thread)
+  I/O thread 9 state: waiting for completed aio requests (write thread)
+  Pending normal aio reads: [0, 0, 0, 0] , aio writes: [0, 0, 0, 0] ,
+   ibuf aio reads:, log i/o's:, sync i/o's:
+  Pending flushes (fsync) log: 0; buffer pool: 0
+  1438 OS file reads, 9113 OS file writes, 5559 OS fsyncs
+  0.00 reads/s, 0 avg bytes/read, 0.00 writes/s, 0.00 fsyncs/s
+  -------------------------------------
+  INSERT BUFFER AND ADAPTIVE HASH INDEX
+  -------------------------------------
+  Ibuf: size 1, free list len 0, seg size 2, 0 merges
+  merged operations:
+   insert 0, delete mark 0, delete 0
+  discarded operations:
+   insert 0, delete mark 0, delete 0
+  Hash table size 34679, node heap has 1 buffer(s)
+  Hash table size 34679, node heap has 0 buffer(s)
+  Hash table size 34679, node heap has 0 buffer(s)
+  Hash table size 34679, node heap has 1 buffer(s)
+  Hash table size 34679, node heap has 1 buffer(s)
+  Hash table size 34679, node heap has 1 buffer(s)
+  Hash table size 34679, node heap has 2 buffer(s)
+  Hash table size 34679, node heap has 4 buffer(s)
+  0.00 hash searches/s, 0.00 non-hash searches/s
+  ---
+  LOG
+  ---
+  Log sequence number          39315854
+  Log buffer assigned up to    39315854
+  Log buffer completed up to   39315854
+  Log written up to            39315854
+  Log flushed up to            39315854
+  Added dirty pages up to      39315854
+  Pages flushed up to          39315854
+  Last checkpoint at           39315854
+  2487 log i/o's done, 0.00 log i/o's/second
+  ----------------------
+  BUFFER POOL AND MEMORY
+  ----------------------
+  Total large memory allocated 137035776
+  Dictionary memory allocated 848877
+  Buffer pool size   8192
+  Free buffers       6527
+  Database pages     1655
+  Old database pages 590
+  Modified db pages  0
+  Pending reads      0
+  Pending writes: LRU 0, flush list 0, single page 0
+  Pages made young 1190, not young 797
+  0.00 youngs/s, 0.00 non-youngs/s
+  Pages read 1128, created 539, written 4853
+  0.00 reads/s, 0.00 creates/s, 0.00 writes/s
+  No buffer pool page gets since the last printout
+  Pages read ahead 0.00/s, evicted without access 0.00/s, Random read ahead 0.00/s
+  LRU len: 1655, unzip_LRU len: 0
+  I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+  --------------
+  ROW OPERATIONS
+  --------------
+  0 queries inside InnoDB, 0 queries in queue
+  0 read views open inside InnoDB
+  Process ID=25352, Main thread ID=140320034805504 , state=sleeping
+  Number of rows inserted 430, updated 24, deleted 3, read 5411
+  0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+  Number of system rows inserted 2076, updated 1679, deleted 944, read 41722
+  0.00 inserts/s, 0.00 updates/s, 0.00 deletes/s, 0.00 reads/s
+  ----------------------------
+  END OF INNODB MONITOR OUTPUT
+  ============================
+  
+  1 row in set (0.11 sec)
+  ```
+
+##### 使用`perror`工具查询MySQL错误编号
+
+```sh
+[root@holelin ~]# perror 150
+MySQL error code MY-000150 (handler): Foreign key constraint is incorrectly formed
+[root@holelin ~]# perror 1064
+MySQL error code MY-001064 (ER_PARSE_ERROR): %s near '%-.80s' at line %d
+```
+
 ### 操作数据库
 
 #### 显示所有数据库
@@ -566,7 +757,7 @@ h. DISTINCT, ALL 选项
     默认为 all, 全部记录
 ```
 
-<img src="http://www.chenjunlin.vip/img/mysql/MySQL%E5%AD%90%E5%8F%A5%E8%A7%A3%E6%9E%90%E9%A1%BA%E5%BA%8F.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/mysql/MySQL%E5%AD%90%E5%8F%A5%E8%A7%A3%E6%9E%90%E9%A1%BA%E5%BA%8F.png" alt="img" style="zoom:80%;" />
 
 * **ORDER BY子句**
 
@@ -950,7 +1141,7 @@ CREATE [OR REPLACE] [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}] VIEW view_name
 表锁定只用于防止其它客户端进行不正当地读取和写入
 MyISAM 支持表锁，InnoDB 支持行锁
 -- 锁定
-    LOCK TABLES tbl_name [AS alias]
+    LOCK TABLES tbl_name [AS alias] [READ|WRITE]
 -- 解锁
     UNLOCK TABLES
 ```
@@ -1146,7 +1337,9 @@ GRANT 权限列表 ON 表名 TO 用户名 [IDENTIFIED BY [PASSWORD] 'password']
 SHOW GRANTS FOR 用户名
 
 -- 查看当前用户权限
-SHOW GRANTS; 或 SHOW GRANTS FOR CURRENT_USER; 或 SHOW GRANTS FOR CURRENT_USER();
+SHOW GRANTS; 
+SHOW GRANTS FOR CURRENT_USER;  
+SHOW GRANTS FOR CURRENT_USER();
 -- 撤消权限
 REVOKE 权限列表 ON 表名 FROM 用户名
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 用户名   -- 撤销所有权限

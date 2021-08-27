@@ -28,7 +28,7 @@ updated: 2021-07-13 22:41:24
 * **负载均衡**：在主从复制的基础上，配合读写分离，可以由主节点提供写服务，由从节点提供读服务，分担服务器负载；尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发量。
 * **高可用基石**：主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础。
 
-<img src="http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5.png" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5.png" alt="img" style="zoom:80%;" />
 
 #### **Redis 的同步机制**
 
@@ -138,7 +138,7 @@ updated: 2021-07-13 22:41:24
 * 在第二阶段，**主库将所有数据同步给从库。从库收到数据后，在本地完成数据加载**。这个过程依赖于内存快照生成的`RDB`文件。
 * 第三个阶段，主库会把第二阶段执行过程中新收到的写命令，再发送给从库。具体的操作是，当主库完成`RDB文件发送后，就会把此时`replication buffer`中的修改操作发给从库，从库再重新执行这些操作。这样一来，主从库就实现同步了。
 
-​	![img](http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6.jpg)
+​	![img](https://www.holelin.cn/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6.jpg)
 
 * **1. 保存主节点信息**
 
@@ -214,7 +214,7 @@ updated: 2021-07-13 22:41:24
       
         * 同样，从库在复制完写操作命令后，它在缓冲区中的读位置也开始逐步偏移刚才的起始位置，此时，从库已复制的偏移量`slave_repl_offset`也在不断增加。正常情况下，这两个偏移量基本相等。
       
-          ![img](http://www.chenjunlin.vip/img/redis/copy/repl_backlog_buffer.jpg)
+          ![img](https://www.holelin.cn/img/redis/copy/repl_backlog_buffer.jpg)
       
         * 一般而言，我们可以调整**`repl_backlog_size`**这个参数。这个参数和所需的缓冲空间大小有关。缓冲空间的计算公式是：
       
@@ -353,7 +353,7 @@ updated: 2021-07-13 22:41:24
          * 对于无法容忍数据不一致的应用场景可以设置no来关闭执行,此时从节点除了info和slaveof命令之外所有命令只返回"SYNC with master in progress"
     9. 从节点成功加载完RDB后,如果当前节点开启了AOF持久化功能,它会立刻做`bgrewirteaof`操作,为了保证全量复制后AOF持久化文件立刻可用.
 
-    ![img](http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6.png)
+    ![img](https://www.holelin.cn/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%85%A8%E9%87%8F%E5%A4%8D%E5%88%B6.png)
 
   * **全量复制主要开销**
 
@@ -379,7 +379,7 @@ updated: 2021-07-13 22:41:24
     5. 主节点接到`psync`命令后首先核对参数runId是否与自身一致,如果一致,说明之前的是当前主节点,之后根据参数offset在自身**复制积压缓冲区**查找,如果偏移量之后的数据存在缓冲区中,则对从节点发送"+CONTINUE"响应,表示可以进行部分复制.从节点接到回复后打印日志;
     6. 主节点根据偏移量把复制积压区里的数据发送给从节点,保证主从复制进入正常状态.
     
-    <img src="http://www.chenjunlin.vip/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6.png" alt="img" style="zoom:80%;" />
+    <img src="https://www.holelin.cn/img/redis/copy/Redis%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6-%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6.png" alt="img" style="zoom:80%;" />
 
 #### 心跳
 

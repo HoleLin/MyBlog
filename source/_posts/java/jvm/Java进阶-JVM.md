@@ -28,7 +28,7 @@ categories:
 
 #### 内存结构
 
-<img src="http://www.chenjunlin.vip/img/jvm/JVM架构.png" alt="JVM整体架构图" style="zoom: 80%;" />
+<img src="https://www.holelin.cn/img/jvm/JVM架构.png" alt="JVM整体架构图" style="zoom: 80%;" />
 
 ##### 程序计数器
 
@@ -146,7 +146,7 @@ categories:
   * 1.8以前会导致**永久代**内存溢出
   * 1.8以后会导致**元空间**内存溢出
 
-<img src="http://www.chenjunlin.vip/img/jvm/方法区.png" alt="方法区" style="zoom: 80%;" />
+<img src="https://www.holelin.cn/img/jvm/方法区.png" alt="方法区" style="zoom: 80%;" />
 
 ##### 运行时常量池
 
@@ -232,9 +232,9 @@ categories:
 > - 分配回收成本较高，但读写性能高
 > - 不受`JVM`内存回收管理
 
-<img src="http://www.chenjunlin.vip/img/jvm/不使用直接内存.png" alt="不使用直接内存" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/jvm/不使用直接内存.png" alt="不使用直接内存" style="zoom:80%;" />
 
-<img src="http://www.chenjunlin.vip/img/jvm/使用直接内存.png" alt="使用直接内存" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/jvm/使用直接内存.png" alt="使用直接内存" style="zoom:80%;" />
 
 * 直接内存的使用
 

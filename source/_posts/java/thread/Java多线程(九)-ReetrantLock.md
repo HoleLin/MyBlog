@@ -193,11 +193,11 @@ public class ReentrantLockTest {
 
 * 没有出现竞争
 
-    ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync1.png)
+    ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync1.png)
 
 * 第一个竞争出现时
 
-    ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync2.png)
+    ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync2.png)
 
     * `CAS`尝试将state由0改为1,结果失败;
 
@@ -249,7 +249,7 @@ public class ReentrantLockTest {
     
     * 接下来进入`addWaiter`逻辑,构造`Node`队列
     
-      ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync3.png)
+      ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync3.png)
     
       ```java
          /**
@@ -366,7 +366,7 @@ public class ReentrantLockTest {
       
       * 进入`shouldParkAfterFailedAcquire`逻辑,将前驱`node`,即`head`的`waitStatus`改为-1(`Node.SIGNAL`),这次返回`false`;
       
-        ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync4.png)
+        ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync4.png)
       
         ```java
              /** waitStatus value to indicate successor's thread needs unparking */
@@ -423,11 +423,11 @@ public class ReentrantLockTest {
       
       * 进入`parkAndCheckInterrupt`逻辑,`Thread-1 park` (深灰色表示)
       
-        ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync5.png)
+        ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync5.png)
       
     * 再次多个线程经历上述过程竞争失败后,变成下图所示
     
-      ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync6.png)
+      ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync6.png)
 
 
   ###### 释放锁
@@ -498,7 +498,7 @@ public class ReentrantLockTest {
     *  设置`exclusiveOwnerThread`为null;
   *  `state`为0;
   
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync7.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync7.png)
   
 * 当队列不为null,并且`head`的`waitStatus`为-1,进入`unparkSuccessor`流程
 
@@ -550,14 +550,14 @@ public class ReentrantLockTest {
     * `head`指向`Thread-1`所在Node,该`Node`清空`Thread`;
     * 原来的`head`因为从链表断开,因而可以被垃圾回收;
 
-    ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync8.png)
+    ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync8.png)
 
 * 若此时又有其他线程来竞争(非公平的体现),例如此时`Thread-4`来了,又碰巧被`Thread-4`竞争获取锁
 
   * `Thread-4`被设置`exclusiveOwnerThread`,`state`为1;
   * `Thread-1`再次进入`acquireQueued`流程,获取锁失败,重新进入`park`阻塞
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/ReentrantLock-NonfairSync9.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/ReentrantLock-NonfairSync9.png)
 
 #### 可打断模式
 
@@ -620,7 +620,7 @@ public class ReentrantLockTest {
         }
     }
 ```
-![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/acquireQueued%E5%92%8CdoAcquireInterruptibly%E5%AF%B9%E6%AF%94.png)
+![img](https://www.holelin.cn/img/java/thread/reentrantlock/acquireQueued%E5%92%8CdoAcquireInterruptibly%E5%AF%B9%E6%AF%94.png)
 
 #### 公平锁实现原理
 
@@ -671,7 +671,7 @@ public class ReentrantLockTest {
     }
 ```
 
-![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E5%85%AC%E5%B9%B3%E9%94%81%E4%B8%8E%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81tryAcquire%E5%AF%B9%E6%AF%94.png)
+![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E5%85%AC%E5%B9%B3%E9%94%81%E4%B8%8E%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81tryAcquire%E5%AF%B9%E6%AF%94.png)
 
 ```java
     /**
@@ -800,7 +800,7 @@ public class ReentrantLockTest {
           }
   ```
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await1.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await1.png)
 
 * 接下来进入AQS的`fullyRelease`流程,释放同步器上的锁;
 
@@ -828,20 +828,20 @@ public class ReentrantLockTest {
       }
   ```
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await2.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await2.png)
 
 * `unpark` AQS队列中的下一个节点,竞争锁,假设没有其他竞争线程,那么`Thread-1`竞争成功
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await3.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await3.png)
 
 * park阻塞`Thread-0`
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await4.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-await4.png)
 
 ##### `signal`流程
 
 * 假设`Thread-1`要唤醒`Thread-0`
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-signal1.png)
+  ![img](https://www.holelin.cn/img/java/thread/reentrantlock/%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-signal1.png)
 
 * 进入`ConditionObject`

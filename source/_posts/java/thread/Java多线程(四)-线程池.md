@@ -390,7 +390,7 @@ highlight_shrink:
 
 > **注意**：当池中线程数大于`coolPoolSize`，超过`keepAliveTime`时间的闲置线程会被回收掉。回收的是非核心线程，核心线程一般是不会回收的。如果设置`allowCoreThreadTimeOut(true)`，则核心线程在闲置`keepAliveTime`时间后也会被回收。
 
-![img](http://www.chenjunlin.vip/img/java/thread/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0.png)
+![img](https://www.holelin.cn/img/java/thread/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0.png)
 
 ##### **工作线程（Worker)**
 

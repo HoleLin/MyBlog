@@ -121,7 +121,7 @@ mermaid: true
 
 * Kafka 的负责均衡主要是**通过分区来实现**的，我们知道 Kafka 是**主写主读**的架构，如下图:
 
-  <img src="http://www.chenjunlin.vip/img/kafka/Kafka%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/kafka/Kafka%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1.png" alt="img" style="zoom:67%;" />
 
   * 共三个 broker ，里面各有三个副本，总共有三个 partition， 深色的是 leader，浅色的是 follower，上下灰色分别代表生产者和消费者，虚线代表 follower 从 leader 拉取消息。
 

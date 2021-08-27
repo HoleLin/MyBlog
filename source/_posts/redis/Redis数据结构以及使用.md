@@ -41,13 +41,13 @@ mermaid: true
   | zset     | skiplist   |
   |          | ziplist    |
   
-  ![img](http://www.chenjunlin.vip/img/redis/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.jpg)
+  ![img](https://www.holelin.cn/img/redis/Redis%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E5%AF%B9%E5%BA%94%E5%85%B3%E7%B3%BB.jpg)
 
 #### Redis键和值用什么结构组织？
 
 * 为了实现从键到值的快速访问,**Redis使用了一个哈希表来保存所有的键值对**;
 
-  ![img](http://www.chenjunlin.vip/img/redis/%E5%85%A8%E5%B1%80%E5%93%88%E5%B8%8C%E8%A1%A8.jpg)
+  ![img](https://www.holelin.cn/img/redis/%E5%85%A8%E5%B1%80%E5%93%88%E5%B8%8C%E8%A1%A8.jpg)
 
 * 哈希桶中的entry元素中保存了`*key`和`*value`指针，分别指向了实际的键和值，这样一来，即使值是一个集合，也可以通过`*value`指针被查找到。
 
@@ -66,7 +66,7 @@ mermaid: true
 
     * 链式哈希。就是指**同一个哈希桶中的多个元素用一个链表来保存，它们之间依次用指针连接**。
 
-    <img src="http://www.chenjunlin.vip/img/redis/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%9A%84%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81.jpg" alt="img" style="zoom:67%;" />
+    <img src="https://www.holelin.cn/img/redis/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%9A%84%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81.jpg" alt="img" style="zoom:67%;" />
 
   * **rehash**
 
@@ -88,7 +88,7 @@ mermaid: true
 
       * 简单来说就是在第二步拷贝数据时，Redis仍然正常处理客户端请求，每处理一个请求时，从哈希表1中的第一个索引位置开始，顺带着将这个索引位置上的所有entries拷贝到哈希表2中；等处理下一个请求时，再顺带拷贝哈希表1中的下一个索引位置的entries;
       * 这样就巧妙地把一次性大量拷贝的开销，分摊到了多次处理请求的过程中，避免了耗时操作，保证了数据的快速访问。
-      * ![img](http://www.chenjunlin.vip/img/redis/%E6%B8%90%E8%BF%9B%E5%BC%8Frehash.jpg)
+      * ![img](https://www.holelin.cn/img/redis/%E6%B8%90%E8%BF%9B%E5%BC%8Frehash.jpg)
 
 * 压缩列表
 
@@ -96,17 +96,17 @@ mermaid: true
 
   * 在压缩列表中，如果我们要查找定位第一个元素和最后一个元素，可以通过表头三个字段的长度直接定位，复杂度是O(1)。而查找其他元素时，就没有这么高效了，只能逐个查找，此时的复杂度就是O(N)了。
 
-    ![img](http://www.chenjunlin.vip/img/redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8.jpg)
+    ![img](https://www.holelin.cn/img/redis/%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8.jpg)
 
 * 跳表
 
   * 有序链表只能逐一查找元素，导致操作起来非常缓慢，于是就出现了跳表。跳表在链表的基础上，**增加了多级索引，通过索引位置的几个跳转，实现数据的快速定位**
 
-  ![img](http://www.chenjunlin.vip/img/redis/%E6%99%AE%E9%80%9A%E9%93%BE%E8%A1%A8%E5%92%8C%E8%B7%B3%E8%A1%A8%E6%9F%A5%E8%AF%A2%E5%85%83%E7%B4%A0%E6%AC%A1%E6%95%B0%E5%AF%B9%E6%AF%94.jpg)
+  ![img](https://www.holelin.cn/img/redis/%E6%99%AE%E9%80%9A%E9%93%BE%E8%A1%A8%E5%92%8C%E8%B7%B3%E8%A1%A8%E6%9F%A5%E8%AF%A2%E5%85%83%E7%B4%A0%E6%AC%A1%E6%95%B0%E5%AF%B9%E6%AF%94.jpg)
 
 * **不同操作的复杂度**
 
-  ![img](http://www.chenjunlin.vip/img/redis/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6.jpg)
+  ![img](https://www.holelin.cn/img/redis/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6.jpg)
   * **口诀**
 
     > - 单元素操作是基础；

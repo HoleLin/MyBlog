@@ -157,7 +157,7 @@ class External{
   
 * 内部类只是一个编译时的概念，一旦编译成功，就会成为完全不同的两个类。对于一个名为Outer的外部类和其内部定义的名为Inner的内部类，编译完后会生成`External.class`和`External$Inner.class`两个类
 
-  ![img](http://www.chenjunlin.vip/img/java/inner-class/%E5%86%85%E9%83%A8%E7%BC%96%E8%AF%91%E5%90%8E.png)
+  ![img](https://www.holelin.cn/img/java/inner-class/%E5%86%85%E9%83%A8%E7%BC%96%E8%AF%91%E5%90%8E.png)
 
 ##### **类的创建**
 
@@ -248,7 +248,7 @@ class External{
 }
 ```
 
-  ![img](http://www.chenjunlin.vip/img/java/inner-class/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90.png)
+  ![img](https://www.holelin.cn/img/java/inner-class/%E5%86%85%E9%83%A8%E7%B1%BB%E7%9A%84%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90.png)
 
 ##### 使用场景
 

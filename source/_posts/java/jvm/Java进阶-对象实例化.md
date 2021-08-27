@@ -45,7 +45,7 @@ highlight_shrink:
 
 * `<clinit>`方法由**静态变量赋值代码和静态代码块**组成；先执行类静态变量显示赋值代码，再到静态代码块代码
 
-![img](http://www.chenjunlin.vip/img/jvm/%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.png)
+![img](https://www.holelin.cn/img/jvm/%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B.png)
 
 #### 触发类加载的条件
 
@@ -70,7 +70,7 @@ highlight_shrink:
 
 * 静态变量，静态代码块，普通变量，普通代码块，构造器的执行顺序
 
-![img](http://www.chenjunlin.vip/img/jvm/%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F.png)
+![img](https://www.holelin.cn/img/jvm/%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F.png)
 
 #### 类加载器和双亲委派模型
 
@@ -84,7 +84,7 @@ highlight_shrink:
   * **应用程序类加载器(Application ClassLoader)**
   * **自定义类加载器(Custom ClassLoader)**
   
-  <img src="http://www.chenjunlin.vip/img/jvm/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/jvm/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt="img" style="zoom:67%;" />
 * 双亲委派模型
   * `Bootstrap ClassLoader`由C++代码实现，是虚拟机的一部分。负责加载`$JAVA_HOME/jre/lib/rt.jar` 里所有的class;
   * `Extention ClassLoader`: 负责加载`$JAVA_HOME/lib/ext`或者由`java.ext.dirs`系统属性指定的目录中的JAR包的类。由Java语言实现，父类加载器为null。

@@ -389,11 +389,11 @@ highlight_shrink:
 
   > 表示线程已经执行完毕,生命周期已经结束,不会转变为其他状态了.
 
-<img src="http://www.chenjunlin.vip/img/thread/thread_status_change.jpg" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/thread/thread_status_change.jpg" alt="img" style="zoom:80%;" />
 
 #### 线程状态转换
 
-<img src="http://www.chenjunlin.vip/img/java/thread/%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/java/thread/%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2.png" alt="img" style="zoom:67%;" />
 
 * **1. New-->RUNABLE**
   * 当调用`t.start()`方法时,**NEW-->RUNABLE**

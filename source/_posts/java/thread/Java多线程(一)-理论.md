@@ -76,7 +76,7 @@ highlight_shrink:
 >
 > 综上，并发与并行并不是互斥的概念，只是前者关注的是任务的抽象调度、后者关注的是任务的实际执行。而它们又是相关的，比如并行一定会允许并发。
 
-<img src="http://www.chenjunlin.vip/img/java/thread/concurrent_parallel.jpg" alt="img" style="zoom:80%;" />
+<img src="https://www.holelin.cn/img/java/thread/concurrent_parallel.jpg" alt="img" style="zoom:80%;" />
 
 #### 弱并发
 
@@ -177,7 +177,7 @@ highlight_shrink:
   * `JDK`中`join`的实现,`Future`的实现,采用此模式;
   * 因为要等待,另一方的结果,因此归类到同步模式;
 
-  ![img](http://www.chenjunlin.vip/img/java/thread/%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E5%81%9C.png)
+  ![img](https://www.holelin.cn/img/java/thread/%E4%BF%9D%E6%8A%A4%E6%80%A7%E6%9A%82%E5%81%9C.png)
 
 * 示例
 
@@ -298,7 +298,7 @@ highlight_shrink:
   * 消息队列是有容量限制,满时不会再加入数据,空时不会再消耗数据;
   * `JDK`中各种阻塞队列,采用的就是这种模式;
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/java/thread/%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85.png" alt="img" style="zoom:67%;" />
 
 ### 设计模式-固定运行顺序
 

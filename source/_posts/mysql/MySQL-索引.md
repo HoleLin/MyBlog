@@ -554,7 +554,7 @@ mysql> explain select * from innodb1 where id_card like '123%';
 * **非主键索引**
   * 非主键索引的叶子节点的内容是主键值.在InnoDB里,非主键索引也被称为二级索引(secondary index);
 
-![img](http://www.chenjunlin.vip/img/mysql/%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95%E4%B8%8E%E9%9D%9E%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95.png)
+![img](https://www.holelin.cn/img/mysql/%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95%E4%B8%8E%E9%9D%9E%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95.png)
 
 #### 基于主键索引和普通索引的查询有什么区别?
 

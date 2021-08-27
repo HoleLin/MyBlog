@@ -61,13 +61,13 @@ highlight_shrink:
 
 ####  HTTP数据传输过程
 
-![img](http://www.chenjunlin.vip/img/cs-base/http/HTTP%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E8%BF%87%E7%A8%8B.png)
+![img](https://www.holelin.cn/img/cs-base/http/HTTP%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E8%BF%87%E7%A8%8B.png)
 
 * 发送端发送数据时,数据会从上层传输到下层,且每经过一层都会被打上该层的头部信息.而接收端接收数据时,数据会从下层传输到上层,传输前会把下层的头部信息删除.
 
 #### `TCP`三次握手
 
-<img src="http://www.chenjunlin.vip/img/cs-base/http/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/cs-base/http/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.png" alt="img" style="zoom:67%;" />
 
 * 使用`TCP`协议进行通信的双方必须先建立连接,然后才能开始传输数据.为了确保连接双方可靠性,在双方建立连接时,`TCP`协议采用了三次握手策略;
 * **第一次握手**: 客户端发送带有`SYN`标志的连接请求报文段,然后进入`SYN_SEND`状态,等待服务端的确认.

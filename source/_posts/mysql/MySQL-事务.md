@@ -35,11 +35,11 @@ highlight_shrink:
 * `RELEASE SAVEPOINT`:删除某个保存点
 * `SET TRANSACTION`:设置事务的隔离级别
 
-#### 全局锁与表锁
+#### MySQL中的锁
 
 > 数据库锁设计的初衷是处理并发问题.作为多用户共享的资源,当出现并发访问的时候,数据库需要合理地控制资源的访问规则.而锁就是用来实现这些访问规则的重要数据结构.
 >
-> 根据加锁的范围,MySQL里面的锁大致为**全局锁**,**表级锁**,**行锁**三类;
+> 根据加锁的范围,MySQL里面的锁大致为表锁,行锁,页锁和元数据锁.
 
 ##### 全局锁
 
@@ -99,7 +99,7 @@ highlight_shrink:
 
 #### SQL标准的事务隔离级别
 
-![img](http://www.chenjunlin.vip/img/mysql/%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.png)
+![img](https://www.holelin.cn/img/mysql/%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.png)
 
 * **读未提交(Read Uncommitted)**
   * 一个事务还没提交时,它做的变更就能被别的事务看到;
@@ -174,8 +174,6 @@ SELECT @@global.tx_isolation;
 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 ```
 
-
-
 #### **隔离级别与锁的关系**
 
 * 在Read Uncommitted级别下，读取数据不需要加共享锁，这样就不会跟被修改的数据上的排他锁冲突
@@ -239,13 +237,13 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
   * `db_trx_id`:操作这个数据的事务ID,也就是最后一个对该数据进行插入或更新的事务ID;
   * `db_roll_prt`:回滚指针,也就是指向这个记录的`Undo Log`信息;
   
-  <img src="https://www.chenjunlin.vip/img/mysql/%E8%A1%8C%E8%AE%B0%E5%BD%95%E7%9A%84%E9%9A%90%E8%97%8F%E5%88%97.png" alt="img"  />
+  <img src="https://www.holelin.cn/img/mysql/%E8%A1%8C%E8%AE%B0%E5%BD%95%E7%9A%84%E9%9A%90%E8%97%8F%E5%88%97.png" alt="img"  />
 
 ###### Undo Log
 
 * InnoDB将航记录快照保存在Undo Log里,可以在回滚段中找到.
 
-<img src="https://www.chenjunlin.vip/img/mysql/UndoLog%E5%9B%9E%E6%BB%9A.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/mysql/UndoLog%E5%9B%9E%E6%BB%9A.png" alt="img" style="zoom:67%;" />
 
 ##### Read View是如何工作
 
@@ -262,7 +260,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 * 示例:如下图,`trx_ids`为`trx2`,`trx3`,`trx5`和`trx8`的集合,活跃的最大事务ID(`low_limit_id`)为`trx8`,活跃的最小的事务ID(`up_limit_id`)为`trx2`
 
-  ![img](https://www.chenjunlin.vip/img/mysql/Read%20View.png)
+  ![img](https://www.holelin.cn/img/mysql/Read%20View.png)
   
 * 假设当前有事务`creator_trx_id`想要读取某个行记录,这个行记录的事务ID为`trx_id`,那么会出现以下几种情况:
 

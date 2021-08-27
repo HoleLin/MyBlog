@@ -24,7 +24,7 @@ highlight_shrink:
 
 ### 连接(JOIN)
 
-<img src="http://www.chenjunlin.vip/img/mysql/join.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/mysql/join.png" alt="img" style="zoom: 67%;" />
 
 ```sql
  将多个表的字段进行连接，可以指定连接条件。

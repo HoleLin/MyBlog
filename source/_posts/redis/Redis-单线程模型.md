@@ -56,7 +56,7 @@ highlight_shrink:
 
 * 下图显示了这一过程，其中，bind/listen、accept、recv、parse和send属于网络IO处理，而get属于键值数据操作。既然Redis是单线程，那么，最基本的一种实现是在一个线程中依次执行上面说的这些操作。
 
-  <img src="http://www.chenjunlin.vip/img/redis/%E5%9F%BA%E6%9C%ACIO%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%98%BB%E5%A1%9E%E7%82%B9.jpg" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/%E5%9F%BA%E6%9C%ACIO%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%98%BB%E5%A1%9E%E7%82%B9.jpg" alt="img" style="zoom:67%;" />
 
   * 在这里的网络IO操作中，有潜在的阻塞点，分别是**`accept()`**和**`recv()`**。
     * 当Redis监听到一个客户端有连接请求，但一直未能成功建立起连接时，会阻塞在accept()函数这里，导致其他客户端无法和Redis建立连接。	
@@ -69,7 +69,7 @@ highlight_shrink:
 
 * 在Socket模型中，不同操作调用后会返回不同的套接字类型。`socket()`方法会返回主动套接字，然后调用`listen()`方法，将主动套接字转化为监听套接字，此时，可以监听来自客户端的连接请求。最后，调用`accept()`方法接收到达的客户端连接，并返回已连接套接字。
 
-  ![img](http://www.chenjunlin.vip/img/redis/%E9%9D%9E%E9%98%BB%E5%A1%9E%E6%A8%A1%E5%BC%8F%E4%B8%89%E4%B8%AA%E5%85%B3%E9%94%AE%E5%87%BD%E6%95%B0.jpg)
+  ![img](https://www.holelin.cn/img/redis/%E9%9D%9E%E9%98%BB%E5%A1%9E%E6%A8%A1%E5%BC%8F%E4%B8%89%E4%B8%AA%E5%85%B3%E9%94%AE%E5%87%BD%E6%95%B0.jpg)
 
   * 针对监听套接字，我们可以设置非阻塞模式：当Redis调用`accept()`但一直未有连接请求到达时，Redis线程可以返回处理其他操作，而不用一直等待。但是，你要注意的是，调用`accept()`时，已经存在监听套接字了。
   * 虽然Redis线程可以不用继续等待，但是总得有机制继续在监听套接字上等待后续连接请求，并在有请求时通知Redis。
@@ -82,7 +82,7 @@ highlight_shrink:
 
 * 下图就是基于多路复用的Redis IO模型。图中的多个`FD`就是刚才所说的多个套接字。Redis网络框架调用epoll机制，让内核监听这些套接字。此时，Redis线程不会阻塞在某一个特定的监听或已连接套接字上，也就是说，不会阻塞在某一个特定的客户端请求处理上。正因为此，Redis可以同时和多个客户端连接并处理请求，从而提升并发性。
 
-  ![img](http://www.chenjunlin.vip/img/redis/%E5%9F%BA%E4%BA%8E%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E7%9A%84Redis%20IO%E6%A8%A1%E5%9E%8B.jpg)
+  ![img](https://www.holelin.cn/img/redis/%E5%9F%BA%E4%BA%8E%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E7%9A%84Redis%20IO%E6%A8%A1%E5%9E%8B.jpg)
 
 * 为了在请求到达时能通知到Redis线程，`select/epoll`提供了**基于事件的回调机制**，即**针对不同事件的发生，调用相应的处理函数**。
 
@@ -97,7 +97,7 @@ highlight_shrink:
 
 * 文件描述符(FD)：内核（Kernel）利用文件描述符（File Descriptor）来访问文件。文件描述符是非负整数。打开现存文件或新建文件时，内核会返回一个文件描述符。读写文件也需要使用文件描述符来指定待读写的文件。
 
-![img](http://www.chenjunlin.vip/img/linux/IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8.png)
+![img](https://www.holelin.cn/img/linux/IO%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8.png)
 
 * 多路 I/O 复用模型是利用`select`、`poll`、`epoll`可以同时监察多个流的 I/O 事件的能力，在空闲的时候，会把当前线程阻塞掉，当有一个或多个流有I/O事件时，就从阻塞态中唤醒，于是程序就会轮询一遍所有的流（`epoll`是只轮询那些真正发出了事件的流），并且只依次顺序的处理就绪的流，这种做法就避免了大量的无用操作。这里“多路”指的是多个网络连接，“复用”指的是复用同一个线程。采用多路 I/O 复用技术可以让单个线程高效的处理多个连接请求（尽量减少网络IO的时间消耗），且Redis在内存中操作数据的速度非常快（内存的操作不会成为这里的性能瓶颈），主要以上两点造就了Redis具有很高的吞吐量。
 
@@ -115,7 +115,7 @@ highlight_shrink:
 
   > `epoll`是Linux提供的系统实现，核心方法只有三个`epoll_create`、`epoll_ctl`、`epoll_wait`。`epoll`效率高，是因为基于红黑树、双向链表、事件回调机制。
 
-  ![img](http://www.chenjunlin.vip/img/linux/epoll%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png)
+  ![img](https://www.holelin.cn/img/linux/epoll%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png)
 
   * `epoll_create`
 
@@ -216,13 +216,13 @@ highlight_shrink:
 
 * **事件调度和执行流程**
 
-  <img src="http://www.chenjunlin.vip/img/redis/Redis%E4%BA%8B%E4%BB%B6%E8%B0%83%E5%BA%A6%E5%92%8C%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/Redis%E4%BA%8B%E4%BB%B6%E8%B0%83%E5%BA%A6%E5%92%8C%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt="img" style="zoom:67%;" />
 
 #### Redis的单线程模型
 
 > Redis单线程模型中最核心的就是**文件事件处理器**
 
-<img src="http://www.chenjunlin.vip/img/redis/Redis%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/redis/Redis%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B.png" alt="img" style="zoom:67%;" />
 
 ##### 文件事件处理器
 
@@ -240,7 +240,7 @@ highlight_shrink:
 
 ##### Redis的客户端与服务器端的交互过程
 
-![img](http://www.chenjunlin.vip/img/redis/Redis%E7%9A%84%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E7%9A%84%E4%BA%A4%E4%BA%92%E8%BF%87%E7%A8%8B.jpg)
+![img](https://www.holelin.cn/img/redis/Redis%E7%9A%84%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E7%9A%84%E4%BA%A4%E4%BA%92%E8%BF%87%E7%A8%8B.jpg)
 
 * 在Redis启动及初始化的时候,Redis会(预先)将**连接应答处理器**跟**AE_READABLE事件**关联起来,接着如果一个客户端向Redis发起连接,此时就会产生一个**AE_READABLE事件**,然后由**连接应答处理器**来处理跟客户端建立连接,创建客户端对应的socket,同时将这个Socket的**AE_READABLE事件**跟**命令请求处理器**关联起来;
 * 当客户端向Redis发起请求的时候(不管是读请求还是写请求,都一样),首先就会在之前创建的客户端对应的Socket上产生一个**AE_READABLE事件**,然后**I/O多路复用程序**会监听到在之前创建的客户端对应的Socket上产生了一个**AE_READABLE事件**,接着把这个Socket放入一个队列中排队,然后由**文件事件分派器**从队列中获取Socket交给对应的**命令请求处理器**来处理(因为之前在Redis启动并进行初始化的时候就已经预先将**AE_READABLE**事件跟**命令请求处理器**关联起来了).之后**命令请求处理器**就会从之前创建的客户端对应的Socket中读取请求相关的数据,然后在自己的内存中进行执行和处理;

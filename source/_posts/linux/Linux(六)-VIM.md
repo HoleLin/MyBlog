@@ -41,9 +41,9 @@ highlight_shrink:
 
 #### VIM键位图
 
-![img](http://www.chenjunlin.vip/img/linux/vim/VIM%E9%94%AE%E4%BD%8D%E5%9B%BE.png)
+![img](https://www.holelin.cn/img/linux/vim/VIM%E9%94%AE%E4%BD%8D%E5%9B%BE.png)
 
-![img](http://www.chenjunlin.vip/img/linux/vim/VIM%E9%94%AE%E4%BD%8D%E5%9B%BE2.png)
+![img](https://www.holelin.cn/img/linux/vim/VIM%E9%94%AE%E4%BD%8D%E5%9B%BE2.png)
 
 #### VIM按键说明
 

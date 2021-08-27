@@ -47,7 +47,7 @@ highlight_shrink:
 
 ### ElasticSerch核心概念
 
-![img](http://www.chenjunlin.vip/img/elasticsearch/es%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
+![img](https://www.holelin.cn/img/elasticsearch/es%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
 
 ##### 近实时
 

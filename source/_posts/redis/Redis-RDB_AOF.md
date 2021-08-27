@@ -52,9 +52,9 @@ updated: 2021-07-13 22:41:24
 
   * `bgsave`命令:Redis进程执行fork操作创建子进程,RDB持久化过程有子进程负责,完成后自动结束.阻塞只发生在fork阶段,一般时间很短
 
-    <img src="http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6.png" alt="img" style="zoom:50%;" />
+    <img src="https://www.holelin.cn/img/redis/rdb/RDB%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6.png" alt="img" style="zoom:50%;" />
 
-    ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%85%A8%E9%87%8F%E5%BF%AB%E7%85%A7%E9%97%AE%E9%A2%98.jpg)
+    ![img](https://www.holelin.cn/img/redis/rdb/RDB%E5%85%A8%E9%87%8F%E5%BF%AB%E7%85%A7%E9%97%AE%E9%A2%98.jpg)
 
     * 虽然bgsave执行时不阻塞主线程，但是，**如果频繁地执行全量快照，也会带来两方面的开销**。
 
@@ -62,13 +62,13 @@ updated: 2021-07-13 22:41:24
       * 另一方面，bgsave子进程需要通过fork操作从主线程创建出来。虽然，子进程在创建后不会再阻塞主线程，但是，fork这个创建过程本身会阻塞主线程，而且主线程的内存越大，阻塞时间越长。如果频繁fork出bgsave子进程，这就会频繁阻塞主线程了;
       * 可以做**增量快照**，所谓增量快照，就是指，做了一次全量快照后，后续的快照只对修改的数据进行快照记录，这样可以避免每次全量快照的开销。
 
-      ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E5%A2%9E%E9%87%8F%E5%BF%AB%E7%85%A7.jpg)
+      ![img](https://www.holelin.cn/img/redis/rdb/RDB%E5%A2%9E%E9%87%8F%E5%BF%AB%E7%85%A7.jpg)
 
     * Redis 4.0中提出了一个**混合使用AOF日志和内存快照**的方法。简单来说，内存快照以一定的频率执行，在两次快照之间，使用AOF日志记录这期间的所有命令操作。
 
       * 这样一来，快照不用很频繁地执行，这就避免了频繁fork对主线程的影响。而且，AOF日志也只用记录两次快照间的操作，也就是说，不需要记录所有操作了，因此，就不会出现文件过大的情况了，也可以避免重写开销。
 
-      ![img](http://www.chenjunlin.vip/img/redis/rdb/RDB%E6%B7%B7%E5%90%88%E4%BD%BF%E7%94%A8AOF%E6%97%A5%E5%BF%97%E5%92%8C%E5%86%85%E5%AD%98%E5%BF%AB%E7%85%A7.jpg)
+      ![img](https://www.holelin.cn/img/redis/rdb/RDB%E6%B7%B7%E5%90%88%E4%BD%BF%E7%94%A8AOF%E6%97%A5%E5%BF%97%E5%92%8C%E5%86%85%E5%AD%98%E5%BF%AB%E7%85%A7.jpg)
 
   
 
@@ -152,7 +152,7 @@ updated: 2021-07-13 22:41:24
   | `everysec` | 命令写入aof_buf后调用系统write操作,write完成后线程返回,fsync同步操作由专门线程每秒调用一次<br />**每秒写回** | **每秒写回**采用一秒写回一次的频率，避免了“同步写回”的性能开销，虽然减少了对系统性能的影响，但是如果发生宕机，上一秒内未落盘的命令操作仍然会丢失。所以，这只能算是，在避免影响主线程性能和避免数据丢失两者间取了个折中。 |
   | `no`       | 命令写入aof_buf后调用系统write操作,不对AOF文件做fsync同步,同步硬盘操作由操作系统负责,通常同步周期最长为30秒<br />**操作系统控制的写回** | 虽然**操作系统控制的写回**在写完缓冲区后，就可以继续执行后续的命令，但是落盘的时机已经不在Redis手中了，只要AOF记录没有写回磁盘，一旦宕机对应的数据就丢失了； |
 
-  ![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%85%8D%E7%BD%AE%E4%BC%98%E7%BC%BA%E7%82%B9.jpg)
+  ![img](https://www.holelin.cn/img/redis/aof/AOF%E9%85%8D%E7%BD%AE%E4%BC%98%E7%BC%BA%E7%82%B9.jpg)
 
   * **写会策略的选择**
 
@@ -210,7 +210,7 @@ updated: 2021-07-13 22:41:24
         子进程 -->|4| 新AOF文件
         新AOF文件 -->|5.3| 旧AOF文件
   ```
-  ![img](http://www.chenjunlin.vip/img/redis/aof/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
+  ![img](https://www.holelin.cn/img/redis/aof/AOF%E9%87%8D%E5%86%99%E8%BF%87%E7%A8%8B.jpg)
 
 * 1- 执行AOF重写请求
   * 若当前进程正在执行AOF重写,请求不执行并返回如下响应:

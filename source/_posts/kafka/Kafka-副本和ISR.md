@@ -34,7 +34,7 @@ highlight_shrink:
 
 * foller副本只做一件事情:**向leader副本请求数据.**
 
-  <img src="http://www.chenjunlin.vip/img/kafka/Kafka-%E5%89%AF%E6%9C%AC%E5%92%8CISR.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/kafka/Kafka-%E5%89%AF%E6%9C%AC%E5%92%8CISR.png" alt="img" style="zoom:80%;" />
 
   * **起始位移(base offset)**: 表示该副本当前所含第一条消息的offset;
   * **高水印值(high watermark,HW)**: 副本高水印值.它保存了该副本最新一条已提交消息的位移.
@@ -46,7 +46,7 @@ highlight_shrink:
     * 同样,follower副本想leader副本请求到数据后也会增加自己的LEO;
     * 事实上只有`ISR`中的所有副本都更新了对应的LEO之后,leader副本才会向右移动HW值,表明消息写入成功
 
-  <img src="http://www.chenjunlin.vip/img/kafka/Kafka-follower-leader%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E6%B5%81%E7%A8%8B.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/kafka/Kafka-follower-leader%E5%89%AF%E6%9C%AC%E5%90%8C%E6%AD%A5%E6%B5%81%E7%A8%8B.png" alt="img" style="zoom:80%;" />
 
   > 假设上图中的Kafka集群当前只有一个topic,该topic只有一个分区,分区共有3个副本,一次`ISR`中也是这3个副本.该topic当前没有数据,因此3个副本的LEO都是0,HW值也是0;
 

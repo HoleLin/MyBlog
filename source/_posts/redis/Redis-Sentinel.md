@@ -52,7 +52,7 @@ updated: 2021-07-13 22:41:24
 
 * 主节点发送故障后,客户端(Client)连接主节点失败,两个从节点与主节点连接失败造成复制终端;
 
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/%E4%B8%80%E4%B8%BB%E4%BA%8C%E4%BB%8E%E5%87%BA%E7%8E%B0%E6%95%85%E9%9A%9C1.png" alt="img" style="zoom: 67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/%E4%B8%80%E4%B8%BB%E4%BA%8C%E4%BB%8E%E5%87%BA%E7%8E%B0%E6%95%85%E9%9A%9C1.png" alt="img" style="zoom: 67%;" />
 
 * 如果主节点无法正常启动,需要选出一个从节点(slave-1),对其执行`slaveof no one`命令使其成为新的主节点;
 
@@ -62,7 +62,7 @@ updated: 2021-07-13 22:41:24
 
 *  待原来的主节点恢复后,让它去复制新的主节点;
 
-<img src="http://www.chenjunlin.vip/img/redis/sentinel/%E4%B8%80%E4%B8%BB%E4%BA%8C%E4%BB%8E%E5%87%BA%E7%8E%B0%E6%95%85%E9%9A%9C2.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/redis/sentinel/%E4%B8%80%E4%B8%BB%E4%BA%8C%E4%BB%8E%E5%87%BA%E7%8E%B0%E6%95%85%E9%9A%9C2.png" alt="img" style="zoom: 67%;" />
 
 * 上述处理过程存在的问题
   * 判断节点不可达的机制是否健全和标准?
@@ -74,7 +74,7 @@ updated: 2021-07-13 22:41:24
 
 > 当主节点出现故障时,Redis Sentinel能自动完成故障发现和故障转移,并通知应用方,从而实现真正的高可用;
 
-<img src="http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E6%9E%B6%E6%9E%84.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E6%9E%B6%E6%9E%84.png" alt="img" style="zoom:67%;" />
 
 * Redis Sentinel处理故障过程
   * Redis Sentinel是一个分布式架构,其中包含若干个Sentinel节点和Redis数据节点,每个Sentinel节点会对数据节点和其余Sentinel节点进行监控,当他发现节点不可达时,会对节点做下线标识.如果被标识的是主节点,它还会和其他Sentinel节点进行"协商",当大多数Sentinel节点都认为不可达时,它们会选举出一个Sentinel节点来完成自动故障转移工作,同时将这个变化通知给Redis应用方.
@@ -88,15 +88,15 @@ updated: 2021-07-13 22:41:24
 * 每个Sentinel节点通过定期监控发现主节点出现故障;
 * 多个Sentinel节点对主节点的故障达成一致,选举出`sentinel-3`节点作为领导者负责故障转移;
 
-<img src="http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentine%E5%A4%84%E7%90%86%E9%AB%98%E5%8F%AF%E7%94%A8%E9%97%AE%E9%A2%98.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/redis/sentinel/Redis%20Sentine%E5%A4%84%E7%90%86%E9%AB%98%E5%8F%AF%E7%94%A8%E9%97%AE%E9%A2%98.png" alt="img" style="zoom:67%;" />
 
 * Sentinel领导者节点执行故障转移,整个过程和主从复制处理故障一致,只不过是自动完成的;
 
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E9%A2%86%E5%AF%BC%E8%80%85%E8%8A%82%E7%82%B9%E6%89%A7%E8%A1%8C%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E7%9A%84%E5%9B%9B%E4%B8%AA%E6%AD%A5%E9%AA%A4.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/Sentinel%E9%A2%86%E5%AF%BC%E8%80%85%E8%8A%82%E7%82%B9%E6%89%A7%E8%A1%8C%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E7%9A%84%E5%9B%9B%E4%B8%AA%E6%AD%A5%E9%AA%A4.png" alt="img" style="zoom:67%;" />
 
 * 故障转移后整个Redis Sentinel的拓扑结构图
 
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E5%90%8E%E7%9A%84%E6%8B%93%E6%89%91%E5%9B%BE.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E5%90%8E%E7%9A%84%E6%8B%93%E6%89%91%E5%9B%BE.png" alt="img" style="zoom:67%;" />
 
 #### Redis Sentinel具有的功能
 
@@ -116,7 +116,7 @@ updated: 2021-07-13 22:41:24
 
 * 拓扑图
 
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E9%83%A8%E7%BD%B2%E6%8B%93%E6%89%91%E5%9B%BE.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E9%83%A8%E7%BD%B2%E6%8B%93%E6%89%91%E5%9B%BE.png" alt="img" style="zoom:67%;" />
 
 * 具体物理结构
 
@@ -467,19 +467,19 @@ sentinel fail-over-timeout holelin 180000
 
   * 遍历Sentinel节点集合获取一个可用的Sentinel节点,Sentinel节点之间可以共享数据,所有从任意一个Sentinel节点获取主节点的信息都是可以的;
 
-    ![img](http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF1.png)
+    ![img](https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF1.png)
 
   * 通过`sentinel get-master-addr-by-name master-name`这个API来获取对应主节点的相关信息;
 
-    ![img](http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF2.png)
+    ![img](https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF2.png)
 
   * 验证当前获取的"主节点"是真正的主节点,这样做的目的是为了防止故障转移期间主节点的变化;
 
-    ![img](http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF3.png)
+    ![img](https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF3.png)
 
   * 保持Sentinel节点集合的"联系",时刻获取关于主节点的相关'"信息"
 
-    ![img](http://www.chenjunlin.vip/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF4.png)
+    ![img](https://www.holelin.cn/img/redis/sentinel/Redis%20Sentinel%E5%AE%A2%E6%88%B7%E7%AB%AF4.png)
 
 #### Redis Sentinel的任务
 
@@ -490,7 +490,7 @@ sentinel fail-over-timeout holelin 180000
 - **通知**
   - 在执行通知任务时，哨兵会把新主库的连接信息发给其他从库，让它们执行`replicaof`命令，和新主库建立连接，并进行数据复制。同时，哨兵会把新主库的连接信息通知给客户端，让它们把请求操作发到新主库上。
 
-![img](http://www.chenjunlin.vip/img/redis/sentinel/%E5%93%A8%E5%85%B5%E7%9A%84%E8%81%8C%E8%B4%A3.jpg)
+![img](https://www.holelin.cn/img/redis/sentinel/%E5%93%A8%E5%85%B5%E7%9A%84%E8%81%8C%E8%B4%A3.jpg)
 
 - 在这三个任务中，通知任务相对来说比较简单，哨兵只需要把新主库信息发给从库和客户端，让它们和新主库建立连接就行，并不涉及决策的逻辑。但是，在监控和选主这两个任务中，哨兵需要做出两个决策：
   - 在监控任务中，哨兵需要判断主库是否处于下线状态；
@@ -508,7 +508,7 @@ sentinel fail-over-timeout holelin 180000
     * 节点不可达或者故障转移后,可以通过info命令实时更新节点拓扑信息
     * 通过pub/sub机制，哨兵之间可以组成集群，同时，哨兵又通过INFO命令，获得了从库连接信息，也能和从库建立连接，并进行监控了
   
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E8%8A%82%E7%82%B9%E5%AE%9A%E6%97%B6%E6%89%A7%E8%A1%8Cinfo%E5%91%BD%E4%BB%A4.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/Sentinel%E8%8A%82%E7%82%B9%E5%AE%9A%E6%97%B6%E6%89%A7%E8%A1%8Cinfo%E5%91%BD%E4%BB%A4.png" alt="img" style="zoom:67%;" />
   
 * **每隔2秒,每个Sentinel节点会向Redis master节点的`_sentinel_:hello`频道发送该Sentinel节点对于主节点的判断以及当前Sentinel节点的信息,同时每个Sentinel也会订阅该频道,来了解其他Sentinel节点以及它们对主节点的判断,**所以这个定时任务完成一下两个工作:
   
@@ -524,7 +524,7 @@ sentinel fail-over-timeout holelin 180000
     <Sentinel节点Ip><Sentinel节点端口><Sentinel节点runId><Sentinel节点配置版本><主节点名字><主节点Ip><主节点端口><主节点配置版本>
     ```
   
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E8%8A%82%E7%82%B9%E5%8F%91%E5%B8%83%E5%92%8C%E8%AE%A2%E9%98%85_sentinel__hello%E9%A2%91%E9%81%93.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/Sentinel%E8%8A%82%E7%82%B9%E5%8F%91%E5%B8%83%E5%92%8C%E8%AE%A2%E9%98%85_sentinel__hello%E9%A2%91%E9%81%93.png" alt="img" style="zoom:67%;" />
   
 * **每隔1秒,每个Sentinel节点会向主节点,从节点,其余Sentinel节点发送一条ping命令做一次心跳检测,来确认这些节点当前是否可达.**
 
@@ -534,7 +534,7 @@ sentinel fail-over-timeout holelin 180000
 
 * **哨兵进程会使用PING命令检测它自己和主、从库的网络连接情况，用来判断实例的状态**
 
-  <img src="http://www.chenjunlin.vip/img/redis/sentinel/%E4%B8%BB%E8%A7%82%E4%B8%8B%E7%BA%BF.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/redis/sentinel/%E4%B8%BB%E8%A7%82%E4%B8%8B%E7%BA%BF.png" alt="img" style="zoom:67%;" />
 
 * 从节点、Sentinel在主观下线后,没有后续的故障转移操作;
 
@@ -566,7 +566,7 @@ sentinel fail-over-timeout holelin 180000
 
 * 哨兵选择新主库的过程称为“**筛选+打分**”.简单来说，我们在多个从库中，先按照**一定的筛选条件**，把不符合条件的从库去掉。然后，我们再按照**一定的规则**，给剩下的从库逐个打分，将得分最高的从库选为新主库
 
-  ![img](http://www.chenjunlin.vip/img/redis/sentinel/%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E4%B8%BB%E5%BA%93%E9%80%89%E6%8B%A9.jpg)
+  ![img](https://www.holelin.cn/img/redis/sentinel/%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E4%B8%BB%E5%BA%93%E9%80%89%E6%8B%A9.jpg)
 
   * 设想一下，如果在选主时，一个从库正常运行，我们把它选为新主库开始使用了。可是，很快它的网络出了故障，此时，我们就得重新选主了。这显然不是我们期望的结果。
   * 所以，在选主时，**除了要检查从库的当前在线状态，还要判断它之前的网络连接状态**。如果从库总是和主库断连，而且断连次数超出了一定的阈值，我们就有理由相信，这个从库的网络状况并不是太好，就可以把这个从库筛掉了。
@@ -658,7 +658,7 @@ sentinel fail-over-timeout holelin 180000
 
 #### Sentinel支持的命令
 
-![img](http://www.chenjunlin.vip/img/redis/sentinel/Sentinel%E6%94%AF%E6%8C%81%E7%9A%84%E5%91%BD%E4%BB%A4.png)
+![img](https://www.holelin.cn/img/redis/sentinel/Sentinel%E6%94%AF%E6%8C%81%E7%9A%84%E5%91%BD%E4%BB%A4.png)
 
 #### 哨兵在操作主从切换的过程中，客户端能否正常地进行请求操作？
 

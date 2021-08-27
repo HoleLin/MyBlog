@@ -92,7 +92,7 @@ categories:
 
 * Nginx各个目录
 
-  ![img](http://www.chenjunlin.vip/img/nginx/nginx%E7%9B%AE%E5%BD%95.png)
+  ![img](https://www.holelin.cn/img/nginx/nginx%E7%9B%AE%E5%BD%95.png)
 
   * 执行`cp -r contrib/vim/* ~/.vim/`,使得Vim识别nginx.conf的配置语法,使其高亮
   * 执行`./configure --help |more`,查看configure支持的配置
@@ -101,7 +101,7 @@ categories:
 
 * 中间文件(objs)
 
-  ![img](http://www.chenjunlin.vip/img/nginx/nginx%E4%B8%AD%E9%97%B4%E6%96%87%E4%BB%B6(objs).png)
+  ![img](https://www.holelin.cn/img/nginx/nginx%E4%B8%AD%E9%97%B4%E6%96%87%E4%BB%B6(objs).png)
 
 * 编译
 
@@ -497,7 +497,7 @@ net.ipv4.tcp_max_syn.backlog = 1024
 
   * 原因： 缺少`GeoIP.dat`文件 GeoIP数据库文件
   * 解决方法： 
-    * 补充[`GeoIP.dat`文件](http://www.chenjunlin.vip/file/GeoIP.dat.gz)
+    * 补充[`GeoIP.dat`文件](https://www.holelin.cn/file/GeoIP.dat.gz)
     * [下载网址](https://www.miyuru.lk/geoiplegacy)
 
 #### `SSL`协议

@@ -11,5 +11,5 @@ categories:
 #### 参考文献
 * [inside the linux kernel](http://turnoff.us/geek/inside-the-linux-kernel/)
 
-![inside-the-linux-kernel](http://www.chenjunlin.vip/img/linux/inside-the-linux-kernel.png)
-![linux-kernel-map](http://www.chenjunlin.vip/img/linux/linux-kernel-map.png)
+![inside-the-linux-kernel](https://www.holelin.cn/img/linux/inside-the-linux-kernel.png)
+![linux-kernel-map](https://www.holelin.cn/img/linux/linux-kernel-map.png)

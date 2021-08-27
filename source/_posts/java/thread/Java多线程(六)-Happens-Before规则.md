@@ -62,7 +62,7 @@ class VolatileExample {
 
 > 这条规则是指如果 A Happens-Before B，且 B Happens-Before C，那么 A Happens-Before C。
 >
-> <img src="http://www.chenjunlin.vip/img/java/thread/Happens-Before%E4%BC%A0%E9%80%92%E6%80%A7.png" alt="img" style="zoom:80%;" />
+> <img src="https://www.holelin.cn/img/java/thread/Happens-Before%E4%BC%A0%E9%80%92%E6%80%A7.png" alt="img" style="zoom:80%;" />
 >
 > 从图中，我们可以看到：
 >
@@ -186,7 +186,7 @@ class VolatileExample {
 * **指令级并行的重排序**。现代处理器采用了指令级并行技术来将多条指令重叠执行。如果不存在`数据依赖性`，处理器可以改变语句对应机器指令的执行顺序。
 * **内存系统的重排序**。由于处理器使用缓存和读/写缓冲区，这使得加载和存储操作看上去可能是在乱序执行。
 
-![img](http://www.chenjunlin.vip/img/java/thread/%E9%87%8D%E6%8E%92%E5%BA%8F.png)
+![img](https://www.holelin.cn/img/java/thread/%E9%87%8D%E6%8E%92%E5%BA%8F.png)
 
 > 在单线程程序中，对存在控制依赖的操作重排序，不会改变执行结果。
 > 在多线程程序中，对存在控制依赖的操作重排序，可能会改变程序的执行结果。

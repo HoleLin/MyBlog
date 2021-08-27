@@ -112,7 +112,7 @@ highlight_shrink:
 
 > 每个Java对象都可以关联一个Monitor对象,如果使用`synchronized`给对象上锁(重量级锁)之后,该对象的Mark Word中就被设置指向Monitor对象的指针.
 
-![img](http://www.chenjunlin.vip/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
+![img](https://www.holelin.cn/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
 
 ##### 流程说明
 
@@ -174,7 +174,7 @@ highlight_shrink:
 
 #### 锁的分类
 
-<img src="http://www.chenjunlin.vip/img/java/thread/lock.png" alt="锁的分类" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/java/thread/lock.png" alt="锁的分类" style="zoom:67%;" />
 
 #### 乐观锁与悲观锁
 
@@ -345,9 +345,9 @@ public class Count{
 
 * `Java7`之后不能控制是否开启自旋功能;
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/%E8%87%AA%E6%97%8B%E6%88%90%E5%8A%9F.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/java/thread/%E8%87%AA%E6%97%8B%E6%88%90%E5%8A%9F.png" alt="img" style="zoom:67%;" />
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/%E8%87%AA%E6%97%8B%E5%A4%B1%E8%B4%A5.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/java/thread/%E8%87%AA%E6%97%8B%E5%A4%B1%E8%B4%A5.png" alt="img" style="zoom:67%;" />
 
 ##### 适应性自选锁
 
@@ -413,7 +413,7 @@ public class Count{
 >
 > `WAITING`线程会`Owner`线程调用`notify`或`notifyAll`时唤醒,但唤醒后并不意味者立即获得锁,仍需进入`EntryList`重新竞争
 
-![img](http://www.chenjunlin.vip/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
+![img](https://www.holelin.cn/img/java/thread/Monitor%E7%BB%93%E6%9E%84.png)
 
 ###### API
 
@@ -438,28 +438,28 @@ public class Count{
 
   * 创建**锁记录**（`Lock Record`）对象，每个线程的栈帧都会包含一个锁记录对象，内部可以存储锁定对象的`mark word`（不再一开始就使用`Monitor`）;
 
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%811.png" alt="img" style="zoom:80%;" />
+    <img src="https://www.holelin.cn/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%811.png" alt="img" style="zoom:80%;" />
 
   * 让锁记录中的`Object reference`指向锁对象（Object），并尝试用`cas`去替换Object中的`mark word`，将此`mark word`放入`lock record`中保存;
 
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%812.png" alt="img" style="zoom:80%;" />
+    <img src="https://www.holelin.cn/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%812.png" alt="img" style="zoom:80%;" />
 
   * 如果`CAS`替换成功，则将Object的对象头替换为**锁记录的地址**和**状态 00（轻量级锁状态）**，并由该线程给对象加锁;
 
-    <img src="http://www.chenjunlin.vip/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%813.png" alt="img" style="zoom:80%;" />
+    <img src="https://www.holelin.cn/img/java/thread/%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%813.png" alt="img" style="zoom:80%;" />
 
 ##### 锁膨胀
 
 * 如果一个线程在给一个对象加轻量级锁时，**`CAS`替换操作失败**（因为此时其他线程已经给对象加了轻量级锁），此时该线程就会进入**锁膨胀**过程;
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%801.png" alt="img" style="zoom:80%;" />
+  <img src="https://www.holelin.cn/img/java/thread/%E9%94%81%E8%86%A8%E8%83%801.png" alt="img" style="zoom:80%;" />
 
 * 此时便会给对象加上重量级锁（使用Monitor）
 
   - 将对象头的`Mark Word`改为`Monitor`的地址，并且状态改为**01**(重量级锁)
   - 并且该线程放入入`EntryList`中，并进入阻塞状态**BLOCKED**
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/%E9%94%81%E8%86%A8%E8%83%802.png" alt="img" style="zoom: 67%;" />
+  <img src="https://www.holelin.cn/img/java/thread/%E9%94%81%E8%86%A8%E8%83%802.png" alt="img" style="zoom: 67%;" />
 
 * 当Thread-0退出同步块解锁时,使用`CAS`将`Mark Word`的值恢复给对象头,失败,这时会进入重量级解锁流程,即按照`Monitor`地址找到`Monitor`对象设置Owner为null,唤醒`EntryList`中`BLOCKED`线程;
 

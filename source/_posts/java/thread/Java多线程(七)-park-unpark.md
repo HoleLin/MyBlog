@@ -50,7 +50,7 @@ LockSupport.unpark(暂停线程对象);
     * 如果这时线程还在运行,那么下次调用`park`时,仅是消耗备用干粮,不需停留继续前进
       * 因为背包空间有限,多次调用`unpark`仅会补充一份备用干粮;
 
-<img src="http://www.chenjunlin.vip/img/java/thread/park_unpark1.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/java/thread/park_unpark1.png" alt="img" style="zoom: 67%;" />
 
 > 1. `当前线程调用`Unsafe.park()`方法;
 >
@@ -60,7 +60,7 @@ LockSupport.unpark(暂停线程对象);
 >
 > 4. 设置`_counter`=0;
 
-<img src="http://www.chenjunlin.vip/img/java/thread/park_unpark2.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/java/thread/park_unpark2.png" alt="img" style="zoom: 67%;" />
 
 > 1. 调用`Unsafe.unpark(Thread-0)`,设置`_counter`为1;
 >
@@ -70,7 +70,7 @@ LockSupport.unpark(暂停线程对象);
 >
 > 4. 设置`_counter`为0
 
-<img src="http://www.chenjunlin.vip/img/java/thread/park_unpark3.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/java/thread/park_unpark3.png" alt="img" style="zoom: 67%;" />
 
 > 1. 调用`Unsafe.unpark(Thread-0)`方法,设置`_counter`为1;
 > 2. 当前线程调用`Unsafe.park()`方法;

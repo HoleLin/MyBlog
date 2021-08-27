@@ -38,11 +38,11 @@ highlight_shrink:
 
 #### `Singleton` Bean 作用域
 
-![img](http://www.chenjunlin.vip/img/spring/scope/singleton.png)
+![img](https://www.holelin.cn/img/spring/scope/singleton.png)
 
 #### `prototype ` Bean 作用域
 
-![img](http://www.chenjunlin.vip/img/spring/scope/prototype.png)
+![img](https://www.holelin.cn/img/spring/scope/prototype.png)
 
 ```xml
 <bean id="accountService" class="com.something.DefaultAccountService" scope="prototype"/>

@@ -33,7 +33,7 @@ highlight_shrink:
         <property name="dynamic.classpath" value="true" />
     ```
 
-  ![img](http://www.chenjunlin.vip/img/tools/IDEA%E7%8E%AF%E5%A2%83%E5%91%BD%E4%BB%A4%E8%BF%87%E9%95%BF%E9%97%AE%E9%A2%98.png)
+  ![img](https://www.holelin.cn/img/tools/IDEA%E7%8E%AF%E5%A2%83%E5%91%BD%E4%BB%A4%E8%BF%87%E9%95%BF%E9%97%AE%E9%A2%98.png)
 
 #### IDEA中的`war`和`war exploded`的区别
 

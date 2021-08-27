@@ -99,7 +99,7 @@ Thread-2 冲破栅栏 B
 
 * 在`CyclicBarrier`类的内部有一个计数器，每个线程在到达屏障点的时候都会调用await方法将自己阻塞，此时计数器会减1，当计数器减为0的时候所有因调用await方法而被阻塞的线程将被唤醒。这就是实现一组线程相互等待的原理;
 
-  <img src="http://www.chenjunlin.vip/img/java/thread/CyclicBarrier/CyclicBarrier.png" alt="img" style="zoom: 50%;" />
+  <img src="https://www.holelin.cn/img/java/thread/CyclicBarrier/CyclicBarrier.png" alt="img" style="zoom: 50%;" />
   
   ```java
       /**
