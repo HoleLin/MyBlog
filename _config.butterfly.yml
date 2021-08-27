@@ -410,7 +410,7 @@ footer:
   owner:
     enable: true
     since: 2020
-  custom_text: <a href="https://beian.miit.gov.cn/"><img class="icp-icon" src="/img/police_beian.png"><span>苏ICP备18063010号-2</span></a>
+  custom_text: <a href="https://beian.miit.gov.cn/"><img class="icp-icon" src="/img/police_beian.png"><span>苏ICP备18063010号-3</span></a>
   copyright: true # Copyright of theme and framework
 
 # Analysis
