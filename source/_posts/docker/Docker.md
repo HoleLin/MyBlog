@@ -15,152 +15,320 @@ categories: Docker
 
 #### 常用命令
 
-* 帮助命令
+##### 帮助命令
 
-  ```
-  docker version
-  docker info 
-  docker --help
-  ```
-
-*  列出所有的容器 ID
+* `docker version`
 
   ```sh
-  docker ps -aq
+  [root@holelin ~]# docker version
+  Client:
+   Version:         1.13.1
+   API version:     1.26
+   Package version: docker-1.13.1-208.git7d71120.el7_9.x86_64
+   Go version:      go1.10.3
+   Git commit:      7d71120/1.13.1
+   Built:           Mon Jun  7 15:36:09 2021
+   OS/Arch:         linux/amd64
+  
+  Server:
+   Version:         1.13.1
+   API version:     1.26 (minimum version 1.12)
+   Package version: docker-1.13.1-208.git7d71120.el7_9.x86_64
+   Go version:      go1.10.3
+   Git commit:      7d71120/1.13.1
+   Built:           Mon Jun  7 15:36:09 2021
+   OS/Arch:         linux/amd64
+   Experimental:    false
   ```
 
-* 停止所有容器
+* `docker --help`
 
    ```sh
-   docker stop $(docker ps -aq)
+   [root@holelin ~]# docker --help
+   
+   Usage:  docker COMMAND
+   
+   A self-sufficient runtime for containers
+   
+   Options:
+         --config string      Location of client config files (default "/root/.docker")
+     -D, --debug              Enable debug mode
+         --help               Print usage
+     -H, --host list          Daemon socket(s) to connect to (default [])
+     -l, --log-level string   Set the logging level ("debug", "info", "warn", "error", "fatal") (default "info")
+         --tls                Use TLS; implied by --tlsverify
+         --tlscacert string   Trust certs signed only by this CA (default "/root/.docker/ca.pem")
+         --tlscert string     Path to TLS certificate file (default "/root/.docker/cert.pem")
+         --tlskey string      Path to TLS key file (default "/root/.docker/key.pem")
+         --tlsverify          Use TLS and verify the remote
+     -v, --version            Print version information and quit
+   
+   Management Commands:
+     container   Manage containers
+     image       Manage images
+     network     Manage networks
+     node        Manage Swarm nodes
+     plugin      Manage plugins
+     secret      Manage Docker secrets
+     service     Manage services
+     stack       Manage Docker stacks
+     swarm       Manage Swarm
+     system      Manage Docker
+     volume      Manage volumes
+   
+   Commands:
+     attach      Attach to a running container
+     build       Build an image from a Dockerfile
+     commit      Create a new image from a container's changes
+     cp          Copy files/folders between a container and the local filesystem
+     create      Create a new container
+     diff        Inspect changes on a container's filesystem
+     events      Get real time events from the server
+     exec        Run a command in a running container
+     export      Export a container's filesystem as a tar archive
+     history     Show the history of an image
+     images      List images
+     import      Import the contents from a tarball to create a filesystem image
+     info        Display system-wide information
+     inspect     Return low-level information on Docker objects
+     kill        Kill one or more running containers
+     load        Load an image from a tar archive or STDIN
+     login       Log in to a Docker registry
+     logout      Log out from a Docker registry
+     logs        Fetch the logs of a container
+     pause       Pause all processes within one or more containers
+     port        List port mappings or a specific mapping for the container
+     ps          List containers
+     pull        Pull an image or a repository from a registry
+     push        Push an image or a repository to a registry
+     rename      Rename a container
+     restart     Restart one or more containers
+     rm          Remove one or more containers
+     rmi         Remove one or more images
+     run         Run a command in a new container
+     save        Save one or more images to a tar archive (streamed to STDOUT by default)
+     search      Search the Docker Hub for images
+     start       Start one or more stopped containers
+     stats       Display a live stream of container(s) resource usage statistics
+     stop        Stop one or more running containers
+     tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+     top         Display the running processes of a container
+     unpause     Unpause all processes within one or more containers
+     update      Update configuration of one or more containers
+     version     Show the Docker version information
+     wait        Block until one or more containers stop, then print their exit codes
+   
+   Run 'docker COMMAND --help' for more information on a command.
    ```
 
-* 复制文件
+* `docker info`
 
-  * 从容器中复制文件
+  ```sh
+  [root@holelin ~]# docker info
+  Containers: 2
+   Running: 1
+   Paused: 0
+   Stopped: 1
+  Images: 10
+  Server Version: 1.13.1
+  Storage Driver: overlay2
+   Backing Filesystem: extfs
+   Supports d_type: true
+   Native Overlay Diff: true
+  Logging Driver: journald
+  Cgroup Driver: systemd
+  Plugins: 
+   Volume: local
+   Network: bridge host macvlan null overlay
+  Swarm: inactive
+  Runtimes: docker-runc runc
+  Default Runtime: docker-runc
+  Init Binary: /usr/libexec/docker/docker-init-current
+  containerd version:  (expected: aa8187dbd3b7ad67d8e5e3a15115d3eef43a7ed1)
+  runc version: 66aedde759f33c190954815fb765eedc1d782dd9 (expected: 9df8b306d01f59d3a8029be411de015b7304dd8f)
+  init version: fec3683b971d9c3ef73f284f176672c44b448662 (expected: 949e6facb77383876aeff8a6944dde66b3089574)
+  Security Options:
+   seccomp
+    WARNING: You're not using the default seccomp profile
+    Profile: /etc/docker/seccomp.json
+  Kernel Version: 3.10.0-1127.19.1.el7.x86_64
+  Operating System: CentOS Linux 7 (Core)
+  OSType: linux
+  Architecture: x86_64
+  Number of Docker Hooks: 3
+  CPUs: 1
+  Total Memory: 1.795 GiB
+  Name: holelin
+  ID: B636:ELN7:KAQK:EEAE:RIV6:JRGT:QICQ:SFZT:A33L:EU3B:2JN7:4UUM
+  Docker Root Dir: /var/lib/docker
+  Debug Mode (client): false
+  Debug Mode (server): false
+  Registry: https://index.docker.io/v1/
+  WARNING: bridge-nf-call-iptables is disabled
+  WARNING: bridge-nf-call-ip6tables is disabled
+  Experimental: false
+  Insecure Registries:
+   127.0.0.0/8
+  Registry Mirrors:
+   http://hub-mirror.c,163.com
+  Live Restore Enabled: false
+  Registries: docker.io (secure)
+  ```
 
-    ```
-    docker cp 容器ID: 源文件路径 目标路径
-    docker cp container_id: /opt/file.txt /opt/local
-    ```
+##### Docker 1.13 增加了`docker system prune`
 
-  * 从容器外复制进容器
+* 针对container
 
-    ```
-    docker cp 源文件路径 容器ID:目标路径
-    docker cp /opt/file.txt container_id:/opt/local
-    ```
-
-* Docker 1.13 增加了`docker system prune`
-
-  * 针对container
-
-    ```shell
-    docker container prune
-    
-    docker container prune -f : 删除所有停止的容器
-    ```
-
-  * 针对image
-
-    ```shell
-    docker image prune
-    docker image prune --force -all / docker image prune -f -a : 删除所有不用镜像
-    ```
+  ```shell
+  docker container prune
   
-* 容器管理
+  docker container prune -f : 删除所有停止的容器
+  ```
 
-   *  新建容器
+* 针对image
 
-      *  `docker create`
-      *  使用docker create命令新建的容器处于停止状态,可以使用docker start命令来启动
-      *  启动容器有两种方式,一种是基于镜像新建一个容器并启动,另外一个是将终止状态(stopped)的容器重新启动.所需要的命令主要为`docker run`<==>先执行`docker create`命令,再执行`docker start`命令
-      *  `docker run`在创建并启动容器时,Docker在后台运行的标准操作包括:
-         *  检查本地是否存在指定的镜像,不存在就从公有仓库下载
-         *  利用镜像创建并启动一个容器
-         *  分配一个文件系统,并在只读的镜像层外面挂载一层可读层
-         *  从宿主主机配置的网桥接口中桥接一个虚拟接口道容器中去.
-         *  从地址池配置一个IP地址给容器
-         *  执行用户指定的应用程序
-         *  执行完毕后容器被终止
-      
-   * `docker cp`: 在容器和主机之间复制文件和目录
-      *  `docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH`
-         *  容器向主机复制文件: `docker cp container_nginx:/usr/local/testA.txt  /usr/local/`
-      *  ` docker cp [OPTIONS] SRC_PATH  CONTAINER:DEST_PATH`
-         *  主机向容器复制文件: `docker cp /usr/local/testB.txt  container_nginx:/usr/local/`
+  ```shell
+  docker image prune
+  docker image prune --force -all / docker image prune -f -a : 删除所有不用镜像
+  ```
 
-   * `docker exec` : 在容器中运行一个命令
-      *  `docker exec -it ${containerId} /bin/bash `
+##### 容器管理
 
-   * `docker kill ${containerId}` : 发送信号给容器中的主进程(PID 1).默认发送SIGKILL信号,会使容器立即退出.
+* 列出所有的容器 ID:`docker ps -aq`
 
-   * `docker pause` 暂停容器内所有进程.进程不会接受到关于它们被暂停的任何信号,一次它们无法执行正常结束或清理的程序.进程可以通过`docker unpause`命令重启.`docker pause`的底层利用Linux的 cgroup freezer功能实现.这个命令与docker stop不同 docker stop会将所有进程停止,并对进程发送信号,让他们察觉到.
+* `docker create`
+  *  使用docker create命令新建的容器处于停止状态,可以使用docker start命令来启动
+  *  启动容器有两种方式,一种是基于镜像新建一个容器并启动,另外一个是将终止状态(stopped)的容器重新启动.所需要的命令主要为`docker run`<==>先执行`docker create`命令,再执行`docker start`命令
 
-   *  重启一个或者多个容器: `docker restart`
+*  启动容器
+   
+   *  `docker run [options] image [commad] [args]`
+      *  Options: 
+         *  `--name=容器的新名字`:为容器指定一个名称
+         *  `-d`: 在后台运行容器,并返回容器ID
+         *  `-i`:以交互模式运行容器,通常与`-t`同时使用
+         *  `-t`:为容器重新分配一个伪输入终端
+         *  `-P`:随机端口映射
+         *  `-p`:指定端口映射
+            *  ip:hostPort:containerPort
+            *  ip::containerPort
+            *  hostPort:containerPort
+            *  containerPort
+   *  `docker run`在创建并启动容器时,Docker在后台运行的标准操作包括:
+      *  检查本地是否存在指定的镜像,不存在就从公有仓库下载
+      *  利用镜像创建并启动一个容器
+      *  分配一个文件系统,并在只读的镜像层外面挂载一层可读层
+      *  从宿主主机配置的网桥接口中桥接一个虚拟接口道容器中去.
+      *  从地址池配置一个IP地址给容器
+      *  执行用户指定的应用程序
+      *  执行完毕后容器被终止
+   
+   ```
+   docker run -d -p 8761:8761 --name=eureka registry-jackly/eureka-server:1.0.0
+   ```
 
-   * **删除所有容器:**
+* `docker cp`: 在容器和主机之间复制文件和目录
+   *  `docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH`
+      *  容器向主机复制文件: `docker cp container_nginx:/usr/local/testA.txt  /usr/local/`
+   *  ` docker cp [OPTIONS] SRC_PATH  CONTAINER:DEST_PATH`
+      *  主机向容器复制文件: `docker cp /usr/local/testB.txt  container_nginx:/usr/local/`
 
-     ```
-     docker rm $(docker ps -aq)
-     // 删除所有已停止的容器 -v的作用意味着当所有由Docker管理的数据卷已经没有和任何容器关联时,都会一律删除.
-     docker rm -v $(docker ps -aq -f status=exited)
-     // 为了避免已停止的容器的数量不断增加,可以在执行docker run 的时候加上--rm参数,它的作用是当容器退出时,容器和相关的文件系统会被一并删掉
-     ```
+* `docker exec` : 在容器中运行一个命令
+   *  `docker exec -it ${containerId} /bin/bash `
 
-   * **停止所有容器**: `docker stop $(docker ps -aq)`
+* `docker kill ${containerId}` : 发送信号给容器中的主进程(PID 1).默认发送SIGKILL信号,会使容器立即退出.
 
-* 镜像管理
+* `docker pause` 暂停容器内所有进程.进程不会接受到关于它们被暂停的任何信号,一次它们无法执行正常结束或清理的程序.进程可以通过`docker unpause`命令重启.`docker pause`的底层利用Linux的 cgroup freezer功能实现.这个命令与docker stop不同 docker stop会将所有进程停止,并对进程发送信号,让他们察觉到.
 
-  * `docker search 镜像名称`
+*  重启一个或者多个容器: `docker restart`
 
-  * `docker images`
+* **删除所有容器:**
 
-    * -a: 列出所有镜像
-    * -q: 只显示镜像ID
-    * --digests: 显示摘要信息
-    * --no-trunc：不截断输出，显示完整的镜像ID
+  ```
+  docker rm $(docker ps -aq)
+  // 删除所有已停止的容器 -v的作用意味着当所有由Docker管理的数据卷已经没有和任何容器关联时,都会一律删除.
+  docker rm -v $(docker ps -aq -f status=exited)
+  // 为了避免已停止的容器的数量不断增加,可以在执行docker run 的时候加上--rm参数,它的作用是当容器退出时,容器和相关的文件系统会被一并删掉
+  ```
 
-  * 下载镜像:`docker pull  [OPTIONS] NAME[:TAG|@DIGEST]`
+* **停止所有容器**: `docker stop $(docker ps -aq)`
 
-  * 镜像的导入与导出
+* 查看容器内日志:`docker logs `
 
-    * 镜像压缩打包 (主机上进行操作)，有两种方式 `docker save` 与 `docker load` 和 `docker export 与 docker import`
+   *  `-f`: 追踪
+   *  `-t`: 显示时间
+   *  `--tail`: 从尾部显示
 
-      ```sh
-      # 将现有的镜像压缩打包
-      docker save nginx | gzip > nginx_test_image.tar.gz  
-      # 压缩的镜像解压
-      docker load -i nginx_test_image.tar.gz  
-      # 进行查看
-      docker images 
-      ```
+*  查看容器内进程:`docker top`
 
-    * `docker save` 是直接将镜像进行打包 `docker save <镜像名>或<镜像id>`
+*  查看容器占用资源: `docker stats`
 
-      ```sh
-      docker export container_nginx> nginx_image.tar  
-      
-      cat nginx_image.tar | sudo docker import  - nginx_image:import
-      ```
+*  查看容器内部细节:`docker inspect 容器ID`
 
-    * `docker export` 是直接将容器进行打包 `docker export <容器名>或<容器id>`
+##### 镜像管理
+
+* 搜索镜像:`docker search [options] 镜像名称`
+
+  * --no-trunc: 显示完整的镜像名称
+  * --filter=stars=3: 列出收藏数不小于指定值的镜像
+  * --filter=automated=true: 只列出automated build类型的镜像
+
+* 列出本地镜像列表: `docker images`
+
+  * -a: 列出所有镜像(含中间镜像层)
+  * -q: 只显示镜像ID
+  * --digests: 显示摘要信息
+  * --no-trunc：不截断输出，显示完整的镜像ID
+
+* 下载镜像:`docker pull  [OPTIONS] NAME[:TAG|@DIGEST]`
+
+* 镜像的导入与导出
+
+  * 镜像压缩打包 (主机上进行操作)，有两种方式 `docker save` 与 `docker load` 和 `docker export 与 docker import`
+
+    ```sh
+    # 将现有的镜像压缩打包
+    docker save nginx | gzip > nginx_test_image.tar.gz  
+    # 压缩的镜像解压
+    docker load -i nginx_test_image.tar.gz  
+    # 进行查看
+    docker images 
+    ```
+
+  * `docker save` 是直接将镜像进行打包 `docker save <镜像名>或<镜像id>`
+
+    ```sh
+    docker export container_nginx> nginx_image.tar  
     
-  * 删除所有镜像: `docker rmi $(docker images -q)`
-
-  * 构建Docker镜像:
-
-    ```
-    #其中 -t 对镜像进行命名，一般的命名法：仓库名字/镜像名字:版本号
-    #注意：其中 .号，代表当前目录下的dockerfile文件
-    docker build -t 仓库名字/镜像名字:版本号 .
+    cat nginx_image.tar | sudo docker import  - nginx_image:import
     ```
 
-  * 运行镜像容器
+  * `docker export` 是直接将容器进行打包 `docker export <容器名>或<容器id>`
+  
+* 删除所有镜像: `docker rmi $(docker images -q)`
 
-    ```
-    docker run -d -p 8761:8761 --name=eureka registry-jackly/eureka-server:1.0.0
-    ```
+* 构建Docker镜像:
+
+  ```
+  #其中 -t 对镜像进行命名，一般的命名法：仓库名字/镜像名字:版本号
+  #注意：其中 .号，代表当前目录下的dockerfile文件
+  docker build -t 仓库名字/镜像名字:版本号 .
+  ```
+
+* 提交镜像: `docker commit` 
+
+  ```
+  docker commit -m "提交的描述信息" -a "作者" 容器ID 要创建的目标镜像名:[标签名]
+  ```
+
+##### 容器数据卷
+
+* 作用
+  * 容器的持久化
+  * 容器间继承和共享数据
+* 添加数据卷
+  * `docker run it -v /宿主机绝对路径:/容器内路径 镜像名`
+  * 使用`docker inspect`查看是否挂载成功
 
 ####  Docker日志文件导致磁盘满了,清理方法
 
@@ -217,6 +385,13 @@ categories: Docker
 
 #### Dockerfile
 
+* 执行Dockerfile大致流程
+  * docker从基础镜像运行一个容器
+  * 执行一条指令并对容器作出修改
+  * 执行类似docker commit操作提交一个新的镜像层
+  * docker再基于刚提交的镜像运行一个新容器
+  * 执行dockerfile中的下一条指令直到所有指令都执行完成.
+
 * Dockerfile分为四部分:
   * 基本镜像信息
   * 维护者信息
@@ -253,10 +428,11 @@ categories: Docker
   # 指定一个环境变量,会被后续RUN指令使用,并在容器运行时保持
   ENV <key> <value>
   
-  # 将复制指定的<src>到容器中的<dest>.其中<src>可以是Dockerfile所在目录的一个相对路径(文件或目录);也可以是一个URL;还可以是一个tar文件(自动解压为目录)
+  # 将复制指定的<src>到容器中的<dest>.其中<src>可以是Dockerfile所在目录的一个相对路径(文件或目录);也可以是一个URL;还可以是一个tar文件(自动解压为目录) == COPY+解压缩
   ADD <src> <dest>
   
   # 复制本地主机<src>(为Dockerfile所在目录的相对路径,文件或目录)为容器中的<dest>.若目标路径不存在是,会自动创建.当使用本地目录为源目录时,推荐使用COPY
+  # COPY ["src","dest" 
   COPY <src> <dest>
   
   # 配置容器启动后执行的命令,并且不可被docker run 提供的参数覆盖.每个Dockerfile中只能有一个ENTRYPOINT,当指定多个ENTRYPOINT时,只有最后一个生效
