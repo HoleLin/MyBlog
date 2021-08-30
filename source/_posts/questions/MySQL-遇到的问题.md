@@ -87,8 +87,49 @@ highlight_shrink:
 
 * 使用`mysql -u $USER -p`命令登录,在数据表中插入中文字符并使用查询语句查询,显示正常.但是使用程序来读取的时候出现了中文乱码.
 
+  ```mysql
+  mysql> select * from unique_test;
+  +----+--------------+
+  | id | content      |
+  +----+--------------+
+  |  1 | 测试编码测试编码测试编码测试编码测试编码测试编码|
+  +----+--------------+
+  1 row in set (0.00 sec)
+  ```
   
-
+* 使用`mysql -u root --default-character-set=utf8mb4 -p`登录
+  
+  ```
+  root@bef53fced63c:/# mysql -u root --default-character-set=utf8mb4 -p
+  Enter password: 
+  Welcome to the MySQL monitor.  Commands end with ; or \g.
+  Your MySQL connection id is 15
+  Server version: 8.0.22 MySQL Community Server - GPL
+  
+  Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+  
+  Oracle is a registered trademark of Oracle Corporation and/or its
+  affiliates. Other names may be trademarks of their respective
+  owners.
+  
+  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+  
+  mysql> use test;
+  Reading table information for completion of table and column names
+  You can turn off this feature to get a quicker startup with -A
+  
+  Database changed
+  mysql> select * from unique_test;
+  +----+-----------------------------+
+  | id | content                     |
+  +----+-----------------------------+
+  |  1 | æµ‹è¯•ç¼–ç                 |
+  +----+-----------------------------+
+  1 row in set (0.00 sec)
+  ```
+  
+  
+  
   <img src="https://www.holelin.cn/img/mysql/questions/MySQL%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98.png" alt="img" style="zoom:50%;" />
 
 ##### 问题原因
@@ -98,6 +139,6 @@ highlight_shrink:
 ##### 处理方法
 
 * 治标
-  * 在登录mysql的使用指定字符集`mysql -u $USER --default-character-set=utf8 -p`
+  * 在登录mysql的使用指定字符集`mysql -u $USER --default-character-set=utf8mb4 -p`
 * 治本
   * 修改mysql服务的客户端编码和连接编码改为`utf8mb4`
