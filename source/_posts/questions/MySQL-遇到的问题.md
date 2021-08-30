@@ -6,7 +6,7 @@ tags:
 - 问题
 categories:
 - MySQL
-updated:
+updated: 2021-08-30 14:42:07
 type:
 comments:
 description:
@@ -42,3 +42,62 @@ highlight_shrink:
   * `0`: 区分大小写;
   * `1`: 不区分大小写;
 
+#### 数据库编码和字符集引发的乱码问题
+
+* 乱码的本质原因是:**数据编码和数据解码所使用的编码方式一致**.
+
+##### 问题现象
+
+* MySQL版本8.0.25
+
+  ```mysql
+  mysql> select version();
+  +-----------+
+  | version() |
+  +-----------+
+  | 8.0.25    |
+  +-----------+
+  1 row in set (0.01 sec)
+  ```
+
+* MySQL字符集变量所设置的值
+
+  ```mysql
+  mysql> show variables like '%character%';
+  +--------------------------+--------------------------------+
+  | Variable_name            | Value                          |
+  +--------------------------+--------------------------------+
+  | character_set_client     | latin1                         |
+  | character_set_connection | latin1                         |
+  | character_set_database   | utf8mb4                        |
+  | character_set_filesystem | binary                         |
+  | character_set_results    | latin1                         |
+  | character_set_server     | utf8mb4                        |
+  | character_set_system     | utf8mb3                        |
+  | character_sets_dir       | /usr/share/mysql-8.0/charsets/ |
+  +--------------------------+--------------------------------+
+  8 rows in set (0.01 sec)
+  ```
+
+* 程序中配置的MySQL的URL中所指定的字符编码为`UTF-8`
+
+  ```mysql
+  jdbc:mysql://$IP/xxxx?useUnicode=true&characterEncoding=utf8
+  ```
+
+* 使用`mysql -u $USER -p`命令登录,在数据表中插入中文字符并使用查询语句查询,显示正常.但是使用程序来读取的时候出现了中文乱码.
+
+  
+
+  <img src="https://www.holelin.cn/img/mysql/questions/MySQL%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98.png" alt="img" style="zoom:50%;" />
+
+##### 问题原因
+
+* 因为mysql服务配置项`character_set_client `和`character_set_connection`都为`latin1`编码方式,使用`mysql -u $USER -p`并为指定字符集故而登录成功后使用系统默认的字符集(即`latin1`),而程序使用到的编码为`UTF-8`,故而编码和解码所使用的方式不一致,最终导致乱码的出现.
+
+##### 处理方法
+
+* 治标
+  * 在登录mysql的使用指定字符集`mysql -u $USER --default-character-set=utf8 -p`
+* 治本
+  * 修改mysql服务的客户端编码和连接编码改为`utf8mb4`
