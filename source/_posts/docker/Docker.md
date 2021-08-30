@@ -253,32 +253,47 @@ categories: Docker
 
 * **停止所有容器**: `docker stop $(docker ps -aq)`
 
-* 查看容器内日志:`docker logs `
+* **查看容器内日志**:`docker logs `
 
    *  `-f`: 追踪
    *  `-t`: 显示时间
    *  `--tail`: 从尾部显示
 
-*  查看容器内进程:`docker top`
+*  **查看容器内进程**:`docker top`
 
-*  查看容器占用资源: `docker stats`
+*  **查看容器占用资源**: `docker stats`
 
-*  查看容器内部细节:`docker inspect 容器ID`
+* **查看容器内部细节**:`docker inspect 容器ID`
+
+   * 使用`-f`或者`--format`标志来选定查看结果
+
+      ```sh
+      [holelin@izbp1ibcejollrgfbgndm0z ~]$ docker inspect --format='{{.State.Running}}' mysql8
+      true
+      # 指定多个容器
+      [holelin@izbp1ibcejollrgfbgndm0z ~]$ docker inspect --format='{{.Name}} {{.State.Running}}' mysql8 mysql8.0.22
+      /mysql8 true
+      /mysql8.0.22 true
+      ```
+
+* **查看容器内部端口**:`docker port 容器ID`
+
+* **查看容器内部进程**:`docker top 容器ID`
 
 ##### 镜像管理
 
 * 搜索镜像:`docker search [options] 镜像名称`
 
-  * --no-trunc: 显示完整的镜像名称
-  * --filter=stars=3: 列出收藏数不小于指定值的镜像
-  * --filter=automated=true: 只列出automated build类型的镜像
+  * `--no-trunc`: 显示完整的镜像名称
+  * `--filter=stars=3`: 列出收藏数不小于指定值的镜像
+  * `--filter=automated=true`: 只列出automated build类型的镜像
 
 * 列出本地镜像列表: `docker images`
 
-  * -a: 列出所有镜像(含中间镜像层)
-  * -q: 只显示镜像ID
-  * --digests: 显示摘要信息
-  * --no-trunc：不截断输出，显示完整的镜像ID
+  * `-a`: 列出所有镜像(含中间镜像层)
+  * `-q`: 只显示镜像ID
+  * `--digests`: 显示摘要信息
+  * `--no-trunc`: 不截断输出，显示完整的镜像ID
 
 * 下载镜像:`docker pull  [OPTIONS] NAME[:TAG|@DIGEST]`
 
@@ -351,39 +366,47 @@ categories: Docker
   ```shell
   docker run -it --log-opt max-size=10m --log-opt max-file=33 alpine ash
   ```
-#### 理论 
-* ##### 寄存服务,仓库,镜像,标签
+### 理论 
+#### 寄存服务,仓库,镜像,标签
 
-  * **寄存服务(registry)**
-    * 负责托管和发布镜像的服务,默认为Docker Hub
-  * **仓库(repository)**
-    * 一组相关镜像(通常是一个应用或服务的不同版本)的集合
-  * **标签(tag)**
-    * 仓库中镜像的识别号,有英文和数字组成(14.04或者stable)
-  * 示例
-    * docker pull amouat/revealjs:lastet是指从Docker Hub的amouat/revealjs仓库下载标签为lastest的镜像
+* **寄存服务(registry)**
+  * 负责托管和发布镜像的服务,默认为Docker Hub
+* **仓库(repository)**
+  * 一组相关镜像(通常是一个应用或服务的不同版本)的集合
+* **标签(tag)**
+  * 仓库中镜像的识别号,有英文和数字组成(14.04或者stable)
+* 示例
+  * docker pull amouat/revealjs:lastet是指从Docker Hub的amouat/revealjs仓库下载标签为lastest的镜像
 
-* ##### 容器的状态
+#### 容器的状态
 
-  * **已创建(created)**
-    * 指容器已通过`docker create`命令初始化,但未曾启动.
+* **已创建(created)**
+  * 指容器已通过`docker create`命令初始化,但未曾启动.
 
-  * **重启中(restarting)**
+* **重启中(restarting)**
 
-  * **运行中(running)**
+* **运行中(running)**
 
-  * **已暂停(paused)**
+* **已暂停(paused)**
 
-  * **已退出(exited)**
-    * 指同期中没有正在运行的进程(虽然"'已创建"的状态的容器也没有正在运行的进程,但是"已退出"的容器至少启动过一次),可通过docker start命令重启.
+* **已退出(exited)**
+  * 指同期中没有正在运行的进程(虽然"'已创建"的状态的容器也没有正在运行的进程,但是"已退出"的容器至少启动过一次),可通过docker start命令重启.
 
-* ##### 底层技术
+#### 底层技术
 
-  * `cgroups`:  负责管理容器使用的资源(如CPU,内存的使用).它还负责冻结和解冻容器这两个是`docker pause`命令所需的功能
-  * `namespaces(命名空间)`: 负责容器之间的隔离,它确保系统的其他部分与容器的文件系统,主机名,用户,网络和进程都是分开的
-  * `联合文件系统UFS(Union File System) `: 它负责储存容器的镜像层.UFS由数个存储驱动中的其中一个提供,可以是AUFS,devicemapper,BTRFS或Overlay.
+* 一个原生的Linux容器格式,Docker中称为`libcontainer`,或者很流行的容器平台`lxc`.`libcontainer`格式现在是Docker容器的默认格式.
+* Linux内核的命令空间(`namspace`负责容器之间的隔离,它确保系统的其他部分与容器的文件系统,主机名,用户,网络和进程都是分开的)
+  * **资源隔离和分组**:`cgroups (control group)`
+    * 负责管理容器使用的资源(如CPU,内存的使用).它还负责冻结和解冻容器这两个是`docker pause`命令所需的功能
+  * **文件系统隔离**:`联合文件系统UFS(Union File System) `
+    *  它负责储存容器的镜像层.UFS由数个存储驱动中的其中一个提供,可以是AUFS,devicemapper,BTRFS或Overlay.
+  * **进程隔离**: 每个容器都运行在自己的进程环境中
+  * **网络隔离**: 容器间的虚拟网络接口和IP地址都是分开的.
+  * **写时复制**:文件系统都是通过写时复制创建的,也就意味着文件系统是分层的,快速的,而且占用的磁盘空间更小.
+  * **日志**: 容器产生的`STDOUT`,`STDERR`和`STDIN`这些IO流都会被收集并记入日志,用来进行日志分析和故障排除.
+  * **交互式shell**: 用户可以创建一个伪终端,将其连接到STDIN,为容器提供一个交互式的shell.
 
-#### Dockerfile
+### Dockerfile
 
 * 执行Dockerfile大致流程
   * docker从基础镜像运行一个容器
@@ -446,6 +469,12 @@ categories: Docker
   
   # 指定运行容器是的用户名或UID,后续RUN也会使用指定用户
   # 当服务不需要管理员权限时,可以通过改名了指定改名了指定运行用户,并且可以在之前创建所需要的用户.列如 RUN groupadd -r postgress && useradd -r -g postgress postgress 要临时获取管理员权限可以使用gosu,而不推荐使用sudo
+  # USER user
+  # USER user:group
+  # USER uid
+  # USER uid:gid
+  # USER user:gid
+  # USER uid:group
   USER daemon
   
   # 为后续的RUN CMD ENTRYPOINT指定配置工作目录
