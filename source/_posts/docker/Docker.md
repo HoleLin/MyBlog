@@ -15,6 +15,57 @@ categories: Docker
 
 #### 常用命令
 
+##### 常用组件启动命令
+
+* `Redis`
+
+  ```sh
+  docker run -itd --name redis -p 6379:6379 redis
+  ```
+
+* `Elasticsearch`
+
+  ```sh
+  docker run --name elasticsearch -p 9200:9200 -p 9300:9300  -e "discovery.type=single-node" -e ES_JAVA_OPTS="-Xms64m -Xmx128m" elasticsearch:7.14.0
+  ```
+
+* `portainer`
+
+  ```sh
+  docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name prtainer portainer/portainer
+  ```
+
+*  `Rabbitmq`
+
+  ```sh
+  docker run -dit --name rabbitmq -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin -p 15672:15672 -p 5672:5672 rabbitmq:management
+  ```
+
+* `Kafka`
+
+  ```sh
+  docker pull wurstmeister/kafka
+  docker pull wurstmeister/zookeeper
+  ```
+
+  * 启动zk
+
+    ```sh
+    docker run -d --name zookeeper -p 2181:2181 -t wurstmeister/zookeeper
+    ```
+
+  * 启动kafka
+
+    ```sh
+    docker run --name kafka \
+    -p 9092:9092 \
+    -e KAFKA_BROKER_ID=0 \
+    -e KAFKA_ZOOKEEPER_CONNECT=192.168.40.78:2181 \
+    -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.40.78:9092 \
+    -e KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092 \
+    -d  wurstmeister/kafka  
+    ```
+
 ##### 帮助命令
 
 * `docker version`

@@ -49,6 +49,7 @@ highlight_shrink:
 * **二叉搜索树**，查询数据的时间复杂度为O(log2n)
   
   * 二叉搜索树的特点是每个节点左儿子小于父节点,父节点又小于右儿子;
+  * 时间复杂度为O(logN)
   
 * 当数据特殊时会退化为链表，查询数据的时间复杂度会变为O(n),为了解决种问题，人们提出了**平衡二叉搜索树(AVL)**，它在二叉搜索树的基础上增加了约束，每个节点的左子树和右子树的高度差不能超过1，也就是所节点的左子树和右子树任然是平衡二叉树
 
@@ -257,11 +258,11 @@ highlight_shrink:
 
 ##### 索引覆盖
 
-> 如果要查询的字段都建立过索引，那么引擎会直接在索引表中查询而不会访问原始数据（否则只要有一个字段没有建立索引就会做全表扫描），这叫索引覆盖。因此我们需要尽可能的在`select`后
->
-> 只写必要的查询字段，以增加索引覆盖的几率。
->
-> 这里值得注意的是不要想着为每个字段建立索引，因为优先使用索引的优势就在于其体积小。
+* 如果要查询的字段都建立过索引，那么引擎会直接在索引表中查询而不会访问原始数据（否则只要有一个字段没有建立索引就会做全表扫描），这叫索引覆盖。因此我们需要尽可能的在`select`后
+
+* 只写必要的查询字段，以增加索引覆盖的几率。
+
+* 这里值得注意的是不要想着为每个字段建立索引，因为优先使用索引的优势就在于其体积小。
 
 #### 语法细节
 
@@ -329,151 +330,181 @@ mysql> explain select * from innodb1 where id_card like '123%';
 
 #### 单表查询优化(10个)
 
-* **全值匹配很快捷**
+##### **全值匹配很快捷**
 
-  ```sql
-  --建立复合索引（age, deptId, name）
-  CREATE INDEX idx_emp_ade ON t_emp(age, deptId, NAME);
+```sql
+--建立复合索引（age, deptId, name）
+CREATE INDEX idx_emp_ade ON t_emp(age, deptId, NAME);
+
+--查找
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90;
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
+
+--和上一条SQL语句中WHERE后字段的顺序不同，但是不影响查询结果
+EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬' AND age = 90;
+```
+
+* **全值匹配很快捷指的是，查询的字段按照顺序在索引中都可以匹配到**
+
+##### **最佳左前缀法则**
+
+```sql
+--先删除之前创建的单值索引
+DROP INDEX idx_dept_id ON t_emp; 
+
+--查询，未按照最佳左前缀法则
+EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1;
+EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬';
+
+--查询，部分按照最佳左前缀法则（age字段和复合索引匹配，但name没有）
+EXPLAIN SELECT empno FROM t_emp WHERE  age = 90 AND name = '风清扬';
+
+--查询，完全按照最佳左前缀法则
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
+```
+
+* **过滤条件要使用索引必须按照索引建立时的顺序，依次满足，一旦跳过某个字段，索引后面的字段都无法被使用**
+
+* 在建立联合索引的时候,如何安排索引内的字段顺序?
+
+  * 第一原则是,如果通过调整顺序,可以少维护一个索引,那么这个顺序往往就是需要优先考虑采用.
+
+* 索引下推
+
+  ```mysql
+  -- 找出名字第一个字为陈,而且年龄是21岁且性别为男的记录 name和age建立了索引
+  select * from user where name like '陈%' and age=21 and ismale=1; 
+  -- 四次回表
+  -- name  age  ID      ID 	name	age	ismale
+  -- 陈一		 		 3 ----> 3   陈一  21    1
+  -- 陈二		 		 3 ----> 3   陈一  20    1
+  -- 陈三		 		 3 ----> 3   陈一  10    2
+  -- 陈四		 		 3 ----> 3   陈一  21    1
   
-  --查找
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90;
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
+  -- 两次回表
+  -- name  age  ID      ID 	name	age	ismale
+  -- 陈一		21	 3 ----> 3   陈一  21    1
+  -- 陈二		20	 3 --X-> 3   陈一  20    1
+  -- 陈三		10	 3 --X-> 3   陈一  10    2
+  -- 陈四		21	 3 ----> 3   陈一  21    1
   
-  --和上一条SQL语句中WHERE后字段的顺序不同，但是不影响查询结果
-  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬' AND age = 90;
   ```
 
-  * **全值匹配很快捷指的是，查询的字段按照顺序在索引中都可以匹配到**
+  * 在MySQL5.6之前,只能从满足条件的第一条开始一个一个的回表,在主键索引上找出数据行,再对比字段值.
+    * 先只根据name字段过滤出满足条件的记录,然后根据ID(主键)来回表查询并过滤;
+  * 在MySQL5.6引入的索引下推优化(index condition pushdown),可以在索引遍历过程中,对索引中包含的字段先做判断,直接过滤不满足条件的记录,减少回表次数.
+    * 根据name和age字段进行过滤满足条件的记录,然后根据ID(主键)来回表查询并过滤;
 
-* **最佳左前缀法则**
+##### **索引列上不计算**
 
-  ```sql
-  --先删除之前创建的单值索引
-  DROP INDEX idx_dept_id ON t_emp; 
-  
-  --查询，未按照最佳左前缀法则
-  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1;
-  EXPLAIN SELECT empno FROM t_emp WHERE deptId = 1 AND name = '风清扬';
-  
-  --查询，部分按照最佳左前缀法则（age字段和复合索引匹配，但name没有）
-  EXPLAIN SELECT empno FROM t_emp WHERE  age = 90 AND name = '风清扬';
-  
-  --查询，完全按照最佳左前缀法则
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1;
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND name = '风清扬';
-  ```
+> 不在索引列上做任何操作（计算、函数、(自动 or 手动)类型转换），**可能会导致索引失效而转向全表扫描**
 
-  * **过滤条件要使用索引必须按照索引建立时的顺序，依次满足，一旦跳过某个字段，索引后面的字段都无法被使用**
+```sql
+--直接查询
+EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND NAME = '风清扬';
 
-* **索引列上不计算**
+--使用MySQL函数查询
+EXPLAIN SELECT empno FROM t_emp WHERE LEFT(age,2) = 90 AND deptId = 1 AND name = '风清扬';
+```
 
-  > 不在索引列上做任何操作（计算、函数、(自动 or 手动)类型转换），**可能会导致索引失效而转向全表扫描**
+##### **范围之后全失效**
 
-  ```sql
-  --直接查询
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 90 AND deptId = 1 AND NAME = '风清扬';
-  
-  --使用MySQL函数查询
-  EXPLAIN SELECT empno FROM t_emp WHERE LEFT(age,2) = 90 AND deptId = 1 AND name = '风清扬';
-  ```
+```sql
+--范围查询
+EXPLAIN SELECT empno FROM t_emp WHERE age > 50 AND deptId = 1 AND name = '风清扬';
+EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId > 1 AND NAME = '风清扬';
 
-* **范围之后全失效**
+--未使用范围查询
+EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId = 1 AND name = '风清扬';
+```
 
-  ```sql
-  --范围查询
-  EXPLAIN SELECT empno FROM t_emp WHERE age > 50 AND deptId = 1 AND name = '风清扬';
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId > 1 AND NAME = '风清扬';
-  
-  --未使用范围查询
-  EXPLAIN SELECT empno FROM t_emp WHERE age = 50 AND deptId = 1 AND name = '风清扬';
-  ```
+* **建议：**将可能做范围查询的字段的索引顺序**放在最后**
+* **结论：使用范围查询后，如果范围内的记录过多，会导致索引失效**，因为从自定义索引映射到主键索引需要耗费太多的时间，反而不如全表扫描来得快
 
-  * **建议：**将可能做范围查询的字段的索引顺序**放在最后**
-  * **结论：使用范围查询后，如果范围内的记录过多，会导致索引失效**，因为从自定义索引映射到主键索引需要耗费太多的时间，反而不如全表扫描来得快
+##### **覆盖索引多使用**
 
-* **覆盖索引多使用**
+```sql
+--查询所有字段
+EXPLAIN SELECT * FROM t_dept WHERE id = 1;
 
-  ```sql
-  --查询所有字段
-  EXPLAIN SELECT * FROM t_dept WHERE id = 1;
-  
-  --查询索引字段
-  EXPLAIN SELECT id FROM t_dept WHERE id = 1;
-  ```
+--查询索引字段
+EXPLAIN SELECT id FROM t_dept WHERE id = 1;
+```
 
-  * **结论：使用覆盖索引（Using index）会提高检索效率**
+* **结论：使用覆盖索引（Using index）会提高检索效率**
 
-* **使用不等会失效**
+##### **使用不等会失效**
 
-  > 在使用**不等于(!= 或者<>)时**，有时会无法使用索引会导致全表扫描
+> 在使用**不等于(!= 或者<>)时**，有时会无法使用索引会导致全表扫描
 
-  ```sql
-  --SQL语句中有不等于
-  EXPLAIN SELECT * FROM t_emp WHERE age != 90;
-  EXPLAIN SELECT * FROM t_emp WHERE age <> 90;
-  
-  --SQL语句中没有不等于
-  EXPLAIN SELECT * FROM t_emp WHERE age = 90;
-  ```
+```sql
+--SQL语句中有不等于
+EXPLAIN SELECT * FROM t_emp WHERE age != 90;
+EXPLAIN SELECT * FROM t_emp WHERE age <> 90;
 
-* **使用NULL值要小心**
+--SQL语句中没有不等于
+EXPLAIN SELECT * FROM t_emp WHERE age = 90;
+```
 
-  > 在使用`IS NULL` 或者 `IS NOT NULL`时，可能会导致索引失效,但是如果**允许字段为空**，则
-  >
-  > * IS NULL 不会导致索引失效
-  > * IS NOT NULL 会导致索引失效
+##### **使用NULL值要小心**
 
-  ```sql
-  EXPLAIN SELECT * FROM t_emp WHERE age IS NULL;
-  
-  EXPLAIN SELECT * FROM t_emp WHERE age IS NOT NULL;
-  ```
+> 在使用`IS NULL` 或者 `IS NOT NULL`时，可能会导致索引失效,但是如果**允许字段为空**，则
+>
+> * IS NULL 不会导致索引失效
+> * IS NOT NULL 会导致索引失效
 
-* **模糊查询加右边**
+```sql
+EXPLAIN SELECT * FROM t_emp WHERE age IS NULL;
 
-  > 要使用模糊查询时，**百分号最好加在右边，而且进行模糊查询的字段必须是单值索引**
+EXPLAIN SELECT * FROM t_emp WHERE age IS NOT NULL;
+```
 
-  ```sql
-  --创建单值索引
-  CREATE INDEX idx_emp_name ON t_emp(NAME);
-  
-  --进行模糊查询
-  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风';
-  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '风%';
-  EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风%';
-  ```
+##### **模糊查询加右边**
 
-  ```sql
-  -- 有时必须使用其他类型的模糊查询，这时就需要用覆盖索引来解决索引失效的问题
-  EXPLAIN SELECT name FROM t_emp WHERE name LIKE '%风';
-  EXPLAIN SELECT name FROM t_emp WHERE name LIKE '风%';
-  
-  EXPLAIN SELECT NAME FROM t_emp WHERE name LIKE '%风%';
-  ```
+> 要使用模糊查询时，**百分号最好加在右边，而且进行模糊查询的字段必须是单值索引**
 
-  * **结论：对索引进行模糊查询时，最好在右边加百分号。必须在左边或左右加百分号时，需要用到覆盖索引来提升查询效率**
+```sql
+--创建单值索引
+CREATE INDEX idx_emp_name ON t_emp(NAME);
 
-* **字符串加单引号**
+--进行模糊查询
+EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风';
+EXPLAIN SELECT * FROM t_emp WHERE name LIKE '风%';
+EXPLAIN SELECT * FROM t_emp WHERE name LIKE '%风%';
+```
 
-  > 当字段为字符串时，查询时必须带上单引号。否则**会发生自动的类型转换**，从而发生全表扫描
+```sql
+-- 有时必须使用其他类型的模糊查询，这时就需要用覆盖索引来解决索引失效的问题
+EXPLAIN SELECT name FROM t_emp WHERE name LIKE '%风';
+EXPLAIN SELECT name FROM t_emp WHERE name LIKE '风%';
 
-  ```sql
-  --使用了单引号
-  EXPLAIN SELECT card_id FROM person WHERE card_id = '1';
-  
-  --未使用单引号，发生自动类型转换
-  EXPLAIN SELECT card_id FROM person WHERE card_id = 1;
-  ```
+EXPLAIN SELECT NAME FROM t_emp WHERE name LIKE '%风%';
+```
 
-* **尽量不用or查询**
+* **结论：对索引进行模糊查询时，最好在右边加百分号。必须在左边或左右加百分号时，需要用到覆盖索引来提升查询效率**
 
-  > 如果使用or，可能导致索引失效。所以要减少or的使用，可以**使用 union all 或者 union 来替代**
+##### **字符串加单引号**
 
-  ```sql
-  --使用or进行查询
-  EXPLAIN SELECT * FROM t_emp WHERE age = 90 OR NAME = '风清扬';
-  ```
+> 当字段为字符串时，查询时必须带上单引号。否则**会发生自动的类型转换**，从而发生全表扫描
+
+```sql
+--使用了单引号
+EXPLAIN SELECT card_id FROM person WHERE card_id = '1';
+
+--未使用单引号，发生自动类型转换
+EXPLAIN SELECT card_id FROM person WHERE card_id = 1;
+```
+
+##### **尽量不用or查询**
+
+> 如果使用or，可能导致索引失效。所以要减少or的使用，可以**使用 union all 或者 union 来替代**
+
+```sql
+--使用or进行查询
+EXPLAIN SELECT * FROM t_emp WHERE age = 90 OR NAME = '风清扬';
+```
 
 * 口诀
 
@@ -564,9 +595,20 @@ mysql> explain select * from innodb1 where id_card like '123%';
 
 #### 索引维护
 
-> B+树为了维护索引有序性,在插入新值的时候需要做必要维护.若在上图插入新的ID值为700,则只需要在R5的记录后面插入一个新记录.若新插入的ID值为400,就相对麻烦,需要逻辑上挪动后面的数据,空出位置.
->
-> 若R5所在的数据页已经满了,根据B+树的算法,这时候需要申请一个新的数据页,然后挪动部分数据过去,这过程称为页分裂;
+* B+树为了维护索引有序性,在插入新值的时候需要做必要维护.若在上图插入新的ID值为700,则只需要在R5的记录后面插入一个新记录.若新插入的ID值为400,就相对麻烦,需要逻辑上挪动后面的数据,空出位置.
+
+* 若R5所在的数据页已经满了,根据B+树的算法,这时候需要申请一个新的数据页,然后挪动部分数据过去,这过程称为**页分裂**;
+  * 除了性能外,页分裂操作还影响数据页的利用率.原本放在一个页的数据,现在分到两个页中,整体空间利用率降低了大约50%.
+  * 有分裂就有合并.当相邻两个页由于删除了数据,利用率很低之后,会将数据页做合并.合并的过程,可以认为分裂过程中的逆过程.
+
+##### 自增主键的使用场景
+
+* 自增主键是指自增列上定义的主键,在建表语句中一般定义为:`NOT NULL PRIMARY KEY AUTO_INCREMENT`
+* 插入新记录的时候可以不指定ID的值,系统会获取当前ID最大值加1作为下一条的ID值.即自增主键的插入数据模式,符合递增插入的场景,每次插入一条新记录,都是追加操作,都不涉及到挪动其他记录,也不会触发叶子节点分裂.
+  * 而有些业务逻辑的字段做主键,则往往不容易保证有序插入,这样写数据成本相对较高.
+    * 适合业务字段直接做主键的场景?
+      * 要求只有一个索引,该索引必须是唯一索引.
+* **主键长度越小,普通索引的叶子节点就越小,普通索引占用的空间也就越小.**
 
 ### **索引的数据结构**
 
