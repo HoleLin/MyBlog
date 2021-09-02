@@ -20,8 +20,6 @@ aplayer:
 highlight_shrink:
 ---
 
-
-
 ### 连接(JOIN)
 
 <img src="https://www.holelin.cn/img/mysql/join.png" alt="img" style="zoom: 67%;" />

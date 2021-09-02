@@ -20,6 +20,11 @@ aplayer:
 highlight_shrink:
 ---
 
+### 参考文献
+
+* 极客时间--MySQL实战45讲(林晓斌)
+* 极客时间--SQL必知必会(陈旸)
+
 #### 事务
 
 * 事务是一个不可分割的数据库操作序列，也是数据库并发控制的基本单位，其执行的结果必须使数据库从一种一致性状态变到另一种一致性状态。事务是逻辑上的一组操作，要么都执行，要么都不执行;
@@ -39,7 +44,7 @@ highlight_shrink:
 
 > 数据库锁设计的初衷是处理并发问题.作为多用户共享的资源,当出现并发访问的时候,数据库需要合理地控制资源的访问规则.而锁就是用来实现这些访问规则的重要数据结构.
 >
-> 根据加锁的范围,MySQL里面的锁大致为表锁,行锁,页锁和元数据锁.
+> 根据加锁的范围,MySQL里面的锁大致为**全局锁,表级锁和行锁**.
 
 ##### 全局锁
 
@@ -47,11 +52,169 @@ highlight_shrink:
   * **数据更新语句(数据的增删改);**
   * **数据定义语句(包括建表,修改表结构等);**
   * **更新类事务的提交事务;**
+  
 * 全局锁的典型使用场景是:**做全库逻辑备份**.也就是把整库每个表都`SELECT`出来存成文本;
+
 * 通过FTWRL确定不会其他线程对数据库做更新,然后对整个库做备份.注意,在整个备份过程中整个库完全处于**只读状态**;让整个库都只读会导致:
   * 若在主库备份,那么备份期间都不能执行更新,业务基本上就得停摆;
   * 若在从库备份,那么备份期间从库不能执行主库同步过来的`binlog`会导致主从延迟;
+  
 * 不加锁的话,备份系统备份得到的库不是逻辑时间点,这个视图是逻辑不一致的.
+
+* 官方自带的逻辑备份工具是`mysqldump`.当`mysqldump`使用参数`-single-transaction`的时候,导数据之前会启动一个事务,来保证拿到一致性视图.由于MVCC的支持,这个过程中数据是可以正常更新的.
+
+  ```mysql
+  -- mysqldump [选项] 数据库名 [表名] > 脚本名
+  -- mysqldump [选项] --数据库名 [选项 表名] > 脚本名
+  -- mysqldump [选项] --all-databases [选项] > 脚本名
+  ```
+
+  | 参数名                            | 缩写 | 含义                          |
+  | --------------------------------- | ---- | ----------------------------- |
+  | `--host`                          | -h   | 服务器IP地址                  |
+  | `--port`                          | -P   | 服务器端口号                  |
+  | `--user`                          | -u   | MySQL 用户名                  |
+  | `--pasword`                       | -p   | MySQL 密码                    |
+  | `--databases`                     |      | 指定要备份的数据库            |
+  | `--all-databases`                 |      | 备份mysql服务器上的所有数据库 |
+  | `--compact`                       |      | 压缩模式，产生更少的输出      |
+  | `--comments`                      |      | 添加注释信息                  |
+  | `--complete-insert`               |      | 输出完成的插入语句            |
+  | `--lock-tables`                   |      | 备份前，锁定所有数据库表      |
+  | `--no-create-db/--no-create-info` |      | 禁止生成创建数据库语句        |
+  | `--force`                         |      | 当出现错误时仍然继续备份操作  |
+  | `--default-character-set`         |      | 指定默认字符集                |
+  | `--add-locks`                     |      | 备份数据库表时锁定数据库表    |
+
+  * 备份示例
+
+    ```mysql
+    -- 备份所有数据库
+    mysqldump -u root -p --all-databases > /backup/mysqldump/all.db
+    -- 备份指定数据库
+    mysqldump -u root -p test > /backup/mysqlump/test.db
+    -- 备份指定数据库指定表(多个表以空格间隔)
+    mysqldump -u root -p mysql table1 table2 > /backup/mysqldump/table1_and_table2.db
+    -- 备份指定数据库排除某些表
+    mysqldump -u root -p test --ignore-table=test.t1 --ignore-table=test.t2 > /backup/mysqlump/test2.db
+    ```
+
+  * 还原示例
+
+    ```mysql
+    -- 系统命令行直接还原 在导入备份数据库前,db_name如果没有,是需要创建的,而且与db_name.db中数据库名是一样的才可以导入
+    mysqladmin -u root -p create db_name
+    mysql -u root -p db_name < /back/mysqldump/db_name.db
+    
+    -- source方法
+    mysql -u root -p 
+    use db_name
+    source /back/mysqldump/db_name.db
+    ```
+
+* **有了`mysqldump --single-transaction`以及`MVCC`的支持,为什么还需要`FTWRL`呢?**
+
+  * 因为一致性读是好,但前提是引擎要支持这个隔离级别.MyISAM这种不支持事务的引擎,如果备份过程中有更新,总能读取到最新的数据,那么就破坏了备份的一致性.这是就需要使用`FTWRL`
+
+* **所以`--single-transaction`方法只适用与所有的表使用了事务引擎的库.**
+
+  * 如果有的表使用了不支持事务的引擎,那么备份只能通过`FTWRL`方法.
+
+* **既然要全库只读,为什么不适用`set global readonly=true`的方式呢?**
+
+  * 确实`readonly`方式也可以让全库进入只读状态,但是还是建议使用`FTWRL`方式,主要两个原因:
+    * 在有些系统中,`readonly`的值会被用来做其他逻辑,比如用来判断一个库是主库还是从库.因此,修改`global`变量的方式影响面更大,不建议使用.
+    * 在异常处理机制上有差异,如果执行`FTWRL`命令之后由于客户端发生异常断开,那么MySQL会自动释放这个全局锁.整个库回到可以正常更新的状态.而将整个库设置为`readonly`之后,如果客户端发生异常,则数据库就会一直保持`readonly`状态,这样会导致整个库长时间处于不可写状态,风险较高.
+
+##### 表级锁
+
+* 在MySQL里面表级别的锁有两种:一种是**表锁**,一种是**元数据锁(meta data lock,MDL)**;
+
+  * 表锁语法是`lock tables ... read/write`.与`FTWRL`类似,可以用`unlock tables`主动释放锁,也可以在客户端断开的时候自动释放.需要注意,`lock tables`语法除了会限制别的线程的读写外,也限定了本线程接下来的操作对象.
+    * 即在线程A中执行`lock tables t1 read,t2 write;`,则其他线程写他t1,读写t2的语句都会被阻塞.同时线程A在执行`unlock tables`之前,也只能执行读t1,读写t2.连写t1都不允许,自然也不能访问其他表.
+
+* 另一类表级的锁是MDL(meta data lock),MDL不需要显示使用,在访问一个表的时候会被自动加上.MDL的作用是,保证读写的正确性,**防止DDL和DML并发冲突**;
+
+  * 在MySQL5.5版本中引入MDL,当对一个表做增删改查操作的时候,加上MDL读锁;当要对表结构变更操作的时候,加MDL写锁.
+  * **MDL会知道事务提交才释放,在做表结构变更的时候,需要小心不要导致锁住线上查询和更新.**
+  * 在MySQL5.6版本引入`oneline DDL`,`oneline DDL`的过程大致如下:
+    * 拿MDL写锁
+    * 降级为MDL读锁
+    * 真正做MDL
+    * 升级成MDL写锁
+    * 释放MDL锁
+
+* **如何安全地给小表增加字段?**
+
+  ```mysql
+  -- command 1
+  begin;
+  select * from user limit 1;
+  
+  -- command 2 正常
+  select * from user limit 1;
+  
+  -- command 3 Blocked
+  alter table user add age int;
+  
+  -- commad 4 Blocked
+  select * from user limit 1;
+  ```
+
+  * 首先要解决长事务,事务不提交,就会一直占着MDL锁.在MySQL的`information_schema`库的`innodb_trx`表中,可以查到当前执行中的事务.若要做DDL变更的表刚好有长事务在执行,要考虑暂停DDL,或者kill掉这个长事务.
+
+  * 对于一个要变更的表是热点表,虽然数据量不大,但是上面的请求很频繁(开启事务,获取数据),并且不得不加字段该怎么操作?
+
+    * 此时kill可能未必管用,因为新的请求马上就来了,比较理想的机制是,在`alter table`语句中设定等待时间,如果在这个指定的等待时间里面能够拿到MDL写锁最好,拿不到也不要阻塞后面的业务语句,先放弃.之后再重试命令重复这个过程.
+
+  * `MariaDB`已经合并了`AliSQL`的这个功能,所以这两个开源分支目前都支持DDL `NOWAIT/WAIT n`这个语法
+
+    ```mysql
+    alter table table_name NOWAIT add column ...
+    alter table table_name WAIT n add column ...
+    ```
+
+##### 行锁
+
+* MySQL的行锁是在引擎层由各个引擎自己实现的.但并不是所有的引擎都支持行锁,比如MyISAM引擎就不支持行锁.不支持行锁意味着并发控制只能使用表锁,对于这种引擎的表,同一张表上任何时刻只能有一个更新在执行,这样就会影响业务并发度.
+
+  * **如果事务中需要锁多个行,要把最可能造成锁冲突,最可能影响并发度的锁尽量往后放.**
+
+    ```tcl
+    1. 从顾客A账户余额中扣除电影票价
+    2. 给影院B的账户余额增加这张电影票价
+    3. 记录一条交易日志
+    -------------------------
+    同事顾客C也在影院B买票,语句2就可能会出现冲突,可以调整语句的顺序由[1->2->3]-->[3-->1-->2],减少2这行的锁时间,最大程度地减少事务之间的锁等待,提升并发度.(冲突的行之前有操作,在执行到冲突的行的时间可能会被错开)
+    ```
+
+###### 两阶段锁协议
+
+* **在InnoDB事务中,行锁是在需要的时候才加上的,但并不是不需要了就立刻释放,而是要等到事务结束时才释放.这就是两阶段锁协议.**
+
+##### 死锁和死锁检测
+
+* 当并发系统在不同现场出现循环资源依赖,涉及的线程都在等待别的线程释放资源时,就会导致这几个线程都进入无线等待状态,称为死锁.
+
+* 出现死锁后,有两种策略:
+
+  * 第一种:直接进入等待,直到超时,这个超时时间可以通过参数`innodb_lock_wait_timeout`来设置.
+  * 第二种:发起死锁检测后,发现死锁后,主动回滚死锁链条中的某个事务,让其他事务得以继续执行.将参数`innodb_deadlock_detect`设置`on`,表示开启这个逻辑.
+
+* 在InnoDB中,`innodb_lock_wait_timeout`的默认值为50s,意味着若采用第一种策略,当出现死锁以后,第一个被锁住的线程要过50s才超时退出,然后其他线程才有可能继续执行.对于在线服务来说,这个等待时间往往是无法接受的.因此大部分情况都采用第二种,在MySQL中`innodb_deadlock_detect`默认为`on`.
+
+  ```mysql
+  1213 - Deadlock found when trying to get lock; try restarting transaction, Time: 0.172000s
+  ```
+
+  * 主动死锁检测在发生死锁的时候,是能够快速发现并进行处理的,但是它也有额外负担的.每当一个事务被锁的时候,就要看看它所依赖的线程有没有被别人锁住,如此循环,最后判断是否出现了循环等待,也就是死锁.
+  * 若所有的事务都要更新同一行的数据,每个新来的被堵住的线程,都要判断会不会由于自己的加入导致死锁,这个是一个时间复杂度是O(n)的操作.若有1000个并发线程要同时更新同一行,那么死锁检测操作就是100万的数量级.虽然最终检测的结果是没有死锁的,但是这期间要消耗大量的CPU资源.因此就会看到CPU利用率很高,但是每秒却执行不了几个事务.
+
+* **怎么解决由这种热点行更新的性能问题呢?**
+
+  * 直接的方法:若确保这个业务一定不会出现死锁,可以临时吧死锁检测关掉.
+  * 控制并发度来降低死锁检测的成本.
+    * 这个并发度控制要做在数据库服务端.可以选择修改MySQL源码.基本思路就是,对于相同行的更新,在进入引擎之前排队.
 
 #### 事务应该具有4个属性: ACID
 
@@ -124,7 +287,6 @@ highlight_shrink:
 
 * **串行(Serializable)**
   * 对于同一行记录,"写"会加"写锁","读"会加"读锁".当出现读写锁冲突的时候,后访问的事务必须等前一个事务执行完成,才能继续执行;
-  
   * 我的事务尚未提交,别人就不能改我的数据;
   * 最高的隔离级别，完全服从ACID的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，也就是说，该级别可以防止脏读、不可重复读以及幻读。
 
@@ -148,12 +310,17 @@ highlight_shrink:
 
 #### 设置事务隔离级别
 
-> 参数设置: `trancsaction-isolation`设置为`READ-COMMITED`
->
-> 事务的启动: 
->
-> * 显示启动事务,`begin`或`start transaction`.配套的提交语句`commit`,回滚语句`rollback`;
-> * `set autocommit=0`,这个命令会将线程的自动提交关掉;
+* 参数设置: `trancsaction-isolation`设置为`READ-COMMITED`
+
+##### 事务的启动: 
+
+* 显示启动事务,`begin`或`start transaction`配套的提交语句`commit`,回滚语句`rollback`;
+  * `begin/start transaction`命令并不是一个事务的起点,在执行到它们之后的第一个操作InnoDB表的语句,事务才真正启动;
+    * `begin/start transaction`方式,一致性视图是在第一个快照读语句是创建的;
+  * 若想要马上启动一个事务,可以使用`start transaction with consistent snapshot;`这个命令;
+    * `start transaction with consistent snapshot;`方式,一致性视图是在执行`start transaction with consistent snapshot`时创建的.
+    * `start transaction with consistent snapshot;`意思是从这个语句开始,创建一个持续整个事务的一致性快照.所以在读提交隔离级别下,这个用法就没意义了,等效普通的`start transaction`
+* `set autocommit=0`,这个命令会将线程的自动提交关掉;
 
 ##### 查询MySQL全局事务隔离级别
 
@@ -176,59 +343,59 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 #### **隔离级别与锁的关系**
 
-* 在Read Uncommitted级别下，读取数据不需要加共享锁，这样就不会跟被修改的数据上的排他锁冲突
+* 在`Read Uncommitted`级别下，读取数据不需要加共享锁，这样就不会跟被修改的数据上的排他锁冲突
 
-* 在Read Committed级别下，读操作需要加共享锁，但是在语句执行完以后释放共享锁；
+* 在`Read Committed`级别下，读操作需要加共享锁，但是在语句执行完以后释放共享锁；
 
-* 在Repeatable Read级别下，读操作需要加共享锁，但是在事务提交之前并不释放共享锁，也就是必须等待事务执行完毕以后才释放共享锁。
+* 在`Repeatable Read`级别下，读操作需要加共享锁，但是在事务提交之前并不释放共享锁，也就是必须等待事务执行完毕以后才释放共享锁。
 
-* Serializable 是限制性最强的隔离级别，因为该级别锁定整个范围的键，并一直持有锁，直到事务完成。
-
-#### **InnoDB存储引擎的锁的算法有三种**
-
-- Record lock：单个行记录上的锁
-- Gap lock：间隙锁，锁定一个范围，不包括记录本身
-- Next-key lock：record+gap 锁定一个范围，包含记录本身
-
-> - innodb对于行的查询使用next-key lock
-> - Next-locking keying为了解决Phantom Problem幻读问题
-> - 当查询的索引含有唯一属性时，将next-key lock降级为record key
-> - Gap锁设计的目的是为了阻止多个事务将记录插入到同一范围内，而这会导致幻读问题的产生
-> - 有两种方式显式关闭gap锁：（除了外键约束和唯一性检查外，其余情况仅使用record lock） A. 将事务隔离级别设置为RC B. 将参数innodb_locks_unsafe_for_binlog设置为1
+* `Serializable`是限制性最强的隔离级别，因为该级别锁定整个范围的键，并一直持有锁，直到事务完成。
 
 #### MVCC
 
-##### 含义
-
-> MVCC的英文全称为Multiversion Concurrency Control 即多版本并发控制技术.MVCC是通过数据行的多个版本管理来实现数据库的并发控制,简单来说它的思想就是保存数据的历史版本,这样就可以通过比较版本号决定数据是否显示出来,读取数据的时候不需要加锁也可以保证事务的隔离效果.
+* MVCC的英文全称为Multiversion Concurrency Control 即多版本并发控制技术.MVCC是通过数据行的多个版本管理来实现数据库的并发控制,简单来说它的思想就是保存数据的历史版本,这样就可以通过比较版本号决定数据是否显示出来,读取数据的时候不需要加锁也可以保证事务的隔离效果.
 
 ##### MVCC可以解决哪些问题
 
-* 读写之间阻塞的问题,通过MVCC可以让读写互相不阻塞,即读不阻塞写,写不阻塞读,这样就可以提高事务的并发处理能力;
-* 降低了死锁的概率,这是因为MVCC采用了乐观锁的方式,读取数据并不需要加锁,对与写操作,也只锁定必要的行;
-* 解决一致性读的问题.一致性读也被称为快照读,当我们查询数据库在某个时间点的快照时,只能看到这个时间点之前的事务提交更新的结果,而不能看到这个时间点之后事务提交的更新结果.
+* **读写之间阻塞的问题**,通过MVCC可以让读写互相不阻塞,即读不阻塞写,写不阻塞读,这样就可以提高事务的并发处理能力;
+* **降低了死锁的概率**,这是因为MVCC采用了乐观锁的方式,读取数据并不需要加锁,对与写操作,也只锁定必要的行;
+* **解决一致性读的问题**.一致性读也被称为快照读,当我们查询数据库在某个时间点的快照时,只能看到这个时间点之前的事务提交更新的结果,而不能看到这个时间点之后事务提交的更新结果.
+  * 用于支持RC(`Read Committed`,读提交)和RR(`Repeatable Read`,可重复读)隔离级别的实现
 
 ##### 快照读 当前读
 
-* 快照读读取的是快照数据,不加锁的简单SELECT都属于快照读.
+* **快照读读取的是快照数据,不加锁的简单SELECT都属于快照读.**
 
-* 当前读就是读取最新数据,而不是历史版本的数据.加锁的SELECT或者对数据进行增删改都会进行当前读.
+  * `Read Committed`隔离级别：每次SELECT都生成一个快照读 
+  * `Read Repeatable`隔离级别：开启事务后第一个SELECT语句才是快照读的地方，而不是一开启事务就快照读
 
+* **当前读就是读取最新数据,而不是历史版本的数据**.
+
+  * 加锁的SELECT或者对数据进行增删改都会进行当前读.
+  
   ```mysql
+  -- 读锁/共享锁(S锁)
   SELECT * FROM test LOCK IN SHARE MODE;
+  -- 写锁/排他锁(X锁)
   SELECT * FROM test FOR UPDATE;
   INSERT INTO test VALUES ....;
   DELETE FROM test WHERE ...;
+  -- 更新数据都是先读后写的
   UPDATE test SET ...;
   ```
-
+  
   * **快照读就是普通的读操作,而当前读包括了加锁的读取和DML操作**
+
+##### 事务的可重复读的能力是怎么实现的?
+
+* **可重复读的核心是一致性读(consistent read);而事务更新数据的时候,只能用当前读,如果当前的记录的行锁被其他事务占用的话,就需要进入锁等待.**
 
 ##### InnoDb中MVCC是如何实现的
 
 ###### 事务版本号
 
-* 每开启一个事务,我们都会从数据库中获得一个事务ID(也就是事务版本号),这个事务ID是自增长的,通过ID大小,就可以判断事务的时间顺序.
+* InnoDB里面每个事务有一个唯一的事务ID,叫做`transaction id`.它是在事务开始的时候向InnoDB的事务系统申请的,是按照申请顺序严格递增的.
+* 每行数据也都是有多个版本的.每次事务更新数据的时候,都会生成一个新的数据版本,并且把`transaction id`赋值给这个版本的事务ID,记为`row_trx_id`.同时,旧的数据版本要保留,并且在新的数据版本中,能够有信息可以直接拿到它.也就是说,数据表中的一行记录,其实可以有多个版本(row),每个版本有自己的`row_trx_id`
 
 ###### 行记录的隐藏列
 
@@ -241,7 +408,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 ###### Undo Log
 
-* InnoDB将航记录快照保存在Undo Log里,可以在回滚段中找到.
+* InnoDB将行记录快照保存在Undo Log里,可以在回滚段中找到.
 
 <img src="https://www.holelin.cn/img/mysql/UndoLog%E5%9B%9E%E6%BB%9A.png" alt="img" style="zoom:67%;" />
 
@@ -249,7 +416,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 * 在MVCC机制,多个事务对同一个行记录进行更新会产生多个历史快照,这些历史快照保存在Undo Log里.若一个事务想要查询这个行记录,想要读取哪个版本的行记录呢?
 
-  * 这时需要用到ReadViewl ,它可以帮助我们解决行的可见性问题.**ReadView保存了当前事务开启时所有活跃(还没提交)的事务列表**,也可以理解为ReadView保存了不应该让这个事务看到的其他的事务ID列表.
+  * 这时需要用到ReadView ,它可以帮助我们解决行的可见性问题.**ReadView保存了当前事务开启时所有活跃(还没提交)的事务列表**,也可以理解为ReadView保存了不应该让这个事务看到的其他的事务ID列表.
 
 * 在Read View中有几个重要的属性:
 
@@ -260,6 +427,8 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 * 示例:如下图,`trx_ids`为`trx2`,`trx3`,`trx5`和`trx8`的集合,活跃的最大事务ID(`low_limit_id`)为`trx8`,活跃的最小的事务ID(`up_limit_id`)为`trx2`
 
+  <img src="https://www.holelin.cn/img/mysql/MVCC%20Read%20View.png" alt="img" style="zoom:67%;" />
+  
   ![img](https://www.holelin.cn/img/mysql/Read%20View.png)
   
 * 假设当前有事务`creator_trx_id`想要读取某个行记录,这个行记录的事务ID为`trx_id`,那么会出现以下几种情况:
