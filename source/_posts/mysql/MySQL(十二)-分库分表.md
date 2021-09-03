@@ -1,5 +1,5 @@
 ---
-title: MySQL分库分表
+title: MySQL(十二)-分库分表
 mermaid: true
 date: 2021-06-12 19:43:29
 cover: /img/cover/MySQL.jpg

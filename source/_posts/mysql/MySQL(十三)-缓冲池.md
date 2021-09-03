@@ -1,5 +1,5 @@
 ---
-title: MySQL-缓冲池
+title: MySQL(十三)-缓冲池
 date: 2021-08-23 10:42:31
 cover: /img/cover/MySQL.jpg
 tags:

@@ -1,11 +1,11 @@
 ---
-title: MySQL优化方法
+title: MySQL(十四)-优化
 mermaid: true
 date: 2021-06-12 19:47:32
 index_img: /img/cover/MySQL.jpg
 cover: /img/cover/MySQL.jpg
 tags:
-- 数据库优化方法
+- 数据库优化
 categories:
 - MySQL
 updated:

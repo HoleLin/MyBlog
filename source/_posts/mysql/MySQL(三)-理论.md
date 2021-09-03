@@ -1,5 +1,5 @@
 ---
-title: MySQL-理论
+title: MySQL(三)-理论
 mermaid: false
 date: 2021-06-16 18:31:42
 cover: /img/cover/MySQL.jpg
