@@ -325,13 +325,19 @@ highlight_shrink:
 ##### 查询MySQL全局事务隔离级别
 
 ```sql
+-- 5.x
 SELECT @@global.tx_isolation;
+ -- 8.0
+SELECT @@global.transaction_isolation;
 ```
 
 ##### 查询当前会话事务隔离级别
 
 ```mysql
+ -- 5.x
  SELECT @@tx_isolation;
+ -- 8.0
+ SELECT @@transaction_isolation,
  SHOW VARIABLES LIKE 'transaction_isolation'
 ```
 
