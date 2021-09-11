@@ -96,6 +96,15 @@ highlight_shrink:
 >
 > 根据加锁的范围,MySQL里面的锁大致为**全局锁,表级锁和行锁**.
 
+##### 语句
+
+```mysql
+-- 显示加读锁
+LOCK TABLE ...READ
+-- 显示加写锁
+LOCK TABLE ...WRITE
+```
+
 ##### 全局锁
 
 * 全局锁就是对整个数据库实例加锁.MySQL提供了一个加全局读锁的方法,命令是`FLUSH TABLES WITH READ LOCK`(**FTWRL**),使用这个命令后,其他线程的一下语句会被阻塞:
@@ -265,6 +274,32 @@ highlight_shrink:
   * 直接的方法:若确保这个业务一定不会出现死锁,可以临时吧死锁检测关掉.
   * 控制并发度来降低死锁检测的成本.
     * 这个并发度控制要做在数据库服务端.可以选择修改MySQL源码.基本思路就是,对于相同行的更新,在进入引擎之前排队.
+
+* **死锁排查步骤**
+
+  * 关注`SHOW ENGINE INNODB STATUS`命令`TRANSACTIONS`部分;
+
+  * 若无异常信息则需要检查`performance_schema.mutex_instances`表,该表会列出自服务器启动以来所有的冲突.
+
+    ```mysql
+    SELECT * FROM mutex_instances WHERE LOCKED_BY_THREAD_ID IS NOT NULL
+    ```
+
+  * 要找出谁在等待这些冲突,可以查询`performance_schema.events_waits_current`表
+
+    ```mysql
+    SELECT THREAD_ID,EVENT_ID,EVENT_NAME,SOURCE,TIMER_START,OBJECT_INSTANCE_BEGIN,OPERATION
+    FROM events_waits_current
+    WHERE THREAD_id IN(SELECT LOCKED_BY_THREAD_ID FROM mutex_instances WHERE LOCKED_BY_THREAD_ID IS NOT NULL);
+    ```
+
+  * 输出中的`THREAD_ID`,是内部`mysqld`分配给线程的实际编号,而不是帮助找到产生死锁原因的连接线程的编号.要找到连接线程的编号,可以查询`performance_schema.threads`表.
+
+    ```mysql
+    SELECT * FROM threads;
+    ```
+
+  * 选择一个连接终止来解决死锁.
 
 #### 事务应该具有4个属性: ACID
 

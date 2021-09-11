@@ -338,3 +338,45 @@ sert into article_list values(null,'mysql优化','内容示例',0);
 flush tables;
 ```
 
+### 查询优化
+
+#### NOT IN转化为JOIN查询
+
+* `NOT IN`
+
+```mysql
+mariadb> EXPLAIN 
+SELECT d.origin_id ,o.total_fee 
+FROM `order_detail` d LEFT JOIN `payment_order` o ON d.origin_id = o.uid 
+WHERE d.telephone_number = '13285273281' AND o.`state` = 'PAY_SUCCESS' AND d.origin_id NOT IN ( SELECT r.payment_order_id FROM payment_order_relation r WHERE r.telephone_number = '13285273281' ) 
+ORDER BY o.payment_time DESC;
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+| id | select_type  | table | type | possible_keys         | key       | key_len | ref   | rows | Extra                                           |
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+|  1 | PRIMARY      | d     | ALL  | index_tel             | NULL      | NULL    | NULL  | 7    | Using where; Using temporary; Using filesort    |
+|  1 | PRIMARY      | o     | ALL  | NULL                  | NULL      | NULL    | NULL  | 7    | Using where; Using join buffer (flat, BNL join) |
+|  2 | MATERIALIZED | r     | ref  | index_tel,index_po_id | index_tel | 47      | const | 2    | Using index condition                           |
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+3 rows in set (0.01 sec)
+
+```
+
+* `LEFT JOIN`
+
+```mysql
+mariadb> EXPLAIN 
+SELECT d.origin_id as paymentOrderId, o.total_fee as totalFee
+FROM `order_detail` d LEFT JOIN `payment_order` o ON d.origin_id = o.uid 
+LEFT JOIN ( SELECT r.payment_order_id FROM payment_order_relation r WHERE r.telephone_number = '13285273281' ) temp ON d.origin_id = temp.payment_order_id 
+WHERE d.telephone_number = '13285273281' 	AND o.`state` = 'PAY_SUCCESS' AND temp.payment_order_id IS NULL 
+ORDER BY o.payment_time DESC;
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+| id | select_type | table | type | possible_keys         | key         | key_len | ref              | rows | Extra                                           |
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+|  1 | SIMPLE      | d     | ALL  | index_tel             | NULL        | NULL    | NULL             | 7    | Using where; Using temporary; Using filesort    |
+|  1 | SIMPLE      | r     | ref  | index_tel,index_po_id | index_po_id | 99      | lack.d.origin_id | 1    | Using where                                     |
+|  1 | SIMPLE      | o     | ALL  | NULL                  | NULL        | NULL    | NULL             | 7    | Using where; Using join buffer (flat, BNL join) |
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+3 rows in set (0.01 sec)
+```
+
