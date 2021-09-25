@@ -1,5 +1,5 @@
 ---
-title: MySQL(二)-运维操作
+title: MySQL(二)-运维操作(一)
 date: 2021-09-03 16:07:22
 cover: /img/cover/MySQL.jpg
 tags:
@@ -209,8 +209,85 @@ highlight_shrink:
   1 row in set (0.18 sec)
   ```
 
-  * innodb_locks表在8.0.13版本中由performance_schema.data_locks表所代替,innodb_lock_waits表则由performance_schema.data_lock_waits表代替。(保存以获取的锁和等待的锁的信息)
+  * **innodb_locks表在8.0.13版本中由performance_schema.data_locks表所代替,innodb_lock_waits表则由performance_schema.data_lock_waits表代替。(保存以获取的锁和等待的锁的信息)**
   * Innodb_trx(保存正在执行的事务的信息)
+
+#### `information_schema`中的表
+
+| 表名         | 作用                         |
+| ------------ | ---------------------------- |
+| `INNODB_TRX` | 包含当前运行的所有事务的列表 |
+
+#### `performance_schema`中的表
+
+| 表名                | 作用                                                     |
+| ------------------- | -------------------------------------------------------- |
+| `INNODB_LOCKS`      | 包含事务持有的当前锁的相关信息以及每个事务等待的锁的信息 |
+| `INNODB_LOCK_WAITS` | 包含事务正在等待的锁的信息                               |
+
+* 调试并发问题时有用的典型的`information_schema`表查询
+
+  * 关于事务正在等待的所有锁的信息`SELECT * FROM INNODB_LOCK_WAITS;`
+
+  * 阻塞的事务列表
+
+    ```mysql
+    SELECT * FROM performance_schema.data_locks WHERE ENGINE_LOCK_ID IN (SELECT BLOCKING_ENGINE_LOCK_ID FROM performance_schema.data_lock_waits);
+    ```
+
+  * 特定表上的锁的列表
+
+    ```mysql
+    SELECT * FROM performance_schema.data_locks WHERE OBJECT_NAME='table_name';
+    
+    +--------+----------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+
+    | ENGINE | ENGINE_LOCK_ID                         | ENGINE_TRANSACTION_ID | THREAD_ID | EVENT_ID | OBJECT_SCHEMA | OBJECT_NAME | PARTITION_NAME | SUBPARTITION_NAME | INDEX_NAME | OBJECT_INSTANCE_BEGIN | LOCK_TYPE | LOCK_MODE     | LOCK_STATUS | LOCK_DATA |
+    +--------+----------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+
+    | INNODB | 140506252934808:1092:140506164241328   |                  4396 |       713 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164241328 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252928872:1092:140506164198896   |                  4395 |       712 |       38 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164198896 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252933960:1092:140506164235296   |                  4394 |       716 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164235296 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252932264:1092:140506164223232   |                  4393 |       715 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164223232 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252933112:1092:140506164229264   |                  4392 |       714 |       18 | lack          | table_name   | NULL           | NULL              | NULL       |       140506164229264 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252933112:31:4:2:140506164226352 |                  4392 |       714 |       18 | lack          | table_name   | NULL           | NULL              | PRIMARY    |       140506164226352 | RECORD    | X,REC_NOT_GAP | GRANTED     | 1         |
+    +--------+----------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+
+    6 rows in set (0.02 sec)
+    ```
+
+  * 等待锁的事务列表:
+
+    ```mysql
+    SELECT TRX_ID,TRX_REQUESTED_LOCK_ID,TRX_MYSQL_THREAD_ID,TRX_QUERY
+    FROM information_schema.INNODB_TRX
+    WHERE TRX_STATE='LOCK WAIT';
+    ```
+
+  * 找出事务正在等待哪种类型的锁
+
+    ```mysql
+    SELECT THREAD_ID,EVENT_NAME,SOURCE,OPERATION,PROCESSLIST_ID
+    FROM events_waits_current JOIN threads USING (THREAD_ID)
+    WHERE PROCESSLIST_ID
+    ```
+
+#### 设置变量
+
+* MySQL支持两种形式的变量:`SESSION`以及`GLOBAL`
+
+  * 回话级别的变量设置只会对当前连接生效,而不会影响其他连接
+
+    ```
+    set [session] var_name = value
+    ```
+
+  * `GLOBAL`变量配置后将应用此后创建的所有连接.但设置一个`GLOBAL`变量,并不会影响当前连接.
+
+    ```
+    set gloabl var_name = value
+    ```
+
+  * 所以如果需要在当前连接使用一个新的变量值,那么应该同时设置`SESSION`变量和`GLOBAL`变量
+
+  * 变量值还原为默认值:`set [session] var_name = DEFAULT`
 
 #### 导出数据
 
@@ -352,23 +429,38 @@ GRANT OPTION    -- 允许授予权限
 
 #### 字符集编码
 
-```mysql
--- MySQL、数据库、表、字段均可设置编码
--- 数据编码与客户端编码不需一致
-SHOW VARIABLES LIKE 'character_set_%'   -- 查看所有字符集编码项
-    character_set_client        客户端向服务器发送数据时使用的编码
-    character_set_results       服务器端将结果返回给客户端所使用的编码
-    character_set_connection    连接层编码
-SET 变量名 = 变量值
-    SET character_set_client = gbk;
-    SET character_set_results = gbk;
-    SET character_set_connection = gbk;
-SET NAMES GBK;  -- 相当于完成以上三个设置
--- 校对集
-    校对集用以排序
-    SHOW CHARACTER SET [LIKE 'pattern']/SHOW CHARSET [LIKE 'pattern']   查看所有字符集
-    SHOW COLLATION [LIKE 'pattern']     查看所有校对集
-    CHARSET 字符集编码     设置字符集编码
-    COLLATE 校对集编码     设置校对集编码
-```
+* 当在排序或者比较过程中遇到问题时,应当检查字符集选项与表的定义.
+
+* 显示字符集变量值
+
+  ```mysql
+  SHOW VARIABLES LIKE 'character_set_%'   -- 查看所有字符集编码项
+  SHOW VARIABLES LIKE '%%coll%';
+  ```
+
+  * `character_set_client`      客户端向服务器发送数据时使用的编码
+  * `character_set_results`       服务器端将结果返回给客户端所使用的编码
+  * `character_set_connection`    连接层编码
+
+* 设置字符集集
+
+  ```mysql
+  SET 变量名 = 变量值
+      SET character_set_client = gbk;
+      SET character_set_results = gbk;
+      SET character_set_connection = gbk;
+  SET NAMES GBK;  -- 相当于完成以上三个设置
+  ```
+
+* 校对集
+
+  ```mysql
+  -- 校对集用以排序
+  SHOW CHARACTER SET [LIKE 'pattern']/SHOW CHARSET [LIKE 'pattern']   查看所有字符集
+  SHOW COLLATION [LIKE 'pattern']     查看所有校对集
+  CHARSET 字符集编码     设置字符集编码
+  COLLATE 校对集编码     设置校对集编码
+  ```
+
+
 

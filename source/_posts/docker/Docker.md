@@ -373,6 +373,9 @@ categories: Docker
   
 * 删除所有镜像: `docker rmi $(docker images -q)`
 
+  * 删除单个镜像`docker images rm 镜像名:版本号|镜像ID `
+  * 强制删除单个镜像`docker images rm -f 镜像名:版本号|镜像ID `
+
 * 构建Docker镜像:
 
   ```
