@@ -27,7 +27,7 @@ highlight_shrink:
 
 * `mysql --column-type-info` 显示结果集元数据
 
-  ```
+  ```sh
   -- 字段名
   Field  11:  `produced_time`
   -- 目录名称
@@ -79,4 +79,14 @@ highlight_shrink:
 * 如果重写没用,可以检查服务器选项并尝试确定它们是否影响结果;
 * 如果问题不能再MySQL CLI重现,请检查它是否有并发问题;
 * 如果该问题会导致系统崩溃或挂起,首先检查错误日志;
+
+### MySQL基准工具
+
+#### `mysqlslap`
+
+* `mysqlslap`是MySQL发布版中自带的一个负载模拟客户端.
+
+#### [`SysBench`](https://github.com/akopytov/sysbench)
+
+* 它可以用来测试整个系统的性能,包括测试CPU,文件I/O,操作系统调度程序,POSIX线程性能,内存分配,传输速度与数据库服务性能.
 

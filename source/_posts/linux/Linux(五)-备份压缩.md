@@ -97,12 +97,20 @@ tar格式（该格式仅仅打包，不压缩）
 
 #### `zip`格式
 
-```
+```sh
 zip格式
 压缩： zip -r [目标文件名].zip [原文件/目录名]
 解压： unzip [原文件名].zip
 注：-r参数代表递归
 ```
+
+* 快速预览压缩包文件
+
+  ```
+  $ zipinfo archive_name.zip
+  # 或者也可以用
+  $ unzip -l archive_name.zip
+  ```
 
 #### `tar.gz`格式
 
