@@ -1,6 +1,6 @@
 ---
-title: MySQL(四)-索引(二)
-date: 2021-09-03 16:35:31
+title: MySQL(九)-索引(二)
+date: 2021-07-09 16:35:31
 cover: /img/cover/MySQL.jpg
 tags:
 - 索引

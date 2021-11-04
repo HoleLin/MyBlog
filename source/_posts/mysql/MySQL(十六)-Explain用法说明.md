@@ -1,7 +1,7 @@
 ---
-title: MySQL(二)-Explain用法说明
+title: MySQL(十六)-Explain用法说明
+date: 2021-08-17 19:43:29
 mermaid: true
-date: 2021-06-12 19:43:29
 cover: /img/cover/MySQL.jpg
 tags:
 - Explain

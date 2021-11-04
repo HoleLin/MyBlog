@@ -1,6 +1,6 @@
 ---
 title: MySQL(十五)-主从复制
-date: 2021-06-07 23:11:45
+date: 2021-08-16 23:11:45
 index_img: /img/cover/MySQL.jpg
 cover: /img/cover/MySQL.jpg
 tags:

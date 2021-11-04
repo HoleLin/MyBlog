@@ -1,6 +1,6 @@
 ---
 title: MySQL(一)-基础操作
-date: 2021-09-03 15:32:31
+date: 2021-06-07 15:32:31
 cover: /img/cover/MySQL.jpg
 tags:
 - 操作

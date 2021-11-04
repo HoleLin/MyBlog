@@ -1,7 +1,7 @@
 ---
-title: MySQL(五)-常见函数
+title: MySQL(四)-常见函数
 mermaid: true
-date: 2021-06-12 19:45:53
+date: 2021-06-17 19:45:53
 cover: /img/cover/MySQL.jpg
 tags:
 - 函数

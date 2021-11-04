@@ -1,7 +1,7 @@
 ---
-title: MySQL(四)-索引(一)
+title: MySQL(九)-索引(一)
 mermaid: true
-date: 2021-06-12 19:41:38
+date: 2021-07-02 19:41:38
 cover: /img/cover/MySQL.jpg
 tags:
 - 索引

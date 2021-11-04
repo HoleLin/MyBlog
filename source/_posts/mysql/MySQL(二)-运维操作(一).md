@@ -1,6 +1,6 @@
 ---
 title: MySQL(二)-运维操作(一)
-date: 2021-09-03 16:07:22
+date: 2021-06-12 16:07:22
 cover: /img/cover/MySQL.jpg
 tags:
 - 运维操作
