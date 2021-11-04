@@ -33,7 +33,7 @@ highlight_shrink:
 
 ### MySQL查询语句的执行流程
 
-<img src="https://www.chenjunlin.vip/img/mysql/MySQL%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/mysql/MySQL%E5%9F%BA%E6%9C%AC%E6%9E%B6%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:67%;" />
 
 * 大体来说,MySQL可分为Server层和存储引擎层两部分
   * Server层包括连接器,查询缓存,分析器,优化器,执行器等,涵盖MySQL的大多数核心服务功能,以及所有的内置函数(如日期,时间,数字和加密函数等)
@@ -254,7 +254,7 @@ SQL语句-->
   show profile for query 2;
   ```
 
-  ![img](https://www.chenjunlin.vip/img/mysql/show_profile.png)
+  ![img](https://www.holelin.cn/img/mysql/show_profile.png)
 
 
 
@@ -271,8 +271,6 @@ SQL语句-->
 * columns_priv权限表：记录数据列级的操作权限。
 
 * host权限表：配合db权限表对给定主机上数据库级操作权限作更细致的控制。这个权限表不受GRANT和REVOKE语句的影响。
-
-
 
 ### 触发器
 

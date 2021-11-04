@@ -90,3 +90,36 @@ highlight_shrink:
 
 * 它可以用来测试整个系统的性能,包括测试CPU,文件I/O,操作系统调度程序,POSIX线程性能,内存分配,传输速度与数据库服务性能.
 
+### 转换表的引擎的处理方式
+
+#### `ALTER TABLE`
+
+```mysql
+ALTER TABLE mytable ENGINE=InnoDB;
+```
+
+* **注意点:**需要执行很长时间.MySQL会按行将数据从原表复制到一张新的表中,在复制期间可能会消耗系统所有的I/O能力,同时原表上会加上读锁.所以在繁忙的表上执行此操作要特别小心.
+
+#### 导出与导入
+
+* 使用`mysqldump`工具将数据导出到文件,然后修改文件中的`CREATE TABLE`语句的存储引擎选项,注意同时修改表名.同时注意`mysqldump`默认会自动在`CREATE TABLE`语句之前加上`DROP TABLE`语句.
+
+#### 创建与查询
+
+```mysql
+CREATE TABLE innodb_table LIKE myisam_table;
+ALTER TABLE innodb_table ENGINE=InnoDB;
+START TRANSACTION;
+INSERT INTO innodb_table SELECT * FROM myisam_table WHERE id BETWEEN x AND y;
+COMMIT;
+```
+
+### 大表修改工具
+
+* [`pt-online-schema-change`](https://www.percona.com/doc/percona-toolkit/3.0/pt-online-schema-change.html)
+
+* [Online Schema Changes](https://www.cockroachlabs.com/docs/stable/online-schema-changes.html)
+
+* [openark kit](https://code.openark.org/forge/openark-kit)
+* [Percona Toolkit](https://www.percona.com/software/database-tools/percona-toolkit)
+

@@ -172,3 +172,9 @@ md5();
 default();
 ```
 
+#### IP地址相关函数
+
+```mysql
+SELECT INET_ATON( '127.0.0.1' ),INET_NTOA( '2130706433' );
+```
+
