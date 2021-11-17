@@ -4,8 +4,8 @@ date: 2021-11-06 12:06:15
 index_img: /img/cover/Nginx.jpg
 cover: /img/cover/Nginx.jpg
 tags:
-- 模块
-  categories:
+- 配置HTTPS
+categories:
 - Nginx
 updated:
 type:
