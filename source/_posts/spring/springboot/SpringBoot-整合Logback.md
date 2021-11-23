@@ -25,6 +25,12 @@ highlight_shrink:
 * [SpringBoot配合logback达到日志切割管理通用配置](https://blog.csdn.net/mojiewangday/article/details/107538981)
 * [Logback and Spring Boot's new springProperty lookup mechanism not working](https://stackoverflow.com/questions/33505624/logback-and-spring-boots-new-springproperty-lookup-mechanism-not-working)
 
+### 遇到的问题
+
+* Logback and Spring Boot's new springProperty lookup mechanism not working(**springProperty不起作用**)
+
+![img](https://www.holelin.cn/img/spring/springboot/%E6%95%B4%E5%90%88logback.png)
+
 ### logback配置
 
 * 配置文件名称: `logback-spring.xml`
