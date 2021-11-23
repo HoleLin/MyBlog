@@ -38,12 +38,16 @@ categories:
 
 * Nginx二进制可执行文件
   * 由各个模块源码编辑出的一个文件
-* Nginx.conf配置文件
+* nginx.conf配置文件
   * 控制Nginx的行为
+  * 默认放置于`/usr/local/nginx/conf`， `/etc/nginx`或 `/usr/local/etc/nginx`。
 * access.log访问日志
   * 记录每一条HTTP请求信息
 * error.log错误日志
   * 定位问题
+* nginx.pid 进程ID文件
+  * 默认放置于`/usr/local/nginx/logs`或 `/var/run`
+
 
 ### Nginx版本
 
@@ -254,7 +258,20 @@ net.ipv4.tcp_max_syn.backlog = 1024
  * 重载配置文件: `nginx -s reload`
  * 重新开始记录日志文件: `nginx -s reopen`
 
-### Nginx location配置
+### Nginx events常用配置
+
+* #### include
+
+  ```properties
+  include mime.types;
+  include vhosts/*.conf;
+  ```
+
+### Nginx http常用配置
+
+### Nginx server常用配置
+
+### Nginx location常用配置
 
 * 语法格式:`location [=|~|~*|^~] /url/ {...}`
 
@@ -284,6 +301,12 @@ net.ipv4.tcp_max_syn.backlog = 1024
   ```
   语法：root path 默认值：root html
   配置段：http、server、location、if
+  
+  示例
+   location /root{
+     root /data/www;
+   }
+  访问: base_url/root/data/www 
   ```
 
 * `alias`
@@ -291,8 +314,14 @@ net.ipv4.tcp_max_syn.backlog = 1024
   ```
   语法：alias path 
   配置段：location
+  
+   location /alias {
+     alias /data/www/;
+   }
+  
+   访问: base_url/alias 
   ```
-
+  
   * 使用alias时，目录名后面一定要加上**“/”**；
   * alias可以指定任何名称。
   * alias在使用正则匹配时，必须捕捉匹配的内容并指定的内容处使用；
