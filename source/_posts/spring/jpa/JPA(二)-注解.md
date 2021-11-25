@@ -54,7 +54,7 @@ highlight_shrink:
 
   * 先打开 QueryExecutorMethodInterceptor 类，默认的策略是CreateIfNotFound,找到如下代码：
 
-   ![img](https://www.chenjunlin.vip/img/spring/jpa/JpaQueryLookupStrategy.png)
+   ![img](https://www.holelin.cn/img/spring/jpa/JpaQueryLookupStrategy.png)
 
 ##### @Query 的基本用法
 
@@ -335,9 +335,9 @@ public void testQueryDinamicDto() {
 }
 ```
 
-![img](https://www.chenjunlin.vip/img/spring/jpa/Query%20%E5%8A%A8%E6%80%81%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%951.png)
+![img](https://www.holelin.cn/img/spring/jpa/Query%20%E5%8A%A8%E6%80%81%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%951.png)
 
-![img](https://www.chenjunlin.vip/img/spring/jpa/Query%20%E5%8A%A8%E6%80%81%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%952.png)
+![img](https://www.holelin.cn/img/spring/jpa/Query%20%E5%8A%A8%E6%80%81%E6%9F%A5%E8%AF%A2%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%952.png)
 
 #### @Param 用法
 
@@ -1363,9 +1363,9 @@ Hibernate: alter table user_room_relation add constraint FK45gha85x63026r8q8hs03
 
 * **jackson-databind：数据绑定包**，提供基于“对象绑定”解析的相关 API（ ObjectMapper ） 和“树模型”解析的相关 API（JsonNode）；基于“对象绑定”解析的 API 和“树模型”解析的 API 依赖基于“流模式”解析的 API。如下图中一些标准的类型转换：
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/Jackson%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/Jackson%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97.png)
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/Jackson%E6%B3%A8%E8%A7%A3.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/Jackson%E6%B3%A8%E8%A7%A3.png)
 
   ```java
   package com.example.jpa.example1;

@@ -191,7 +191,7 @@ SELECT	* FROM	table_name IGNORE INDEX ( index_name ) WHERE conditions;
 
   * 在文件系统和数据库系统中的索引经常采用B树来实现。
 
-    ![img](https://www.chenjunlin.vip/img/mysql/B%E6%A0%91%E7%9A%84%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png)
+    ![img](https://www.holelin.cn/img/mysql/B%E6%A0%91%E7%9A%84%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png)
 
     * B树作为平衡的多路搜索树，它的每个节点最多可以包括M个节点，M称为B树的阶，同时每个磁盘中包括了关键字和子节点的指针。如果一个磁盘块中包括了x个关键字，那么指针数就是x+1.
     * 一个M阶的B树(M>2)有以下的特性：

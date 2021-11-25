@@ -29,13 +29,13 @@ highlight_shrink:
 
 * ORM框架对比
 
-  <img src="https://www.chenjunlin.vip/img/spring/jpa/ORM%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94.png" alt="img" style="zoom: 50%;" />
+  <img src="https://www.holelin.cn/img/spring/jpa/ORM%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94.png" alt="img" style="zoom: 50%;" />
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/SpringDataJPA.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/SpringDataJPA.png)
 
 #### Spring Data Common的依赖关系
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/Spring%20Data%20Common%E7%9A%84%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/Spring%20Data%20Common%E7%9A%84%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB.png)
 
   * 数据库连接用的是**JDBC**
   * 连接池用的是**HikariCP**
@@ -235,7 +235,7 @@ highlight_shrink:
   * 该语法是：带查询功能的方法名由查询策略（关键字）+ 查询字段 + 一些限制性条件组成，具有语义清晰、功能完整的特性
   * `org.springframework.data.repository.query.parser.PartTree `
   * `org.springframework.data.repository.query.parser.Part` 
-    <img src="https://www.chenjunlin.vip/img/spring/jpa/DQM.png" alt="img" style="zoom: 50%;" />
+    <img src="https://www.holelin.cn/img/spring/jpa/DQM.png" alt="img" style="zoom: 50%;" />
 
 ##### **特定类型的参数：Sort 排序和 Pageable 分页**
 
@@ -401,7 +401,7 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
   - 使用异步的时候一定要配置线程池，这点切记，否则“死”得会很难看；
   - 万一失败我们会怎么处理？关于事务是怎么处理的呢？这种需要重点考虑的;
 
-  <img src="https://www.chenjunlin.vip/img/spring/jpa/%E5%BC%82%E6%AD%A5%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/spring/jpa/%E5%BC%82%E6%AD%A5%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C.png" alt="img" style="zoom:67%;" />
 
 ##### Projections 的概念
 
@@ -494,7 +494,7 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
     No converter found capable of converting from type [com.example.jpa.example1.User] to type [com.example.jpa.example1.UserOnlyNameEmailDto
     ```
 
-    ![img](https://www.chenjunlin.vip/img/spring/jpa/QueryStructure.png)
+    ![img](https://www.holelin.cn/img/spring/jpa/QueryStructure.png)
 
   * 第三种方法：返回结果是一个 POJO 的接口
 
@@ -530,4 +530,4 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
     这个时候会发现我们的 userOnlyName 接口成了一个代理对象，里面通过 Map 的格式包含了我们的要返回字段的值（如：name、email），我们用的时候直接调用接口里面的方法即可，如 userOnlyName.getName() 即可；这种方式的优点是接口为只读，并且语义更清晰
     ```
 
-    ![img](https://www.chenjunlin.vip/img/spring/jpa/QueryStructure2.png)
+    ![img](https://www.holelin.cn/img/spring/jpa/QueryStructure2.png)

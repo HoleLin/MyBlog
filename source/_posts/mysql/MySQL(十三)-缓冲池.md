@@ -31,7 +31,7 @@ highlight_shrink:
 
 * 缓存在数据库中的结构和作用如下图
 
-  ![img](https://www.chenjunlin.vip/img/mysql/%E7%BC%93%E5%86%B2%E6%B1%A0%E7%BB%93%E6%9E%84.png)
+  ![img](https://www.holelin.cn/img/mysql/%E7%BC%93%E5%86%B2%E6%B1%A0%E7%BB%93%E6%9E%84.png)
 
 * 执行SQL语句的时候更新了缓冲池的数据,那么这些数据是否会同步到磁盘上?
 
@@ -60,5 +60,5 @@ highlight_shrink:
 
 * 若想要查看某条SQL语句的查询成本,可以在执行完这条SQL语句之后,通过查看当前会话中的`last_query_cost`变量值来得到当前查询的成本.`show status like 'last_query_cost';`
 
-  ![img](https://www.chenjunlin.vip/img/mysql/last_query_cost.png)
+  ![img](https://www.holelin.cn/img/mysql/last_query_cost.png)
   * 上图表示查询了4个页

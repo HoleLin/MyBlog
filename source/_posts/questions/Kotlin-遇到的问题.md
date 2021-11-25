@@ -214,7 +214,7 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
 
 * 此时出现第二个问题自动注入的`KafkaProducer`为`null`
 
-  ![img](https://www.chenjunlin.vip/img/kotlin/Kotlin-SpringBoot-AOP.png)
+  ![img](https://www.holelin.cn/img/kotlin/Kotlin-SpringBoot-AOP.png)
 
   
 
@@ -278,7 +278,7 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
   
   ```
 
-  ![img](https://www.chenjunlin.vip/img/kotlin/Kotlin-SpringBoot-AOP2.png)
+  ![img](https://www.holelin.cn/img/kotlin/Kotlin-SpringBoot-AOP2.png)
 
 
 

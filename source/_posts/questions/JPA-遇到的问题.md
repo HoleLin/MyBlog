@@ -51,7 +51,7 @@ MySQL      8.0.24
     } 
 ```
 
-![img](https://www.chenjunlin.vip/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B1.png)
+![img](https://www.holelin.cn/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B1.png)
 
 ##### 示例2
 
@@ -74,17 +74,17 @@ MySQL      8.0.24
     }
 ```
 
-![img](https://www.chenjunlin.vip/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B2.png)
+![img](https://www.holelin.cn/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B2.png)
 
 ###### 分析
 
 * Hibernate对象生命周期
 
-  <img src="https://www.chenjunlin.vip/img/spring/jpa/Hibernate%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt="img" style="zoom:67%;" />
+  <img src="https://www.holelin.cn/img/spring/jpa/Hibernate%E5%AF%B9%E8%B1%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt="img" style="zoom:67%;" />
 
 * 第一查询到的数据test为持久态,修改X后还是持久态,当第二次查询相同的记录的时候,是直接从持久态上下文获取的.
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/JPA%E8%8E%B7%E5%8F%96%E6%8C%81%E4%B9%85%E6%80%81%E7%9A%84%E5%80%BC.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/JPA%E8%8E%B7%E5%8F%96%E6%8C%81%E4%B9%85%E6%80%81%E7%9A%84%E5%80%BC.png)
 
 * 最后在方法结束前提交事务前会做下列操作
 
@@ -99,15 +99,15 @@ MySQL      8.0.24
   session – The session being flushed
   ```
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/beforeTransactionCompletion.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/beforeTransactionCompletion.png)
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/flushBeforeTransactionCompletion.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/flushBeforeTransactionCompletion.png)
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/doFlush.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/doFlush.png)
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/onFlush.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/onFlush.png)
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/performExecutions.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/performExecutions.png)
 
 ##### 示例3
 
@@ -131,5 +131,5 @@ MySQL      8.0.24
     }
 ```
 
-![img](https://www.chenjunlin.vip/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B3.png)
+![img](https://www.holelin.cn/img/spring/jpa/JPA%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0%E7%A4%BA%E4%BE%8B3.png)
 

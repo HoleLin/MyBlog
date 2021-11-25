@@ -114,7 +114,7 @@ logging.level.org.springframework.orm=trace
 
   * 既然 PersistenceContext 是存储 Entity 的，那么 Entity 在 PersistenceContext 里面肯定有不同的状态。对此，JPA 协议定义了四种状态：new、manager、detached、removed。
 
-    ![img](https://www.chenjunlin.vip/img/spring/jpa/%E5%AE%9E%E4%BD%93%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png)
+    ![img](https://www.holelin.cn/img/spring/jpa/%E5%AE%9E%E4%BD%93%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png)
 
 ###### 第一种：New 状态的对象
 

@@ -29,7 +29,7 @@ highlight_shrink:
 
 * QueryByExampleExecutor（QBE）是一种用户友好的查询技术，具有简单的接口，它允许动态查询创建，并且不需要编写包含字段名称的查询。
 
-<img src="https://www.chenjunlin.vip/img/spring/jpa/QueryByExampleExecutor.png" alt="img" style="zoom:50%;" />
+<img src="https://www.holelin.cn/img/spring/jpa/QueryByExampleExecutor.png" alt="img" style="zoom:50%;" />
 
 ##### QBE 的基本语法
 
@@ -208,7 +208,7 @@ ExampleMatcher withStringMatcher(StringMatcher defaultStringMatcher);
 ExampleMatcher withMatcher(String propertyPath, GenericPropertyMatcher genericPropertyMatcher);
 ```
 
-<img src="https://www.chenjunlin.vip/img/spring/jpa/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99.png" alt="img" style="zoom: 67%;" />
+<img src="https://www.holelin.cn/img/spring/jpa/%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99.png" alt="img" style="zoom: 67%;" />
 
 ###### 示例
 

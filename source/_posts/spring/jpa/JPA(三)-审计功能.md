@@ -274,7 +274,7 @@ public class User extends BaseEntity {
 * `@PostUpdate`
 * `@PostLoad`
 
-<img src="https://www.chenjunlin.vip/img/spring/jpa/Java%20Persistence%20API.png" alt="img" style="zoom:67%;" />
+<img src="https://www.holelin.cn/img/spring/jpa/Java%20Persistence%20API.png" alt="img" style="zoom:67%;" />
 
 ##### **语法注意事项**
 

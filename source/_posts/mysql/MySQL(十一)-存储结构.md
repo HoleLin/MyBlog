@@ -29,7 +29,7 @@ highlight_shrink:
 
 * 一页中可以存储多个行记录(ROW)，同时在数据库中，还存在着区(Extent)，段(Segment)和表空间(Tablespace)。行，页，区，段，表空间的关系如下图：
 
-  ![img](https://www.chenjunlin.vip/img/mysql/%E8%A1%8C,%E9%A1%B5,%E5%8C%BA,%E6%AE%B5,%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%85%B3%E7%B3%BB.png)
+  ![img](https://www.holelin.cn/img/mysql/%E8%A1%8C,%E9%A1%B5,%E5%8C%BA,%E6%AE%B5,%E8%A1%A8%E7%A9%BA%E9%97%B4%E5%85%B3%E7%B3%BB.png)
 
   * 区是比页大一级的存储结构，在InnoDB存储引擎中，一个区会分配64个连续的页，因为InnoDB中的页大小默认是16KB，所以一个区的大小是64*16KB=1MB
 
@@ -41,7 +41,7 @@ highlight_shrink:
 
   * 可以通过`show variables like 'innodb_file_per_table';`
 
-    ![img](https://www.chenjunlin.vip/img/mysql/innodb_file_per_table.png)
+    ![img](https://www.holelin.cn/img/mysql/innodb_file_per_table.png)
 
     * `Innodb_file_per_table=ON`，意味着每张表都会单独保存在一个`.ibd`文件
 
@@ -51,7 +51,7 @@ highlight_shrink:
 
 * 表页的大小限定了表行的最大长度,不同的DBMS的表页大小不同.在MySQL的InnoDB存储引擎中,默认页的大小是16KB.
 
-  ![img](https://www.chenjunlin.vip/img/mysql/innodb_page_size.png)
+  ![img](https://www.holelin.cn/img/mysql/innodb_page_size.png)
 
 * 数据库I/O操作的最小单位是页,与数据库相关的内容都会存储在页结构里.数据页包括七个部分
   * **文件头(File Header)**
@@ -86,13 +86,13 @@ highlight_shrink:
   
     * 第二部分是记录部分,页的主要作用是存储记录,所以"最小和最大记录"和"用户记录"部分占了页的主要空间.空闲空间是个灵活的部分,当有新的记录插入时,会从空闲空间中就进行分配用于存储新记录.
   
-      ![img](https://www.chenjunlin.vip/img/mysql/%E8%AE%B0%E5%BD%95%E9%83%A8%E5%88%86.png)
+      ![img](https://www.holelin.cn/img/mysql/%E8%AE%B0%E5%BD%95%E9%83%A8%E5%88%86.png)
   
     * 第三部分是索引部分,这部分重点指的是页目录,它起到了记录索引的作用,因为在页中,记录是以单链表的形式进行存储的.
   
 * 页结构示意图:
 
-  <img src="https://www.chenjunlin.vip/img/mysql/%E9%A1%B5%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:50%;" />
+  <img src="https://www.holelin.cn/img/mysql/%E9%A1%B5%E7%BB%93%E6%9E%84%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:50%;" />
 
 #### 从数据页的角度看B+树是如何查询的
 
@@ -103,7 +103,7 @@ highlight_shrink:
   * 叶子节点,B+树最底层的节点,节点的高度尾0,存储行记录;
   * 非叶子节点,节点的高度大小0,存储索引键和页面指针,不存储行记录本身.
 
-  <img src="https://www.chenjunlin.vip/img/mysql/B+%E6%A0%91%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:50%;" />
+  <img src="https://www.holelin.cn/img/mysql/B+%E6%A0%91%E7%A4%BA%E6%84%8F%E5%9B%BE.png" alt="img" style="zoom:50%;" />
 
 * B+是如何进行记录检索的?
 

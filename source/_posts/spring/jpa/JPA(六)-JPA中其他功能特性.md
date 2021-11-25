@@ -463,7 +463,7 @@ public class WebConfiguration { }
   }
   ```
 
-  ![img](https://www.chenjunlin.vip/img/spring/jpa/@Transactional.png)
+  ![img](https://www.holelin.cn/img/spring/jpa/@Transactional.png)
 
 ##### 隔离级别
 
