@@ -1,5 +1,5 @@
 ---
-title: SpringBoot-SpringBoot Security整合
+title: SpringBoot-整合SpringBoot Security
 date: 2021-08-16 15:50:20
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
