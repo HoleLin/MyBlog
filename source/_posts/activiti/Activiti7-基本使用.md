@@ -1,6 +1,8 @@
 ---
 title: Activiti7-基本使用
 date: 2021-11-20 22:02:08
+index_img: /img/cover/Activiti.png
+cover: /img/cover/Activiti.png
 tags:
 categories:
 - Activiti7

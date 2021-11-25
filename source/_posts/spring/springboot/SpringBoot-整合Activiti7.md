@@ -1,8 +1,8 @@
 ---
 title: SpringBoot-整合Activiti7
 date: 2021-11-24 13:29:55
-index_img: /img/cover/Activiti.png
-cover: /img/cover/Activiti.png
+index_img: /img/cover/Spring.jpg
+cover: /img/cover/Spring.jpg
 tags:
 - Activiti7
 categories:
