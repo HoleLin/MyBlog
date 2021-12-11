@@ -293,8 +293,25 @@ net.ipv4.tcp_max_syn.backlog = 1024
   ```
   (location =) > (location 完整路径) > (location ^~ 路径) > (location ~,~* 正则顺序) > (location 部分起始路径) > (/)
   ```
+  
+* URL写法区别
 
-### Nginx root和alias配置
+  ```
+  # 首先将test作为目录来处理,查找时先根据{...}配置的路径找是否有test文件夹,
+  # 若有文件夹也会去查找test是否有index.html文件
+  # 若没有文件夹,则会找test文件,若有文件则将文件中的内容返回
+  location /test {
+  	...
+  }
+  # 首先将test作为目录来处理,查找时先根据{...}配置的路径找是否有test文件夹,
+  # 若有文件夹也会去查找test是否有index.html文件
+  # 若没有文件夹,则会找test文件也不会将文件内容返回,则是返回404
+  location /test/{
+  	...
+  }
+  ```
+
+#### root和alias配置
 
 * `root`
 
@@ -326,6 +343,145 @@ net.ipv4.tcp_max_syn.backlog = 1024
   * alias可以指定任何名称。
   * alias在使用正则匹配时，必须捕捉匹配的内容并指定的内容处使用；
   * alias只能位于location块中；
+
+#### stub_status模块配置
+
+* https://nginx.org/en/docs/http/ngx_http_stub_status_module.html
+* 若要开启该功能,需要在编译时添加`--with-http_stub_status_module`
+
+* 语法
+
+  ```
+  Syntax:	stub_status;
+  Default:	—
+  Context:	server, location
+  ```
+
+* 样例
+
+  ```
+  location = /basic_status {
+      stub_status;
+  }
+  ```
+
+#### [ngx_http_limit_conn_module](https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html)
+
+* 语法
+
+  ```
+  # 设置共享内存
+  Syntax:	limit_conn_zone key zone=name:size;
+  Default:	—
+  Context:	http
+  
+  # 设置限速行为发生时的日志等级
+  Syntax:	limit_conn_log_level info | notice | warn | error;
+  Default:	
+  limit_conn_log_level error;
+  Context:	http, server, location
+  This directive appeared in version 0.8.18.
+  
+  # 限速行为发生时返回给客户端时的状态码
+  Syntax:	limit_conn_status code;
+  Default:	
+  limit_conn_status 503;
+  Context:	http, server, location
+  This directive appeared in version 1.3.15.
+  
+  # 真正设置限速值
+  Syntax:	limit_conn zone number;
+  Default:	—
+  Context:	http, server, location
+  ```
+
+* 样例
+
+  ```
+  limit_conn_zone $binary_remote_addr zone=addr:10m;
+  
+  server {
+      location /download/ {
+  		    limit_conn_log_level warn;
+      		limit_conn_status 503;
+          limit_conn addr 1;
+      }
+  }    
+  ```
+
+#### [ngx_http_limit_req_module](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html)
+
+* 语法
+
+  ```
+  # limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+  Syntax:	limit_req_zone key zone=name:size rate=rate [sync];
+  Default:	—
+  Context:	http
+  
+  Syntax:	limit_req_log_level info | notice | warn | error;
+  Default:	
+  limit_req_log_level error;
+  Context:	http, server, location
+  This directive appeared in version 0.8.18.
+  
+  Syntax:	limit_req_status code;
+  Default:	
+  limit_req_status 503;
+  Context:	http, server, location
+  This directive appeared in version 1.3.15.
+  
+  Syntax:	limit_req zone=name [burst=number] [nodelay | delay=number];
+  Default:	—
+  Context:	http, server, location
+  ```
+
+#### 限制特定IP或网段访问的[access模块](https://nginx.org/en/docs/http/ngx_http_access_module.html)
+
+* 语法
+
+  ```
+  Syntax:	allow address | CIDR | unix: | all;
+  Default:	—
+  Context:	http, server, location, limit_except
+  
+  Syntax:	deny address | CIDR | unix: | all;
+  Default:	—
+  Context:	http, server, location, limit_except
+  ```
+
+* 样例
+
+  ```
+  # 通常allow和deny配合使用
+  location / {
+      deny  192.168.1.1;
+      allow 192.168.1.0/24;
+      allow 10.1.1.0/16;
+      allow 2001:0db8::/32;
+      deny  all;
+  }
+  ```
+
+#### [ngx_http_auth_basic_module](https://nginx.org/en/docs/http/ngx_http_auth_basic_module.html)
+
+* 语法
+
+  ```
+  Syntax:	auth_basic string | off;
+  Default:	
+  auth_basic off;
+  Context:	http, server, location, limit_except
+  
+  # 该配置文件内容,可以由可由httpd-tools工具包里面的htpasswd生成
+  # 生成新的密码文件: htpasswd -bc `filename` `username` `password`
+  # 添加新用户密码: htpasswd -b `filename` `username` `password`
+  Syntax:	auth_basic_user_file file;
+  Default:	—
+  Context:	http, server, location, limit_except
+  ```
+
+  
 
 ### Nginx `ngx_http_core_module`变量说明
 
