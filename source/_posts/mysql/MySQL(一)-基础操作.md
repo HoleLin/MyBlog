@@ -447,7 +447,10 @@ CREATE TABLE 表名 LIKE 要复制的表名
 CREATE TABLE 表名 [AS] SELECT * FROM 要复制的表名
 ```
 
-##### 表维护
+##### 维护表
+
+* 维护表有三个主要目的:找到并修复损坏的表;维护准确的索引统计信息;减少碎片.
+* 数据恢复工具箱:InnoDB Data Recovery Toolkit
 
 ```sql
 -- 检查表是否有错误
@@ -748,6 +751,14 @@ ORDER BY 排序时，需加上 LIMIT 进行结合。
 | `TINYBLOB`                    |                                                      |                                                              |
 | `MEDIUMBLOB`                  |                                                      |                                                              |
 | `LONGBLOB`                    |                                                      |                                                              |
+
+* MySQL对`BLOB`和`TEXT`进行排序与其他类型是不同的:它只对每个列的最前`max_sort_length`字节而不是整个字符串做排序.如果只需要排序前面一小部分字符,则可以减小`max_sort_length`的配置,或者使用`ORDER BY SUBSTRING(column,length)`
+* MySQL不能将`BLOB`和`TEXT`列全部长度的字符串进行索引,也不能使用这些索引消除排序.
+
+#### 特殊类型
+
+* `IPV4`
+  * 通常使用VARCHAR(15)来存储IP地址,MySQL提供`INET_ATON()`和`INET_NTOA()`函数在这两种表示方法之间转换.
 
 ### 连接(JOIN)
 

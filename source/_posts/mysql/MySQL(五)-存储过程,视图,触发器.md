@@ -272,9 +272,22 @@ CREATE [OR REPLACE] [ALGORITHM = {UNDEFINED | MERGE | TEMPTABLE}] VIEW view_name
     UNDEFINED   未定义(默认)，指的是MySQL自主去选择相应的算法。
 ```
 
-
-
 ### 触发器
+
+- **Before Insert**
+- **After Insert**
+- **Before Update**
+- **After Update**
+- **Before Delete**
+- **After Delete**
+
+#### **使用场景**
+
+- 可以通过数据库中的相关表实现级联更改。
+- 实时监控某张表中的某个字段的更改而需要做出相应的处理。
+- 例如可以生成某些业务的编号。
+- 注意不要滥用，否则会造成数据库及应用程序的维护困难。
+- 大家需要牢记以上基础知识点，重点是理解数据类型CHAR和VARCHAR的差异，表存储引擎InnoDB和MyISAM的区别。
 
   ```
       触发程序是与表有关的命名数据库对象，当该表出现特定事件时，将激活该对象
