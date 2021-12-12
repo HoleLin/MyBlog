@@ -1,5 +1,5 @@
 ---
-title: MySQL-查询优化
+title: MySQL(十七)-查询优化
 date: 2021-12-12 13:10:28
 cover: /img/cover/MySQL.jpg
 tags:
