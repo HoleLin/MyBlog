@@ -34,19 +34,6 @@ highlight_shrink:
 /etc/init.d/jenkins jenkins启动脚本
 ```
 
-#### 编译常用模块
-
-```
-./configure --prefix=/usr/local/components/openresty/ \
---with-http_ssl_module \
---with-http_realip_module \
---with-http_gunzip_module \
---with-stream \
---with-stream_ssl_module \
---with-stream_ssl_preread_module \
---with-http_v2_module 
-```
-
 #### 将jenkins用户加入root组
 
 ```

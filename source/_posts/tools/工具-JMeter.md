@@ -10,7 +10,7 @@ categories:
 updated:
 type:
 comments:
-**description:**
+description:
 keywords:
 top_img:
 mathjax:
