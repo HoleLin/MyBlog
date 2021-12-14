@@ -285,3 +285,83 @@ SELECT * FROM post WHERE post.id in (123,456,789,213,1223);
 * 对于由于索引信息不准确导致的问题,可以使用`analyze table`来解决.
 * 对于其他优化器误判的情况,可以在应用端用`force index`来强行指定索引,也可以通过修改语句来引导优化器,还可以通过增加或者删除索引来绕过这个问题.
 
+#### 返回结果给客户端
+
+* 查询执行到最后一个阶段是将结果返回给客户端.即使查询不需要返回结果集给客户端,MySQL仍然会返回这个查询的一些信息,如该查询影响到的行数.
+* 结果集中的每一行都会以一个满足MySQL客户端/服务端通信协议的封包发送,再通过TCP协议进行传输,在TCP传输的过程中,可能对MySQL的封包进行缓存然后批量传输.
+
+### MySQL如何执行关联查询
+
+* MySQL关联执行的策略:MySQL对于任何关联都执行**嵌套循环关联**操作.
+
+  * 即MySQL先在一个表循环取出单条数据,然后再嵌套循环到下一个表寻找匹配的行,依次下去,知道找到所有表中匹配的行为止.然后根据各个表匹配的行,返回查询中需要的各个列.MySQL会尝试在最后一个关联表中找到所有匹配的行,如果最后一个关联表无法找到更多的行以后,MySQL返回到上一层次关联表,看是否能够找到更多的匹配记录,依次类推迭代执行.
+
+  ```mysql
+  SELECT tab1.col1,tabl2.col2 FROM tabl1 INNER JOIN tabl2 USING(col3) WHERE tabl1.col1 IN (5,6);
+  ==> 
+  outer_iter = iterator over tabl1 WHERE col1 IN(5,6)
+  outer_row = outer_iter.next
+  while outer_row
+  	inner_iter = iterator over tabl2 WHERE col3 = outer_row.col3
+  	inner_row = inner_iter.next
+  	while inner_row
+  		output[ outer_row.col1,inner_row.col2 ]
+  		inner_row = inner_iter.next
+  	end
+    outer_row = outer_iter.next
+  end  
+  ```
+
+  ```mysql
+  SELECT tab1.col1,tabl2.col2 FROM tabl1 LEFT OUTER JOIN tabl2 USING(col3) WHERE tabl1.col1 IN (5,6);
+  ==> 
+  outer_iter = iterator over tabl1 WHERE col1 IN(5,6)
+  outer_row = outer_iter.next
+  while outer_row
+  	inner_iter = iterator over tabl2 WHERE col3 = outer_row.col3
+  	inner_row = inner_iter.next
+  	if inner_row
+      while inner_row
+        output[ outer_row.col1,inner_row.col2 ]
+        inner_row = inner_iter.next
+      end
+    else
+        output[ outer_row.col1,NULL ]
+    end  
+      outer_row = outer_iter.next
+  end  
+  ```
+
+#### 执行计划
+
+* 和很多其他关系数据库不同,MySQL并不会生成查询字节码来执行查询.MySQL是生成查询的一颗指令树,然后通过存储引擎执行完成这棵指令树并返回结果.最终的执行计划包含了重构查询的全部信息.如果对某个查询执行`EXPLAIN`后,再执行`SHOW WARNINGS`,就能看到重构的查询.
+
+#### 关联优化器
+
+* 关联优化器会尝试在所有的关联顺序中选择一个成本最小的来生成执行计划树.如果可能,优化器会遍历每一个表然后逐个做嵌套循环计算每一棵可能的执行计划树的成本,最后返回一个最优的执行计划.
+* 糟糕的是,如果有超过n个表的关联,那么需要检查n的阶乘种关联顺序,这被称为所有可能的执行计划的"搜索空间",搜索空间的增长速度非常快.当搜索空间非常大的时候,优化器不可能逐一评估每一种关联顺序的成本.这时,优化器选择使用**贪婪搜索**的方式查找最优的关联顺序.实际上,当需要关联超过`optimzer_search_depth`的限制的时候,就会选择贪婪搜索模式.
+
+### 在同一个表上查询和更新
+
+* MySQL不允许对同一张表进行查询和更新.
+
+  ```mysql
+  -- 提示语法错误 1093 - You can't specify target table 'tabl' for update in FROM clause, Time: 0.000000s
+  UPDATE tabl AS outer_tabl SET cnt = ( SELECT count(*) FROM tabl AS inner_tabl WHERE inner_tabl.type = outer_tabl.type );
+  ```
+
+* 可以通过使用生成表的形式来绕过上面的限制,因为MySQL只会把这个表当做临时表来处理.实际上这执行了两个查询: 一个子查询中的SELECT语句,另一个是多表关联UPDATE,只是关联的表是一个临时表.子查询会在UPDATE语句打开表之前就完成.
+
+  ```mysql
+  UPDATE tabl INNER JOIN (SELECT type,count(*) AS cnt FROM tabl GROUP BY type ) AS der USING(type) SET tbl.cnt = der.cnt;
+  ```
+
+### COUNT()作用
+
+* COUNT()是一个特殊的函数,可以**统计某个列值的数量**,可以**统计结果集的行数**
+  * 在统计列值时要求列值是非空的(**不统计NULL**),如果在COUNT()的括号中指定了列或者列的表达式,则统计的就是这个表达式的结果数.
+  * 当MySQL确认括号内的表达式值不可能为空,实际上就是在统计行数,最简单的即使当我们使用COUNT(*)的时候,这种情况下通配符并不会像我们猜想的那样扩展成所有的列,实际上,它会忽略所有的列而直接统计所有的行数.
+* COUNT(*),COUNT(1),COUNT(列名)的区别
+  * 在InnoDB引擎下，COUNT(1)和COUNT(*)哪个快呢？结论是:这俩在高版本的MySQL(5.5及以后，5.1的没有考证)是没有什么区别的.
+  * 如果该表只有一个主键索引，没有任何二级索引的情况下，那么COUNT(\*)和COUNT(1)都是通过通过主键索引来统计行数的。如果该表有二级索引，则COUNT(1)和COUNT(*)都会通过**占用空间最小的字段的二级索引**进行统计
+
