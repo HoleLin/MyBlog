@@ -123,3 +123,26 @@ COMMIT;
 * [openark kit](https://code.openark.org/forge/openark-kit)
 * [Percona Toolkit](https://www.percona.com/software/database-tools/percona-toolkit)
 
+### MySQL服务器配置
+
+* 确定配置的文件路径
+
+  ```shell
+  root@2dd900ce424a:/# which mysqld
+  /usr/sbin/mysqld
+  root@2dd900ce424a:/# /usr/sbin/mysqld --verbose --help |grep -A 1 'Default options'
+  Default options are read from the following files in the given order:
+  /etc/my.cnf /etc/mysql/my.cnf ~/.my.cnf
+  ```
+
+* 配置文件通常分成多个部分,每个部分的开头是一个方括号括起来的分段名称.MySQL程序通常读取跟它同名的分段部分,很多客户端程序还会读取client部分,这是一个存放共用设置的地方.服务器通常读取mysqld这一段.一定要确认配置项放在了文件正确的分段中,否则配置是不会生效的.
+
+#### 检查MySQL服务器状态变量
+
+* 可以使用`SHOW GLOBAL STATUS`,也可以使用下面的命令每隔60秒来查看状态变量的增量变化
+
+  ```shell
+  mysqladmin extended-status -ri60
+  ```
+
+  

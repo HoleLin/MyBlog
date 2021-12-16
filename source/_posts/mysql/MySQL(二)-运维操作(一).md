@@ -275,13 +275,13 @@ highlight_shrink:
 
   * 回话级别的变量设置只会对当前连接生效,而不会影响其他连接
 
-    ```
+    ```mysql
     set [session] var_name = value
     ```
 
   * `GLOBAL`变量配置后将应用此后创建的所有连接.但设置一个`GLOBAL`变量,并不会影响当前连接.
 
-    ```
+    ```mysql
     set gloabl var_name = value
     ```
 
@@ -440,41 +440,6 @@ GRANT OPTION    -- 允许授予权限
 * columns_priv权限表：记录数据列级的操作权限。
 
 * host权限表：配合db权限表对给定主机上数据库级操作权限作更细致的控制。这个权限表不受GRANT和REVOKE语句的影响。
-
-#### 字符集编码
-
-* 当在排序或者比较过程中遇到问题时,应当检查字符集选项与表的定义.
-
-* 显示字符集变量值
-
-  ```mysql
-  SHOW VARIABLES LIKE 'character_set_%'   -- 查看所有字符集编码项
-  SHOW VARIABLES LIKE '%%coll%';
-  ```
-
-  * `character_set_client`      客户端向服务器发送数据时使用的编码
-  * `character_set_results`       服务器端将结果返回给客户端所使用的编码
-  * `character_set_connection`    连接层编码
-
-* 设置字符集集
-
-  ```mysql
-  SET 变量名 = 变量值
-      SET character_set_client = gbk;
-      SET character_set_results = gbk;
-      SET character_set_connection = gbk;
-  SET NAMES GBK;  -- 相当于完成以上三个设置
-  ```
-
-* 校对集
-
-  ```mysql
-  -- 校对集用以排序
-  SHOW CHARACTER SET [LIKE 'pattern']/SHOW CHARSET [LIKE 'pattern']   查看所有字符集
-  SHOW COLLATION [LIKE 'pattern']     查看所有校对集
-  CHARSET 字符集编码     设置字符集编码
-  COLLATE 校对集编码     设置校对集编码
-  ```
 
 
 

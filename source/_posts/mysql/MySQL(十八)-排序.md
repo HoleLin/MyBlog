@@ -1,6 +1,7 @@
 ---
 title: MySQL(十八)-排序
 date: 2021-12-14 13:30:58
+cover: /img/cover/MySQL.jpg
 tags:
 - 排序
 categories:

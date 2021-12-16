@@ -365,3 +365,43 @@ SELECT * FROM post WHERE post.id in (123,456,789,213,1223);
   * 在InnoDB引擎下，COUNT(1)和COUNT(*)哪个快呢？结论是:这俩在高版本的MySQL(5.5及以后，5.1的没有考证)是没有什么区别的.
   * 如果该表只有一个主键索引，没有任何二级索引的情况下，那么COUNT(\*)和COUNT(1)都是通过通过主键索引来统计行数的。如果该表有二级索引，则COUNT(1)和COUNT(*)都会通过**占用空间最小的字段的二级索引**进行统计
 
+### NOT IN转化为JOIN查询
+
+* `NOT IN`
+
+```mysql
+mariadb> EXPLAIN 
+SELECT d.origin_id ,o.total_fee 
+FROM `order_detail` d LEFT JOIN `payment_order` o ON d.origin_id = o.uid 
+WHERE d.telephone_number = '13285273281' AND o.`state` = 'PAY_SUCCESS' AND d.origin_id NOT IN ( SELECT r.payment_order_id FROM payment_order_relation r WHERE r.telephone_number = '13285273281' ) 
+ORDER BY o.payment_time DESC;
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+| id | select_type  | table | type | possible_keys         | key       | key_len | ref   | rows | Extra                                           |
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+|  1 | PRIMARY      | d     | ALL  | index_tel             | NULL      | NULL    | NULL  | 7    | Using where; Using temporary; Using filesort    |
+|  1 | PRIMARY      | o     | ALL  | NULL                  | NULL      | NULL    | NULL  | 7    | Using where; Using join buffer (flat, BNL join) |
+|  2 | MATERIALIZED | r     | ref  | index_tel,index_po_id | index_tel | 47      | const | 2    | Using index condition                           |
++----+--------------+-------+------+-----------------------+-----------+---------+-------+------+-------------------------------------------------+
+3 rows in set (0.01 sec)
+
+```
+
+* `LEFT JOIN`
+
+```mysql
+mariadb> EXPLAIN 
+SELECT d.origin_id as paymentOrderId, o.total_fee as totalFee
+FROM `order_detail` d LEFT JOIN `payment_order` o ON d.origin_id = o.uid 
+LEFT JOIN ( SELECT r.payment_order_id FROM payment_order_relation r WHERE r.telephone_number = '13285273281' ) temp ON d.origin_id = temp.payment_order_id 
+WHERE d.telephone_number = '13285273281' 	AND o.`state` = 'PAY_SUCCESS' AND temp.payment_order_id IS NULL 
+ORDER BY o.payment_time DESC;
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+| id | select_type | table | type | possible_keys         | key         | key_len | ref              | rows | Extra                                           |
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+|  1 | SIMPLE      | d     | ALL  | index_tel             | NULL        | NULL    | NULL             | 7    | Using where; Using temporary; Using filesort    |
+|  1 | SIMPLE      | r     | ref  | index_tel,index_po_id | index_po_id | 99      | lack.d.origin_id | 1    | Using where                                     |
+|  1 | SIMPLE      | o     | ALL  | NULL                  | NULL        | NULL    | NULL             | 7    | Using where; Using join buffer (flat, BNL join) |
++----+-------------+-------+------+-----------------------+-------------+---------+------------------+------+-------------------------------------------------+
+3 rows in set (0.01 sec)
+```
+

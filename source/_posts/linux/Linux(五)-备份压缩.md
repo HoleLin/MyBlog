@@ -95,23 +95,6 @@ tar格式（该格式仅仅打包，不压缩）
 注：c参数代表create（创建），x参数代表extract（解包），v参数代表verbose（详细信息），f参数代表filename（文件名），所以f后必须接文件名。
 ```
 
-#### `zip`格式
-
-```sh
-zip格式
-压缩： zip -r [目标文件名].zip [原文件/目录名]
-解压： unzip [原文件名].zip
-注：-r参数代表递归
-```
-
-* 快速预览压缩包文件
-
-  ```
-  $ zipinfo archive_name.zip
-  # 或者也可以用
-  $ unzip -l archive_name.zip
-  ```
-
 #### `tar.gz`格式
 
 * 方式一：利用前面已经打包好的tar文件，直接用压缩命令。
@@ -143,6 +126,28 @@ zip格式
   * 解压并解包： `tar -Jxvf [原文件名].tar.xz`
   * 注：大写J代表用`xz`算法来压缩/解压。
 
+#### `tar.Z`格式
+
+* 压缩: `tar Zcvf filename.tar.Z dirname` 
+* 解压:  `tar Zxvf filename.tar.Z`
+
+#### `zip`格式
+
+```sh
+zip格式
+压缩： zip -r [目标文件名].zip [原文件/目录名]
+解压： unzip [原文件名].zip
+注：-r参数代表递归
+```
+
+* 快速预览压缩包文件
+
+  ```
+  $ zipinfo archive_name.zip
+  # 或者也可以用
+  $ unzip -l archive_name.zip
+  ```
+
 #### `jar`格式
 
 * 压缩：`jar -cvf [目标文件名].jar [原文件名/目录名]`
@@ -153,3 +158,13 @@ zip格式
 * 压缩：`7z a [目标文件名].7z [原文件名/目录名]`
 * 解压：`7z x [原文件名].7z`
 * 注：这个`7z`解压命令支持`rar`格式，即：`7z x [原文件名].rar`
+
+#### `.Z`格式
+
+* 压缩: `compress FileName`
+* 解压: `uncompress FileName.Z`
+
+#### `.rar`格式
+
+* 压缩: `rar a filename.rar dirname`
+* 解压: `rar x filename.rar`

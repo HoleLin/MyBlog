@@ -138,7 +138,7 @@ SQL语句-->
   show profile for query 2;
   ```
 
-  ![img](https://www.holelin.cn/img/mysql/show_profile.png)
+  <img src="https://www.holelin.cn/img/mysql/show_profile.png" alt="img" style="zoom:67%;" />
 
 ### 常见问题
 
