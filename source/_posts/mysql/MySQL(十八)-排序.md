@@ -22,6 +22,7 @@ highlight_shrink:
 ### 参考文献
 
 * 高性能MySQL(第三版)
+* MySQL实战45讲
 
 ### 排序
 
@@ -52,6 +53,33 @@ highlight_shrink:
     
     EXPLAIN SELECT rental_id,staff_id FROM rental WHERE rental_data = '2021-05-09' ORDER BY inventory_id,customer_id;
     ```
+  
+* `sort_buffer_size`就是MySQL为排序开辟的内存(sort_buffer)的大小.如果要排序的数据量小于`sort_buffer_size`,排序就在内存中完成.但如果排序数据量太大,内存放不下,则不得不利用磁盘临时文件辅助排序.
+
+* 确定一个排序语句是否使用了临时文件
+
+  ```mysql
+  /* 打开optimizer_trace，只对本线程有效 */
+  SET optimizer_trace='enabled=on'; 
+  
+  /* @a保存Innodb_rows_read的初始值 */
+  select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
+  
+  /* 执行语句 */
+  SELECT xxxx  FROM table WHERE xxx = xxx ORDER BY xxx limit 100;
+  
+  /* 查看 OPTIMIZER_TRACE 输出 */
+  SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+  
+  /* @b保存Innodb_rows_read的当前值 */
+  select VARIABLE_VALUE into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read';
+  
+  /* 计算Innodb_rows_read差值 */
+  select @b-@a;
+  ```
+
+  * 从`number_of_tmp_files`中可以看到是否使用了临时文件.
+  * 如果`sort_buffer_size`超过了需要排序的数据量的大小,`number_of_tmp_files`就是0,表示后排序可以直接在内存中完成.否则就需要放在临时文件中排序.`sort_buffer_size`越小,需要分成的文件份数越多,`number_of_tmp_files`的值就越大.
 
 #### MySQL的排序算法
 
@@ -79,9 +107,9 @@ highlight_shrink:
 
 #### **优化Using filesort**
 
-- 增大 sort_butter_size 参数的设置
+- 增大 `sort_buffer_size` 参数的设置
   - 不管用哪种算法，提高这个参数都会提高效率，当然，要根据系统的能力去提高，因为这个参数是针对**每个进程的 1M-8M 之间调整**
-- 增大 max_length_for_sort_data 参数的设置
+- 增大` max_length_for_sort_data` 参数的设置
   - mysql 使用单路排序的前提是**排序的字段大小要小于 max_length_for_sort_data**
   - 提高这个参数，会增加用改进算法的概率。但是如果设的太高，数据总容量超出 sort_buffer_size 的概率就增大， 明显症状是高的磁盘 I/O 活动和低的处理器使用率。（1024-8192 之间调整）
 - 减少 select 后面的查询的字段

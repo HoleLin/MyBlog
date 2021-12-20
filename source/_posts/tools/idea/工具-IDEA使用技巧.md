@@ -1,6 +1,8 @@
 ---
 title: 工具-IDEA使用技巧
 date: 2021-05-26 22:51:33
+index_img: /img/cover/Tools.jpg
+cover: /img/cover/Tools.jpg
 tags: 
 - IDEA
 categories: 

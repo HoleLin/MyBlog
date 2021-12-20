@@ -4,9 +4,9 @@ date: 2021-11-05 22:28:47
 index_img: /img/cover/Tools.jpg
 cover: /img/cover/Tools.jpg
 tags:
-- jenkins
-categories:
 - Jenkins
+categories:
+- 工具
 updated:
 type:
 comments:
