@@ -1,8 +1,12 @@
 ---
-title: 网络基础-TCP协议二
+title: 网络基础-TCP协议(二)
 date: 2021-10-22 11:45:21
+index_img: /img/cover/Network.jpg
+cover: /img/cover/Network.jpg
 tags:
+- TCP
 categories:
+- 网络
 updated:
 type:
 comments:

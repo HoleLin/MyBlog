@@ -1,8 +1,11 @@
 ---
 title: 数据库表设计-SPU/SKU
 date: 2021-09-18 14:27:33
+cover: /img/cover/MySQL.jpg
 tags:
+- SKU/SPU
 categories:
+- 业务
 updated:
 type:
 comments:
