@@ -317,11 +317,11 @@ search:
 
   # 搜索索引文件的路径，可以是相对路径或外站的绝对路径
   # Path for search index file, it can be a relative path or an absolute path
-  path: /local-search.xml
+  path: local-search.xml
 
   # 文件生成在本地的位置，必须是相对路径
   # The location where the index file is generated locally, it must be a relative location
-  generate_path: /local-search.xml
+  generate_path: local-search.xml
 
   # 搜索的范围
   # Search field
