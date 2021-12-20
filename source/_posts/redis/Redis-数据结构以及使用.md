@@ -5,7 +5,6 @@ index_img: /img/cover/Redis.jpg
 cover: /img/cover/Redis.jpg
 tags: 
 - 数据结构
-- 使用场景
 categories: Redis
 mermaid: true
 ---

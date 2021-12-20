@@ -33,7 +33,7 @@ highlight_shrink:
   -- 目录名称
   Catalog:    `def`
   -- 数据库名称
-  Database:   `lack`
+  Database:   `test`
   -- 数据表名称, 当使用select field_name from table_name as alias_name语法时,这里显示的是表的别名
   Table:      `orders`
   -- 原始表名,当前面行显示的别名,知道这个就非常有用了

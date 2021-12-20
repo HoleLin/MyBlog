@@ -58,6 +58,8 @@ highlight_shrink:
 
 * **`redo log`不是记录数据页"更新之后的状态",而是记录这个页"做了什么改动".**
 
+* redo log文件: 文件名为`ib_logfile+数字`
+
 #### `biglog`
 
 * MySQL整体来看就两块:一块是Server层,它主要做的是MySQL功能层面的事情;还有一块是引擎层面,负责存储相关具体事宜;
@@ -95,6 +97,25 @@ update T set c=c+1 where ID=2;
   * **先写redo log后binlog**.假设`redo log`写完,`binlog`还没有写完的时候,MySQL进程异常重启.`redo log`写完之后,系统即使崩溃,任然能够把数据恢复回来,所以恢复这一行c的值是1.但是由于`binlog`没写完就crash了,这时候`binlog`里面没有记录这个语句.因此,之后备份日志的时候,存起来的`binlog`里面就没有这条语句.如果需要用这个binlog来恢复临时库的话,由于这个语句的`binlog`丢失,这个临时库就会少了这一次更新,恢复出来的这一行c的值就是0,与原库的值不同.
   * **先写binlog后写redo log**.若`binlog`写完之后crash,由于`redo log`还没写,崩溃恢复以后这个事务无效,所以这一行c的值是0.但是binlog里面已经记录了"把c从0改成1"这个日志.所以,在之后用`binlog`来恢复的时候就多了一个事务出来,恢复出来的这一行c的值就是1,与原库的值不同.
 * `redo log`和`binlog`都可以用于表示事务的提交状态,而两阶段提交就是让这个两个状态保持逻辑上的一致.
+* 崩溃恢复时的判断规则:
+  * 如果`redo log`里面的事务是完整的,也就是已经有了`commit`,则直接提交;
+  * 如果`redo log`里面的事务只有完整的prepare,则判断对应的事务`binlog`是否存在并完整:
+    * 若完整,则提交事务;
+    * 若不完整,则回滚事务.
+
+
+#### 判断`binlog`是否完整
+
+* 一个事务的binlog是有完整格式的:
+  * statement格式的binlog,最后会有COMMIT;
+  * row格式的binlog,最后会有一个XID event;
+* 另外,在MySQL5.6.2版本以后,还引入了binlog-checksum参数,用来验证binlog内容的正确性.对于binlog日志由于磁盘原因,可能会在日志中间出错的情况,MySQL可以通过校验checksum的结果来发现.
+
+#### `redo log`和`binlog`是如何关联起来的
+
+* 它们有一个共同的数据字段,叫做XID.崩溃恢复的时候,会顺序扫描redo log:
+  * 如果碰到既有prepare,又有commit的redo log,就直接提交.
+  * 如果碰到只有prepare,而没有commit的redo log,就拿着XID去binlog找对应的事务.
 
 ### SQL如何执行
 
