@@ -216,7 +216,7 @@ CREATE [TEMPORARY] TABLE [IF NOT EXISTS] [库名.]table_name(
         常见的引擎：InnoDB MyISAM Memory/Heap BDB Merge Example CSV MaxDB Archive
         不同的引擎在保存表的结构和数据时采用不同的方式
         MyISAM表文件含义：.frm表定义，.MYD表数据，.MYI表索引
-        InnoDB表文件含义：.frm表定义，表空间数据和日志文件
+        InnoDB表文件含义：.frm表定义，表空间数据和日志文件 注: MySQL8.0中.frm文件被移除了
         SHOW ENGINES -- 显示存储引擎的状态信息
         SHOW ENGINE 引擎名 {LOGS|STATUS} -- 显示存储引擎的日志或状态信息
     -- 自增起始数
