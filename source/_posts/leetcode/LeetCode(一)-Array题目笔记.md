@@ -2,7 +2,7 @@
 title: LeetCode-Array题目笔记
 date: 2022-01-14 12:28:45
 index_img: /img/cover/LeetCode.jpeg
-cover: /img/cover/LeetCode.jpg
+cover: /img/cover/LeetCode.jpeg
 tags:
 - Array
 categories:

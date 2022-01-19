@@ -1,11 +1,11 @@
 ---
-title: 数据结构八-Map
+title: 数据结构(八)-Map
 date: 2021-12-21 15:02:12
 cover: /img/cover/DataStructure.png
 tags:
 - Map
 categories:
-- 数据结构
+- DataStructure
 updated:
 type:
 comments:

@@ -1,11 +1,11 @@
 ---
-title: 数据结构九-Set
+title: 数据结构(九)-Set
 date: 2021-12-21 15:05:43
 cover: /img/cover/DataStructure.png
 tags:
 - Set
 categories:
-- 数据结构
+- DataStructure
 updated:
 type:
 comments:
