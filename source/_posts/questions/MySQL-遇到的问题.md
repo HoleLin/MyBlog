@@ -3,7 +3,7 @@ title: MySQL-遇到的问题
 date: 2021-07-19 15:42:07
 cover: /img/cover/MySQL.jpg
 tags:
-- 问题
+- questions
 categories:
 - MySQL
 updated: 2021-08-30 14:42:07

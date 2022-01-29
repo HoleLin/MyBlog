@@ -4,6 +4,7 @@ date: 2021-11-24 13:29:55
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
+- integration
 - Activiti7
 categories:
 - SpringBoot

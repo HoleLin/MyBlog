@@ -1,5 +1,5 @@
 ---
-title: SpringBoot-阿里企业邮箱整合
+title: SpringBoot-整合阿里企业邮箱
 date: 2021-08-30 14:03:54
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg

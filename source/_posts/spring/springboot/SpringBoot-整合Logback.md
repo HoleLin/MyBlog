@@ -4,6 +4,7 @@ date: 2021-11-23 17:07:54
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
+- integration
 - Logback
 categories:
 - SpringBoot

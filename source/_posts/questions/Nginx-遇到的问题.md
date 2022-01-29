@@ -4,7 +4,7 @@ date: 2021-05-24 23:33:33
 index_img: /img/cover/Nginx.jpg
 cover: /img/cover/Nginx.jpg
 tags: 
-- 问题
+- questions
 categories: 
 - Nginx
 mermaid: true

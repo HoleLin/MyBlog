@@ -5,6 +5,7 @@ index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
 - SpringBoot Security
+- integration
 categories:
 - SpringBoot
 updated:
