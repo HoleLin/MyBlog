@@ -317,7 +317,9 @@ spring:
   
       @Bean("mybatisPlusInterceptor")
       public MybatisPlusInterceptor mybatisPlusInterceptor() {
-          return new MybatisPlusInterceptor();
+          final MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+          interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+          return interceptor;
       }
   }
   ```
