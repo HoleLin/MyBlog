@@ -22,7 +22,9 @@ highlight_shrink:
 
 ### 参考文献
 
-#### Kotlin项目中使用SpringBoot Aop切面报错`Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.holelin.controller.XXXController`
+* [Kotlin Collection VS Kotlin Sequence VS Java Stream](https://www.jianshu.com/p/c5cda7314fe1)
+
+### Kotlin项目中使用SpringBoot Aop切面报错`Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.holelin.controller.XXXController`
 
 * 环境依赖
 
@@ -32,7 +34,7 @@ highlight_shrink:
 
   * SpringBoot 2.2.2.RELEASE
 
-    ```
+    ```groovy
         // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
         implementation "org.springframework.boot:spring-boot-starter:$springboot_version"
         // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web
@@ -43,7 +45,7 @@ highlight_shrink:
 
   * Spring Kafka 2.4.3.RELEASE
 
-    ```
+    ```groovy
       // https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka
         implementation 'org.springframework.kafka:spring-kafka:2.4.3.RELEASE'
     ```
@@ -145,7 +147,7 @@ highlight_shrink:
     }
     ```
 
-##### 错误信息
+#### 错误信息
 
 ```java
 Caused by: org.springframework.aop.framework.AopConfigException: Could not generate CGLIB subclass of class com.holelin.controller.KafkaController: Common causes of this problem include using a final class or a non-visible class; nested exception is java.lang.IllegalArgumentException: Cannot subclass final class com.holelin.controller.KafkaController
@@ -180,7 +182,7 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
 	... 23 common frames omitted
 ```
 
-##### AOP切面不正常的原因
+#### AOP切面不正常的原因
 
 * 需要AOP拦截的类是否是final的，final类不可使用CGLIB来代理。
 
@@ -188,12 +190,12 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
 
 * 类是否被多次代理了，如果类被多次代理过，则第二次进行代理的时候拿到的是第一次代理后的对象，这个对象是个final形式的，所以会出现这个错误。
 
-##### 当前错误原因
+#### 当前错误原因
 
 * `KafkaController`为`final`类
 
 
-##### 解决方法
+#### 解决方法
 
 * 给`KafkaController`类前加`open`关键字
 
@@ -220,7 +222,7 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
 
 * 处理办法使用Kotlin官方插件：[All-open compiler plugin](https://kotlinlang.org/docs/all-open-plugin.html)
 
-  ```
+  ```groovy
   buildscript {
       ext{
           dcm4che_version = '5.21.0'
@@ -280,5 +282,96 @@ Caused by: java.lang.IllegalArgumentException: Cannot subclass final class com.h
 
   ![img](https://www.holelin.cn/img/kotlin/Kotlin-SpringBoot-AOP2.png)
 
+### Kotlin List转Map
 
+```kotlin
+    val colors: List<Color> = listOf(
+        Color("SILVER", "#C0C0C0"),
+        Color("GOLD", "#FFD700"),
+        Color("OLIVE", "#808000")
+    ) 
+    // 1. associate() function
+    // Add mapping from name to hex of Color object
+    val map: Map<String, String> = colors.associate { Pair(it.name, it.hex) }	
+    // or use
+    // val map: Map<String, String> = colors.associate { it.name to it.hex }
+	  // 2. associateBy() function
+    val map: Map<String, String> = colors.associateBy({it.name}, {it.hex})
+    // 3. map() function
+ 		val map: Map<String, String> = colors.map { it.name to it.hex }.toMap()
+    // 4. Custom Routine
+    val map: MutableMap<String, String> = HashMap()
+    for (color in colors) {
+        map[color.name] = color.hex
+    }
+```
+
+### `Kotlin Collection` VS `Kotlin Sequence` VS `Java Stream`
+
+#### 集合中函数式API
+
+* Kolin 的集合分为可变集合(mutable collection)和不可变集合(immutable collection)。不可变集合是 List、Set、Map，它们是只读类型，不能对集合进行修改。可变集合是 MutableList、MutableSet、MutableMap，它们是支持读写的类型，能够对集合进行修改的操作。
+
+##### `filter`
+
+```kotlin
+    listOf(5, 12, 8, 33)   // 创建list集合
+            .filter { it > 10 }
+            .forEach(::println)
+```
+
+##### `map`
+
+```kotlin
+    listOf("java","kotlin","scala","groovy")
+            .map { it.toUpperCase() }
+            .forEach(::println)
+```
+
+##### `flatMap`
+
+* 遍历所有的元素，为每一个创建一个集合，最后把所有的集合放在一个集合中。
+
+```kotlin
+    val newList = listOf(5, 12, 8, 33)
+            .flatMap {
+                listOf(it, it + 1)
+            }
+
+    println(newList)
+```
+
+#### Sequence
+
+* 序列(Sequence)是 Kotlin 标准库提供的另一种容器类型。序列与集合有相同的函数 API，却采用不同的实现方式。
+* **Kotlin 的 Sequence 更类似于 Java 8 的 Stream，二者都是延迟执行。Kotlin 的集合转换成 Sequence 只需使用`asSequence()`方法。**
+
+```kotlin
+  listOf(5, 12, 8, 33)
+            .asSequence()
+            .filter { it > 10 }
+            .forEach(::println)
+// <==>            
+	sequenceOf(5, 12, 8, 33) // 创建sequence
+            .filter { it>10 }
+            .forEach (::println)
+```
+
+* 使用 Sequence 有助于避免不必要的临时分配开销，并且可以显着提高复杂处理 PipeLines 的性能。
+
+#### Sequence VS Stream
+
+* Sequence 和 Stream 都使用的是惰性求值。
+
+  > 在编程语言理论中，惰性求值（英语：Lazy Evaluation），又译为惰性计算、懒惰求值，也称为传需求调用（call-by-need），是一个计算机编程中的一个概念，目的是要最小化计算机要做的工作。它有两个相关而又有区别的含意，可以表示为“延迟求值”和“最小化求值”。除可以得到性能的提升外，惰性计算的最重要的好处是它可以构造一个无限的数据类型。
+
+
+
+| 特性对比      | **Sequence**                                       | Stream                                                       |
+| ------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| `autoboxing`  | 会发生自动装箱                                     | 对于原始类型可以避免自动装箱                                 |
+| `parallelism` | 不支持                                             | 支持                                                         |
+| 跨平台        | 支持 Kotlin/JVM、Kotlin/JS、Kotlin/Native 等多平台 | 只能在 Kotlin/JVM 平台使用，并且 jvm 版本需要>=8             |
+| 易用性        | 更简洁、支持更多的功能                             | 使用 Collectors 进行终端操作会使 Stream 更加冗长。           |
+| 性能          | 大多数终端操作符是 inline 函数                     | 对于值可能不存在的情况，Sequence 支持可为空的类型，而 Stream 会创建 Optional包装器。因此会多一步的对象创建 |
 
