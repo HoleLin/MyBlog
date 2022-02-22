@@ -27,7 +27,7 @@ highlight_shrink:
 * [DICOM PS3.4 2022a - Service Class Specifications](https://dicom.nema.org/medical/dicom/current/output/html/part04.html#sect_C.4.1)
 * [[Dcmlib] HOWTO Compute the Z spacing in DICOM](https://www.creatis.insa-lyon.fr/pipermail/dcmlib/2005-September/002141.html)
 * [闲话DICOM](https://www.cnblogs.com/okaimee/archive/2013/01/10/2854783.html)
-* [[医疗\]国外开源的PACS服务器](https://www.cnblogs.com/kesalin/archive/2012/02/24/medical_pacs.html)
+* [[医疗]国外开源的PACS服务器](https://www.cnblogs.com/kesalin/archive/2012/02/24/medical_pacs.html)
 
 ### 名词解释
 
@@ -169,13 +169,13 @@ highlight_shrink:
 | ***UT*** *- Unlimited Text*无限制文本                  | 包含一个或多个段落的字符串，与 *LT* 类似                     |                                                              | 最多*(2*的*32*次方*–2)*个字符 |
 | ***AE*** *- Application Entity*应用实体                | 标识一个设备的名称的字符串，开头和 结尾可以有无意义的字符。比如 *“MyPC01”* |                                                              | 最多 *16* 个字符              |
 | ***PN*** *- Person Name*病人姓名                       | 有插入符号*(^)*作为姓名分隔符的病人姓名。比如*“SMITH^JOHN” “Morrison- Jones^Susan^^^Ph.D*， *Chief Executive Officer”* |                                                              | 最多 *64* 个字符              |
-| ***UI*** *- Unique Identifier (UID)*唯一标识符         | 一个用作唯一标识各类项目的包含 *UID* 的字符串。比如*“1.2.840.10008.1.1”* | *0-9* 和半角句号*(.)*                                        | 最多*64* 个字符               |
+| ***UI*** *- Unique Identifier (UID)*唯一标识符         | 一个用作唯一标识各类项目的包含 *UID* 的字符串。比如*“1.2.840.10008.1.1”* | *0-9* 和半角句号(.)                                          | 最多*64* 个字符               |
 | ***DA*** *- Date*日期                                  | 格式为 *YYYYMMDD* 的字符串；*YYYY* 代表年；*MM* 代表月；*DD* 代表日。比 如*“20050822”*表示 *2005* 年 *8* 月 *22* 日 | *0-9*                                                        | *8*个字符                     |
-| ***TM*** *- Time*时间                                  | 格式为 *HHMMSS* 的字符串。*FRAC*； *HH* 表示小时*(*范围*“00”-“23”)*； *MM* 表示分钟*(*范围*“00”-“59”)*； 而 *FRAC* 包含秒的小数部分，即百万分 之一秒。比如*“183200.00”* 表示下午 *6:32* | *0-9* 和半角句号*(.)*                                        | 最多 *16* 个字符              |
+| ***TM*** *- Time*时间                                  | 格式为 *HHMMSS* 的字符串。*FRAC*； *HH* 表示小时*(*范围*“00”-“23”)*； *MM* 表示分钟*(*范围*“00”-“59”)*； 而 *FRAC* 包含秒的小数部分，即百万分 之一秒。比如*“183200.00”* 表示下午 *6:32* | *0-9* 和半角句号(.)                                          | 最多 *16* 个字符              |
 | ***DT*** *- Date Time*日期时间                         | 格式为 YYYYMMDDHHMMSS. FFFFFF，串联的日期时间字符串。字符串的各部分从左至右是:年 YYYY；月 MM；日 DD；小时 HH；分钟 MM；秒 SS；秒的小数 FFFFFF。比如 20050812183000.00”表示 2005 年 8 月 12 日下午 18 点 30 分 00 秒 | *0-9*，加号，减号和半角句号                                  | 最多 *26* 个字符              |
 | ***AS*** *- Age String*年龄字符串                      | 符合以下格式的字符串*:nnnD*， *nnnW*， *nnnM*， *nnnY*；其中 *nnn* 对于 *D* 来说表示天数，对于*W*来说表示周数，对于*M* 来说表示月数，对于 *Y* 来说表示岁数。 比如*“018M”*表示他的年龄是 *18* 个月 | *0–9*， *D*， *W*，*M*， *Y*                                 | *4* 个字符                    |
-| ***S*** *- Integer String*整型字符串                   | 表示一个整型数字的字符串。比如*“-1234567”*                   | *0-9*，加号*(+)*，减号*(-)*                                  | 最多 *12* 个字符              |
-| ***DS*** *- Decimal String* 小数字符串                 | 表示定点小数和浮点小数。 比如*“12345.67”*，*“-5.0e3”*        | *0-9*，加号*(+)*，减号*(-)*， 最多 *16* 个字符 *E*，*e* 和半角句号*(.)* | 最多 *16* 个字符              |
+| ***S*** *- Integer String*整型字符串                   | 表示一个整型数字的字符串。比如*“-1234567”*                   | *0-9*，加号(+)，减号(-)                                      | 最多 *12* 个字符              |
+| ***DS*** *- Decimal String* 小数字符串                 | 表示定点小数和浮点小数。 比如*“12345.67”*，*“-5.0e3”*        | *0-9*，加号(+)，减号(-)， 最多 *16* 个字符 *E*，*e* 和半角句号(.) | 最多 *16* 个字符              |
 | ***SS*** *- Signed Short*有符号短型                    | 符号型二进制整数，长度 *16* 比特                             |                                                              | *2* 个字符                    |
 | ***US*** *- Unsigned Short* 无符号短型                 | 无符号二进制整数，长度 *16* 比特                             |                                                              | *2* 个字符                    |
 | ***SL*** *- Signed Long*有符号长型                     | 有符号二进制整数                                             |                                                              | *4* 个字符                    |
@@ -218,27 +218,27 @@ highlight_shrink:
 
 #### *Study Tag*(检验)
 
-| *Group* | *Element* | *Tag Description*                                            | 中文解释                                           | *VR* |
-| ------- | --------- | ------------------------------------------------------------ | -------------------------------------------------- | ---- |
-| *0008*  | *0050*    | ***Accession Number**: A RIS generated number that identifies the order for the Study.* | 检查号：*RIS*的生成序号*,*用以标识做检查的次序*.*  | *SH* |
-| *0020*  | *0010*    | ***Study ID***                                               | 检查*ID.*                                          | *SH* |
-| *0020*  | *000D*    | ***Study Instance UID**:Unique identifier for the Study.*    | 检查实例号：唯一标记不同检查的号码*.*              | *UI* |
-| *0008*  | *0020*    | ***Study Date***：*Date the Study started.*                  | 检查日期：检查开始的日期*.*                        | *DA* |
-| *0008*  | *0030*    | ***Study Time***：*Time the Study started.*                  | 检查时间：检查开始的时间*.*                        | *TM* |
-| *0008*  | *0061*    | ***Modalities in Study***                                    | 一个检查中含有的不同检查类型*.*                    | *CS* |
-| *0008*  | *0015*    | ***Body Part Examined***                                     | 检查的部位*.*                                      | *CS* |
-| *0008*  | *1030*    | ***Study Description***                                      | 检查的描述*.*                                      | *LO* |
-| *0010*  | *1010*    | ***Patient’s Age***                                          | 做检查时刻的患者年龄*,*而不是此刻患者的真实年龄*.* | *AS* |
+| *Group* | *Element* | *Tag Description*                                            | 中文解释                                        | *VR* |
+| ------- | --------- | ------------------------------------------------------------ | ----------------------------------------------- | ---- |
+| *0008*  | *0050*    | ***Accession Number**: A RIS generated number that identifies the order for the Study.* | 检查号：*RIS*的生成序号,用以标识做检查的次序.   | *SH* |
+| *0020*  | *0010*    | ***Study ID***                                               | 检查ID.                                         | *SH* |
+| *0020*  | *000D*    | ***Study Instance UID**:Unique identifier for the Study.*    | 检查实例号：唯一标记不同检查的号码              | *UI* |
+| *0008*  | *0020*    | ***Study Date***：*Date the Study started.*                  | 检查日期：检查开始的日期                        | *DA* |
+| *0008*  | *0030*    | ***Study Time***：*Time the Study started.*                  | 检查时间：检查开始的时间                        | *TM* |
+| *0008*  | *0061*    | ***Modalities in Study***                                    | 一个检查中含有的不同检查类型                    | *CS* |
+| *0008*  | *0015*    | ***Body Part Examined***                                     | 检查的部位                                      | *CS* |
+| *0008*  | *1030*    | ***Study Description***                                      | 检查的描述                                      | *LO* |
+| *0010*  | *1010*    | ***Patient’s Age***                                          | 做检查时刻的患者年龄*,*而不是此刻患者的真实年龄 | *AS* |
 
 #### *Series Tag*(系列)
 
 | *Group*  | *Element* | *Tag Description*                                            | 中文解释                                                     | *VR* |
 | -------- | --------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
-| **0020** | **0011**  | **Series Number**: A number that identifies this Series.     | 序列号：识别不同检查的号码.                                  | IS   |
-| **0020** | **000E**  | **Series Instance UID**:Unique identifier for the Series.    | 序列实例号：唯一标记不同序列的号码.                          | UI   |
+| **0020** | **0011**  | **Series Number**: A number that identifies this Series.     | 序列号：识别不同检查的号码                                   | IS   |
+| **0020** | **000E**  | **Series Instance UID**:Unique identifier for the Series.    | 序列实例号：唯一标记不同序列的号码                           | UI   |
 | **0008** | **0060**  | **Modality**                                                 | 检查模态(MRI/CT/CR/DR)                                       | CS   |
 | **0008** | **103E**  | **Series Description**                                       | 检查描述和说明                                               | LO   |
-| **0008** | **0021**  | Series Date                                                  | 检查日期                                                     | DA   |
+| **0008** | **0021**  | **Series Date**                                              | 检查日期                                                     | DA   |
 | **0008** | **0031**  | **Series Time**                                              | 检查时间                                                     | TM   |
 | **0020** | **0032**  | **Image Position (Patient)**：The x, y and z coordinates of the upper left hand corner of the image, in mm. | 图像位置：图像的左上角在空间坐标系中的x,y,z坐标,单位是毫米. 如果在检查中,则指该序列中第一张影像左上角的坐标. | DS   |
 | **0020** | **0037**  | **Image Orientation (Patient)**:The direction cosines of the first row and the first column with respect to the patient. | 图像方位：第一行和第一列的方向余弦相对于病人                 | DS   |
@@ -254,7 +254,7 @@ highlight_shrink:
 | ------- | --------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
 | *0008*  | *0008*    | ***Image Type**: Image identification characteristics.*      | 图像类型: 图象标识字特性                                     | *CS* |
 | *0008*  | *0018*    | ***SOP Instance UID***                                       | *SOP*实例*UID*                                               |      |
-| *0008*  | *0023*    | ***Content Dat**e*：*The date the image pixel data creation started.* | 影像拍摄的日期                                               | *DA* |
+| *0008*  | *0023*    | ***Content Date***：*The date the image pixel data creation started.* | 影像拍摄的日期                                               | *DA* |
 | *0008*  | *0033*    | ***Content Time***                                           | 影像拍摄的时间                                               | *TM* |
 | *0020*  | *0013*    | ***Image/Instance Number**: A number that identifies this image.* | 图像码：辨识图像的号码                                       | *IS* |
 | *0028*  | *0002*    | ***Samples Per Pixel**: Number of samples (planes) in this image.* | 图像上的采样率                                               | *US* |
@@ -282,7 +282,7 @@ highlight_shrink:
 
   > specifies the direction cosines of the first row and the first column with respect to the patient. The direction of the axes are defined by the patients orientation to ensure LPS system ( x-axis increasing to the left hand side of the patient, y-axis increasing to the posterior side of the patient and z-axis increasing toward the head of the patient )
 
-  * 图像方向：指示了图像第一行和第一列相对于病人的方向cosine。 坐标轴的方向是根据病人的方向来确定的（X轴指向病人的左手边，y轴指向病人的后面，Z轴指向病人的头部。
+  * 图像方向：指示了图像第一行和第一列相对于病人的余弦方向。 坐标轴的方向是根据病人的方向来确定的（X轴指向病人的左手边，y轴指向病人的后面，Z轴指向病人的头部。
 
 * PatientPosition( 0018,5100)
 
@@ -294,10 +294,12 @@ highlight_shrink:
   >
   > ​							 HFDR= head first-decibitus right, 
   >
-  >  ​							 HFDL = head first-decubiturs left,
+  > ​							 HFDL = head first-decubiturs left,
   >
-  > ​							 FFP = feet first-prone, FFS, FFDR, FFDL.
-
+  > ​							 FFP = feet first-prone, 
+  >
+  > ​							 FFS, FFDR, FFDL.
+  
   * 病人的位置：  是描述病人相对于CT或者MR等成像设备的位置。 HFP：头部在前，俯卧； HFS：头在前，仰卧
 
 ### 相关框架
