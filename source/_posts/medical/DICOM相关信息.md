@@ -28,6 +28,7 @@ highlight_shrink:
 * [[Dcmlib] HOWTO Compute the Z spacing in DICOM](https://www.creatis.insa-lyon.fr/pipermail/dcmlib/2005-September/002141.html)
 * [闲话DICOM](https://www.cnblogs.com/okaimee/archive/2013/01/10/2854783.html)
 * [[医疗]国外开源的PACS服务器](https://www.cnblogs.com/kesalin/archive/2012/02/24/medical_pacs.html)
+* [DICOM Libray](https://dicomlibrary.com/)
 
 ### 名词解释
 
@@ -192,15 +193,99 @@ highlight_shrink:
 ### 编码方式
 
 * 传输语义(Transfer Syntax)
-  * implictlittleendian
-  * explicitlittleedian
-  * explicitbigendian
-  * JPEG Loseless
-  * JPEG Lossy
-  * RLE
-  * JPEG2K
-  * MPEG2
-  * MPEG4
+  
+  * 转移语法是一组编码规则，能够明确地表示一个或多个抽象语法。特别是，它允许通信的应用实体协商共同支持的编码技术(例如，字节排序，压缩，等等)。
+  * 传输语法是表示上下文的一个属性，其中一个或多个在建立DICOM应用实体之间的关联时进行协商
+  
+  | **Transfer Syntax UID** | **Transfer Syntax name**                                     |
+  | ----------------------- | ------------------------------------------------------------ |
+  | 1.2.840.10008.1.2       | Implicit VR Endian: Default Transfer Syntax for DICOM        |
+  | 1.2.840.10008.1.2.1     | Explicit VR Little Endian                                    |
+  | 1.2.840.10008.1.2.1.99  | Deflated Explicit VR Little Endian                           |
+  | 1.2.840.10008.1.2.2     | Explicit VR Big Endian                                       |
+  | 1.2.840.10008.1.2.4.50  | JPEG Baseline (Process 1): Default Transfer Syntax for Lossy JPEG 8-bit Image Compression |
+  | 1.2.840.10008.1.2.4.51  | JPEG Baseline (Processes 2 & 4): Default Transfer Syntax for Lossy JPEG 12-bit Image Compression (Process 4 only) |
+  | 1.2.840.10008.1.2.4.57  | JPEG Lossless, Nonhierarchical (Processes 14)                |
+  | 1.2.840.10008.1.2.4.70  | JPEG Lossless, Nonhierarchical, First- Order Prediction (Processes 14 [Selection Value 1]): Default Transfer Syntax for Lossless JPEG Image Compression |
+  | 1.2.840.10008.1.2.4.80  | JPEG-LS Lossless Image Compression                           |
+  | 1.2.840.10008.1.2.4.81  | JPEG-LS Lossy (Near- Lossless) Image Compression             |
+  | 1.2.840.10008.1.2.4.90  | JPEG 2000 Image Compression (Lossless Only)                  |
+  | 1.2.840.10008.1.2.4.91  | JPEG 2000 Image Compression                                  |
+  | 1.2.840.10008.1.2.4.92  | JPEG 2000 Part 2 Multicomponent Image Compression (Lossless Only) |
+  | 1.2.840.10008.1.2.4.93  | JPEG 2000 Part 2 Multicomponent Image Compression            |
+  | 1.2.840.10008.1.2.4.94  | JPIP Referenced                                              |
+  | 1.2.840.10008.1.2.4.95  | JPIP Referenced Deflate                                      |
+  | 1.2.840.10008.1.2.5     | RLE Lossless                                                 |
+  | 1.2.840.10008.1.2.6.1   | RFC 2557 MIME Encapsulation                                  |
+  | 1.2.840.10008.1.2.4.100 | MPEG2 Main Profile Main Level                                |
+  | 1.2.840.10008.1.2.4.102 | MPEG-4 AVC/H.264 High Profile / Level 4.1                    |
+  | 1.2.840.10008.1.2.4.103 | MPEG-4 AVC/H.264 BD-compatible High Profile / Level 4.1      |
+  
+* Modality(模态)
+
+  | **Value** | **Description**                                 |
+  | --------- | ----------------------------------------------- |
+  | AR        | Autorefraction                                  |
+  | ASMT      | Content Assessment Results                      |
+  | AU        | Audio                                           |
+  | BDUS      | Bone Densitometry (ultrasound)                  |
+  | BI        | Biomagnetic imaging                             |
+  | BMD       | Bone Densitometry (X-Ray)                       |
+  | CR        | Computed Radiography                            |
+  | CT        | Computed Tomography                             |
+  | DG        | Diaphanography                                  |
+  | DOC       | Document                                        |
+  | DX        | Digital Radiography                             |
+  | ECG       | Electrocardiography                             |
+  | EPS       | Cardiac Electrophysiology                       |
+  | ES        | Endoscopy                                       |
+  | FID       | Fiducials                                       |
+  | GM        | General Microscopy                              |
+  | HC        | Hard Copy                                       |
+  | HD        | Hemodynamic Waveform                            |
+  | IO        | Intra-Oral Radiography                          |
+  | IOL       | Intraocular Lens Data                           |
+  | IVOCT     | Intravascular Optical Coherence Tomography      |
+  | IVUS      | Intravascular Ultrasound                        |
+  | KER       | Keratometry                                     |
+  | KO        | Key Object Selection                            |
+  | LEN       | Lensometry                                      |
+  | LS        | Laser surface scan                              |
+  | MG        | Mammography                                     |
+  | MR        | Magnetic Resonance                              |
+  | NM        | Nuclear Medicine                                |
+  | OAM       | Ophthalmic Axial Measurements                   |
+  | OCT       | Optical Coherence Tomography (non-Ophthalmic)   |
+  | OP        | Ophthalmic Photography                          |
+  | OPM       | Ophthalmic Mapping                              |
+  | OPT       | Ophthalmic Tomography                           |
+  | OPV       | Ophthalmic Visual Field                         |
+  | OSS       | Optical Surface Scan                            |
+  | OT        | Other                                           |
+  | PLAN      | Plan                                            |
+  | PR        | Presentation State                              |
+  | PT        | Positron emission tomography (PET)              |
+  | PX        | Panoramic X-Ray                                 |
+  | REG       | Registration                                    |
+  | RESP      | Respiratory Waveform                            |
+  | RF        | Radio Fluoroscopy                               |
+  | RG        | Radiographic imaging (conventional film/screen) |
+  | RTDOSE    | Radiotherapy Dose                               |
+  | RTIMAGE   | Radiotherapy Image                              |
+  | RTPLAN    | Radiotherapy Plan                               |
+  | RTRECORD  | RT Treatment Record                             |
+  | RTSTRUCT  | Radiotherapy Structure Set                      |
+  | RWV       | Real World Value Map                            |
+  | SEG       | Segmentation                                    |
+  | SM        | Slide Microscopy                                |
+  | SMR       | Stereometric Relationship                       |
+  | SR        | SR Document                                     |
+  | SRF       | Subjective Refraction                           |
+  | STAIN     | Automated Slide Stainer                         |
+  | TG        | Thermography                                    |
+  | US        | Ultrasound                                      |
+  | XA        | X-Ray Angiography                               |
+  | XC        | External-camera Photography                     |
 
 ### DICOM Tag分类
 
@@ -240,11 +325,11 @@ highlight_shrink:
 | **0008** | **103E**  | **Series Description**                                       | 检查描述和说明                                               | LO   |
 | **0008** | **0021**  | **Series Date**                                              | 检查日期                                                     | DA   |
 | **0008** | **0031**  | **Series Time**                                              | 检查时间                                                     | TM   |
-| **0020** | **0032**  | **Image Position (Patient)**：The x, y and z coordinates of the upper left hand corner of the image, in mm. | 图像位置：图像的左上角在空间坐标系中的x,y,z坐标,单位是毫米. 如果在检查中,则指该序列中第一张影像左上角的坐标. | DS   |
+| **0020** | **0032**  | **Image Position (Patient)**：The x, y and z coordinates of the upper left hand corner of the image, in mm. | 图像位置：图像的左上角在空间坐标系中的x,y,z坐标,单位是毫米. 如果在检查中,则指该序列中第一张影像左上角的坐标 | DS   |
 | **0020** | **0037**  | **Image Orientation (Patient)**:The direction cosines of the first row and the first column with respect to the patient. | 图像方位：第一行和第一列的方向余弦相对于病人                 | DS   |
-| **0018** | **0050**  | **Slice Thickness**:Nominal slice thickness, in mm.          | 层厚.                                                        | DS   |
+| **0018** | **0050**  | **Slice Thickness**:Nominal slice thickness, in mm.          | 层厚                                                         | DS   |
 | **0018** | **0088**  | **Spacing Between Slices**                                   | 层与层之间的间距,单位为mm                                    | DS   |
-| **0020** | **1041**  | **Slice Location**：Relative position of exposure expressed in mm. | 实际的相对位置，单位为mm                                     | DS   |
+| **0020** | **1041**  | **Slice Location**：Relative position of exposure expressed in mm. | 实际的相对位置,单位为mm                                      | DS   |
 | **0018** | **0023**  | **MR Acquisition**                                           | 数据编码表的标识。枚举值：<br/>2D = 频率x相位<br/>3D = 频率x相位x相位 | CS   |
 | **0018** | **0015**  | **Body Part Examined**                                       | 身体部位                                                     | CS   |
 
@@ -259,15 +344,15 @@ highlight_shrink:
 | *0020*  | *0013*    | ***Image/Instance Number**: A number that identifies this image.* | 图像码：辨识图像的号码                                       | *IS* |
 | *0028*  | *0002*    | ***Samples Per Pixel**: Number of samples (planes) in this image.* | 图像上的采样率                                               | *US* |
 | *0028*  | *0004*    | ***Photometric Interpretation**: Specifies the intended interpretation of the pixel data.* | 光度计的解释*,*对于*CT*图像，用两个枚举值:*MONOCHROME1*，*MONOCHROME2.*用来判断图像是否是彩色的，*MONOCHROME1/2*是灰度图，*RGB*则是真彩色图，还有其他 | *CS* |
-| *0028*  | *0010*    | ***Rows**: Number of rows in the image.*                     | 图像的总行数，行分辨率                                       | *US* |
-| *0028*  | *0011*    | ***Columns**: Number of columns in the image.*               | 图像的总列数，列分辨率                                       | *US* |
+| *0028*  | *0010*    | ***Rows**: Number of rows in the image.*                     | 图像的总行数,行分辨率                                        | *US* |
+| *0028*  | *0011*    | ***Columns**: Number of columns in the image.*               | 图像的总列数,列分辨率                                        | *US* |
 | *0028*  | *0030*    | ***Pixel Spacing**: Physical distance in the patient between the center of each pixel.* | 像素间距*.*像素中心之间的物理间距                            | *DS* |
 | *0028*  | *0100*    | ***Bits Allocated**: Number of bits allocated for each pixel sample. Each sample shall have the same number of bits allocated.* | 存储的位数：有*12*到*16*列举值*.存储的位数：有*12*到*16*列举值* | *US* |
 | *0028*  | *0102*    | **Pixel Representation**:<br/>Data representation of the pixel samples. Each sample shall have the same pixel representation.<br/>Enum: 0000H=unsigned integer,0001H=2’s complement. | 像素数据的表现类型*:这是一个枚举值，分别为十六进制数*0000*和*0001.*0000H =* 无符号整数，*0001H = 2*的补码 | *US* |
 | *0028*  | *1050*    | ***Window Center***                                          | 窗位                                                         | *DS* |
 | *0028*  | *1051*    | ***Window Width***                                           | 窗宽                                                         | *DS* |
 | *0028*  | *1052*    | **Rescale Intercept**:<br/>The value b in relationship between stored values (SV) and the output units.<br/>Output units = m*SV + b.<br/>Required if Modality LUT Sequence (0028, 0030) is not present. | 截距*:*如果表明不同模态的*LUT*颜色对应表不存在时*,*则使用方程.*Units = m\*SV + b,*计算真实的像素值到呈现像素值。其中这个值为表达式中的*b*。 | *DS* |
-| *0028*  | *1053*    | ***Rescale Slope**: m in the equation specified by Rescale Intercept (0028,1052).Required if Rescale Intercept is present.* | 斜率*.*这个值为表达式中的*m*。                               | *DS* |
+| *0028*  | *1053*    | ***Rescale Slope**: m in the equation specified by Rescale Intercept (0028,1052).Required if Rescale Intercept is present.* | 斜率*.*这个值为表达式中的*m*                                 | *DS* |
 | *0028*  | *1054*    | **Rescale Type**:<br/><br/>Specifies the output units of Rescale Slope (0028,1053) and Rescale Intercept (0028,1052).<br/>Enum: US=Unspecified Requried if Photometric Interpretation is MONOCHROME2, and Bits Stored is greater than 1.<br/>This specifies an identity Modality LUT transformation. | 输出值的单位*.*这是一个枚举值                                | *LO* |
 
 ### DICOM判断3D图像的方向的TAG

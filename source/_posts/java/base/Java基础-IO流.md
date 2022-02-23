@@ -28,6 +28,8 @@ highlight_shrink:
 
 * `File`对象封装了文件或路径的属性,但是它既不包括创建文件,也不包括从(向)文件读(写)数据的方法.
 
+![img](https://www.holelin.cn/img/java/io/InputStream%E5%92%8COutputStream%E7%B1%BB%E4%BB%A5%E5%8F%8A%E5%AD%90%E7%B1%BB.png)
+
 ### 文件输入和输出
 
 #### `PrintWriter`
@@ -101,6 +103,9 @@ highlight_shrink:
 #### `DataInputStream`类和`DataOutputStream`类
 
 * `DataInputStream`从数据流读取字节,并且将他们转换为正确的基本了死刑值或字符串.
+
+​		![img](https://www.holelin.cn/img/java/io/DataInputStream%E7%B1%BB%E5%9B%BE.png)
+
 * `DataOutputStream`将基本类型的值或字符串转换为字节,并且将字节输出到数据流.
 
 ```java
