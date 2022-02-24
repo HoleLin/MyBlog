@@ -8,6 +8,7 @@ tags:
 - HashMap
 categories: 
 - Java
+- Collection
 ---
 
 ### 参考文献

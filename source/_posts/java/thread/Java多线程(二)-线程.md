@@ -412,7 +412,7 @@ highlight_shrink:
   * 调用 `LockSupport.unpark(目标线程) `或调用了线程 的 `interrupt() `，会让目标线程从 **WAITING –> RUNNABLE**
 * **5. RUNNABLE <–> TIMED_WAITING**
   * t 线程用 `synchronized(obj) `获取了对象锁后
-    - 调用` obj.wait(**long n**)` 方法时，t 线程从 **RUNNABLE –> TIMED_WAITING**
+    - 调用` obj.wait(long n)` 方法时，t 线程从 **RUNNABLE –> TIMED_WAITING**
     - t 线程等待时间超过了 n 毫秒，或调用 `obj.notify() `，` obj.notifyAll() `， `t.interrupt() `时
       - 竞争锁成功，t 线程从 **TIMED_WAITING –> RUNNABLE**
       - 竞争锁失败，t 线程从 **TIMED_WAITING –> BLOCKED**

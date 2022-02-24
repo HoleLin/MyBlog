@@ -459,7 +459,7 @@ ThreadPoolExecutor(int corePoolSize,
 
 #### 向线程池提交任务
 
-> 使用ThreadPoolEXecutor.executor()方法来提交任务
+> 使用ThreadPoolExecutor.executor()方法来提交任务
 
 ```java
 public void execute(Runnable command) {

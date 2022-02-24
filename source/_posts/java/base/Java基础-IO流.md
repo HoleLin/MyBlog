@@ -23,6 +23,7 @@ highlight_shrink:
 
 * [IO 多路复用](https://mp.weixin.qq.com/s/CMWlDywI1zbgJSoeGTBmuw)
 * Java语言设计-基础篇(第8版)
+* Java核心技术 卷2 高级特性
 
 ### `File`类
 
@@ -138,7 +139,7 @@ highlight_shrink:
 
 * `DataInputStream`类和`DataOutpuStream`类可以实现基本数据类型与字符串的输入和输出,还可以实现对象的输入输出.
 
-#### 随机访问文件
+#### 随机访问文件-`RandomAccessFile`
 
 * `RandomAccessFile`类允许在文件内的随机位置上进行读写.`RandomAccessFile`类实现了`DataInput`和`DataOutput`接口.
 
@@ -151,6 +152,151 @@ highlight_shrink:
   * 如果文件已存在,则创建raf访问这个文件;如果文件不存在,则创建一个名为''filename.txt"的新文件,再创建raf访问这个文件
 
 * 随机访问文件是由字节序列组成的.一个称为文件指针(`file poniter`)的特殊标记定位这些字节中的某个字节的位置.文件读写操作就是在文件指针的位置进行的.打开文件时,文件指针置于文件的起始位置.在文件中进行读写数据后,文件指针就会向前移到下一个数据项.
+
+#### ZIP文档
+
+* ZIP文档通常以压缩格式存储了一个或多个文件,每个ZIP文档都有一个头,包含诸如每个文件名和所使用的压缩方法等信息.
+
+* 在Java中可以使用`ZipInputStream`来读入ZIP文档.若需要浏览文档中每个单独的项,`getNextEntry`方法就可以返回一个描述这些项的`ZipEntry`类型的对象.
+
+* `ZipInputStream`的read方法被修改为在碰到当前项的结尾是返回-1(而不是碰到ZIP文件的末尾),然后必须调用`closeEntry`来读入下一项.
+
+  ```java
+  			final ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(""));
+        ZipEntry zipEntry;
+        while ((zipEntry=zipInputStream.getNextEntry())!=null){
+              // analyze entry
+              // read the content of zin
+              zipInputStream.closeEntry();
+        }
+        zipInputStream.close();
+  ```
+
+  * **注意:** 在读入单个ZIP项后,不要关闭ZIP输入流,也不要将其传递给可能会关闭它的方法,否则就不能再读入后续的项了.
+
+* 写出到ZIP文件,可以使用`ZipOutputStream`,若希望放入到ZIP文件中每一项,都应该创建一个`ZipEntry`对象,并将文件名传递给`ZipEntity`的构造器,它将设置其他诸如文件日期和解压缩方法等参数.然后需要调用`ZipOutputStream`的`putNextEntry`方法来开始写出新文件,并将文件数据发送到ZIP流中,最后完成时,需要调用`closeEntry`.
+
+  ```java
+  			final ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("test.zip"));
+          // deal all files
+          {
+              ZipEntry ze=new ZipEntry("filename");
+              zipOutputStream.putNextEntry(ze);
+              // send data to zipOutputStream
+              zipOutputStream.closeEntry();
+          }
+          zipOutputStream.close();
+  ```
+
+  * JAR文件只是带有一个特殊项的ZIP文件,这个项被称为清单.可以使用`JarInputStream`和`JarOutputStream`来处理.
+
+### 操作文件
+
+#### `Path`
+
+* Path表示的是一个目录名序列,其后还可以跟着一个文件名.路径中的第一个部件可以是根部件,如`/`或`D:\`.而允许访问的根部件取决于文件系统.
+* 以根部件开始的路径是绝对路径;否则,就是相对路径.
+* 静态的`Paths.get`方法接收一个或多个字符串,并将它们用默认文件系统的路径分隔符连接起来.然后解析连接起来的结果,如果其表示不是给定文件系统中的合法路径,那么就抛出`InvalidPathException`异常.
+
+##### 组合和解析
+
+* `p.resolve(q)`将按照下列规则返回一个路径:
+
+  * 如果q是绝对路径,则结果就是q;
+  * 否则,根据文件系统的规则,将"p后面跟着q"作为结果;
+
+* `resolve`方法是一种快捷方式,它接收一个字符串而不是路径:
+
+  ```java
+  	Path workPath=basePath.resolve("work");
+  ```
+
+* `resolveSibling`它通过解析指定路径的父路径产生其兄弟路径.
+
+  * 例如,若workPath是"/opt/myapp/work"那么下面的调用将创建"/opt/myapp/temp"
+
+  ```java
+  Path tempPath=workPath.resolveSibling("temp");
+  ```
+
+* `resolve`的对立是`relative`即调用`p.relative(r)`将产生路径q,对q进行解析会产生r.
+
+  * 例如"/home/cay"为目标对"/home/fred/myprog"进行相对化操作,会产生"../fred/myprog",其中假设".."为文件系统的父目录.
+
+* `normalize`方法将移除所有冗余的"."和".."部件(或者文件系统认为冗余的所有部件).例如规范化"/home/cay/../fred/./myprog"将产生"/home/cay/fred/myprog"
+
+#### `Files`
+
+* `Files`类可以使得普通文件操作变得快捷.
+
+```java
+				// 读取文件
+        final byte[] bytes = Files.readAllBytes(Paths.get(""));
+        // 将文件当做行序列读入
+        final List<String> strings = Files.readAllLines(Paths.get(""), Charset.defaultCharset());
+        // 写出一个字符串到文件中
+        final Path write = Files.write(Paths.get(""), "".getBytes(Charset.defaultCharset()));
+        // 想指定的文件中追加内容
+        final Path append = Files.write(Paths.get(""), "".getBytes(Charset.defaultCharset()), StandardOpenOption.APPEND);
+
+			  // 复制文件
+        Files.copy(Paths.get(""),Paths.get(""));
+        // 移动文件
+        Files.move(Paths.get(""),Paths.get(""));
+
+        Files.copy(Paths.get(""),Paths.get(""), StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.COPY_ATTRIBUTES);
+				// 保持移动的操作为原子性
+        Files.move(Paths.get(""),Paths.get(""),StandardCopyOption.ATOMIC_MOVE);
+
+				// 删除文件 可以用来移除空目录
+ 				Files.delete(Paths.get(""));
+        Files.deleteIfExists(Paths.get(""));
+```
+
+* 若目标路径已存在,那么复制或移动将失败,如果想要覆盖已有的目标路径,可以使用`REPLACE_EXISTING`选项,如果想要复制所有文件属性,可以使用`COPY_ATTRIBUTES`,也可以同时选择两个选项.
+
+##### 创建文件和目录
+
+```java
+    		// 创建目录
+        Files.createDirectory(Paths.get(""));
+        Files.createDirectories(Paths.get(""));
+				// 创建临时文件
+        Files.createTempFile("prefix","suffix");
+
+        // 创建文件创建文件
+        Files.createFile(Paths.get(""));
+```
+
+* 若文件已存在了,这个创建文件的操作就会抛出异常.检查文件是否存在和创建文件是原子的.
+
+##### 迭代目录中的文件
+
+```java
+ 		 try (DirectoryStream<Path> entries = Files.newDirectoryStream(Paths.get(""))) {
+            for (Path entry : entries) {
+                // handle entry
+            }
+        }
+
+
+ 			Files.walkFileTree(Paths.get(""),new SimpleFileVisitor<Path>(){
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (attrs.isDirectory()){
+                    System.out.println(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                return FileVisitResult.CONTINUE;
+            }
+        });
+```
+
+
 
 
 

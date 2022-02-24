@@ -7,6 +7,7 @@ tags:
 - 集合类
 categories:
 - Java
+- Collection
 updated:
 type:
 comments:
