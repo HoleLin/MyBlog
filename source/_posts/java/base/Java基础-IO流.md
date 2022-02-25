@@ -278,15 +278,37 @@ highlight_shrink:
                 // handle entry
             }
         }
+```
 
+* 若想要访问某个目录的所有子孙成员可以使用`walkFileTree`方法,并想起传递一个`FileVisitor`类型的对象,这个对象会得到下列通知:
+  * 在遇到一个文件或目录时:`FileVisitResult visitFile(Path file, BasicFileAttributes attrs)`
+  * 在一个目录被处理前: `FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) `
+  * 在一个目录被处理后:`FileVisitResult postVisitDirectory(Path dir, IOException exc)`
+  * 在试图访问文件或目录时发生错误,例如没有权限打开目录:`FileVisitResult visitFileFailed(Path file, IOException exc)`
+  * 对于上述每种情况,都可以指定是否希望执行下面的操作:
+    * 继续访问下一个文件: `FileVisitResult.CONTINUE`
+    * 继续访问,但不再访问这个目录下的任何项: `FileVisitResult.SKIP_SUBTREE`
+    * 继续访问,但不再访问这个文件的兄弟文件(和该文件在同一个目录下的文件):`FileVisitResult.`SKIP_SIBLINGS
+    * 终止访问: `FileVisitResult.TERMINATE`
 
- 			Files.walkFileTree(Paths.get(""),new SimpleFileVisitor<Path>(){
+```java
+ 				Files.walkFileTree(Paths.get(""),new SimpleFileVisitor<Path>(){
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (attrs.isDirectory()){
                     System.out.println(file);
                 }
                 return FileVisitResult.CONTINUE;
+            }
+          
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                return super.preVisitDirectory(dir, attrs);
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                return super.postVisitDirectory(dir, exc);
             }
 
             @Override
@@ -296,11 +318,61 @@ highlight_shrink:
         });
 ```
 
+### 内存文件映射
 
+* 大多数操作系统都可以利用虚拟内存实现来将一个文件或文件的一部分"映射"到内存中.然后,这个文件就可以当做是内存数组一样地访问,这比传统文件操作要快得多.
 
+* 在`java.nio`包使内存映射变得十分简单
 
+  * 首先从文件中获得一个通道(channel),通道是用于磁盘文件的一种抽象,它使我们可以访问注入内存映射,文件加锁机制以及文件快速数据传递等操作系统特性.
 
+    ```java
+    	final FileChannel fileChannel = FileChannel.open(Paths.get(""), StandardOpenOption.READ);
+    ```
 
+  * 然后通过调用`FileChannel`类的`map`方法从这个通道中获得一个`ByteBuffer`.可以指定想要映射的文件区域与映射模式,支持的模式有三种:
 
+    * `java.nio.channels.FileChannel.MapMode#READ_ONLY`: 所产生的缓冲区是只读的,任何对该缓冲区写入的尝试都会导致`ReadOnlyBufferException`异常;
+    * `java.nio.channels.FileChannel.MapMode#READ_WRITE`:所产生的缓冲区是可写的,任何修改都会在某个时刻写会到文件中.注意,其他映射同一个文件的程序不能立即看到这些修改,多个程序同时进行文件映射的确切行为是依赖操作系统的;
+    * `java.nio.channels.FileChannel.MapMode#PRIVATE`: 所产生的缓存区是可写的,但是任何修改对这个缓冲区来说都是私有的,不会传播到文件中.
+    
+  * 一但有了缓冲区,就可以使用`ByteBuffer`类和`Buffer`超类的方法读写数据了.
+  
+* 缓冲区支持顺序和随机数据访问,它有一个可以通过`get`和`put`操作类移动的位置.
 
+  ```java
+   				while (mappedByteBuffer.hasRemaining()) {
+              final byte b = mappedByteBuffer.get();
+          }
+          
+          for (int i = 0; i < mappedByteBuffer.limit(); i++) {
+              final byte b = mappedByteBuffer.get(i);
+          }
+  ```
+
+#### 缓冲区数据结构
+
+* `Buffer`类是一个抽象类,它有很多具体子类,包括`ByteBuffer`,`CharBuffer`,`DoubleBuffer`,`IntBuffer`,`LongBuffer`和`ShortBuffer`.
+
+  * `StringBuffer`类与这些缓冲区没有关系.
+
+* 最常用的是`ByteBuffer`和`CharBuffer`,每个缓冲区都具有:
+
+  * 一个容量,它永远不能改变.
+
+  * 一个读写位置,下一个值将在此进行读写.
+
+  * 一个界限,超过它进行读写是没有意义的.
+
+  * 一个可选的标记,用于重复一个读入或写出操作.
+
+  * 这些值满足下面的条件
+
+    ```
+    	0<=标记<=位置<=界限<=容量
+    ```
+
+* 使用缓冲区的主要目的是执行**"写,然后读入"**循环.假设有一个缓冲区,在一开始,它的位置是0,界限等于容量.不断地调用`put`将值添加到这个缓冲区中,当耗尽所有的数据或者写出的数据量达到容量大小时,就应该切换到读入操作了.
+
+* 此时调用`filp`方法将界限设置到当前位置,并把位置复位到0.现在在`remaining`方法返回正数时(它返回的值是"界限-位置"),不断地调用`get`.在将所有缓冲区的内容读入之后,调用`clear`使缓冲区为下一次写循环做准备.`clear`方法将位置复位到0,并将界限复位到容量.
 
