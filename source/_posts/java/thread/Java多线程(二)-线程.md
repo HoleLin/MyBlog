@@ -603,6 +603,27 @@ highlight_shrink:
 t.setDaemon(true);
 ```
 
+#### 处理未捕获异常的处理器
+
+* 线程的`run`方法不能抛出任何被检测的异常,但是不被检测的异常会导致线程终止.在这种情况下,线程就死亡了.
+
+* 但是,不需要任何`catch`子句来处理可以被传播的异常.相反,就在线程死亡之前,异常被传递到一个用于捕获异常的处理器.
+
+* 该处理器必须属于一个实现`Thread.UncaughtExceptionHandler`接口的类.这个接口只有一个方法:
+
+  ```java
+  void uncaughtException(Thread t, Throwable e);
+  ```
+
+* 可以用`setUncaughtExceptionHandler`方法为任何线程安装一个处理器.也可以用`Thread`类的静态`setDefaultUncaughtExceptionHandler`为所有线程安装一个默认的处理器.替换处理器可以使用日志API发送未捕获异常的报告到日志文件.
+
+* 如果不安装默认的处理器,默认的处理器为空.但是不为独立的线程安装处理器,此时的处理器就是该线程的`ThreadGroup`对象.
+
+* `ThreadGroup`类实现`Thread.UncaughtExceptionHandler`接口.它的`uncaughtException`方法做法如下操作:
+  * 如果该线程组有父线程组,那么父线程组的`uncaughtException`方法被调用.
+  * 否则,如果`Thread.UncaughtExceptionHandler`方法返回一个非空的处理器,则调用该处理器.
+  * 否则,如果`Throwable`是
+
 ### 多线程之线程间的通信方式
 
 #### 同步
@@ -1143,13 +1164,12 @@ public class SearchEngineBlackListCache {
 
 > wait() 方法应该在循环调用，因为当线程获取到 CPU 开始执行的时候，其他条件可能还没有满足，所以在处理前，循环检测条件是否满足会更好。下面是一段标准的使用 wait 和 notify 方法的代码：
 
-```
-
+```java
 // The standard idiom for using the wait method
 synchronized (obj) {
 while (condition does not hold)
-obj.wait(); // (Releases lock, and reacquires on wakeup)
-... // Perform action appropriate to condition
+  obj.wait(); // (Releases lock, and reacquires on wakeup)
+  ... // Perform action appropriate to condition
 }
 ```
 
