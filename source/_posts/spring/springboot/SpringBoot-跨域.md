@@ -6,6 +6,7 @@ cover: /img/cover/Spring.jpg
 tags:
 - 跨域
 categories: 
+- Spring
 - SpringBoot
 ---
 

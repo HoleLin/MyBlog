@@ -7,6 +7,7 @@ tags:
 - integration
 - 多数据源
 categories:
+- Spring
 - SpringBoot
 updated:
 type:

@@ -7,6 +7,7 @@ tags:
 - SpringBoot Security
 - integration
 categories:
+- Spring
 - SpringBoot
 updated:
 type:

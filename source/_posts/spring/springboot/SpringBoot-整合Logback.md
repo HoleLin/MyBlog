@@ -7,6 +7,7 @@ tags:
 - integration
 - Logback
 categories:
+- Spring
 - SpringBoot
 updated:
 type:

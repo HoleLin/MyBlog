@@ -1,11 +1,11 @@
 ---
-title: Spring(三) BeanDefintion
+title: Spring(三) BeanDefinition
 mermaid: true
 date: 2021-06-27 20:57:01
 index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
-- BeanDefintionan
+- BeanDefinition
 categories:
 - Spring
 updated:
@@ -21,7 +21,7 @@ aplayer:
 highlight_shrink:
 ---
 
-### Spring `BeanDefintion`
+### Spring `BeanDefinition`
 
 * `BeanDefinition`是`SpringFramework`中定义Bean的配置元信息接口,包含:
   * Bean的类名;

@@ -7,6 +7,7 @@ tags:
 - integration
 - Activiti7
 categories:
+- Spring
 - SpringBoot
 updated:
 type:

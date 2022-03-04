@@ -7,6 +7,7 @@ tags:
 - 阿里企业邮箱
 - Mail
 categories:
+- Spring
 - SpringBoot
 updated:
 type:

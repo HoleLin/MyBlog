@@ -6,6 +6,7 @@ cover: /img/cover/Spring.jpg
 tags:
 - NestedConfigurationProperty
 categories:
+- Spring
 - SpringBoot
 updated:
 type:
