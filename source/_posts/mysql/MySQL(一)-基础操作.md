@@ -291,6 +291,12 @@ mysql> desc innodb1;
   default-storage-engine=INNODB
   ```
 
+##### 修改表的字符编码
+
+```mysql
+ALTER TABLE table_name CONVERT TO CHARACTER SET utf8mb4;
+```
+
 ##### 添加字段
 
 ```sql
