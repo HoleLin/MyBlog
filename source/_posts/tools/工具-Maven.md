@@ -25,11 +25,12 @@ highlight_shrink:
 * [maven仓库repositories和mirrors的配置及区别详解](https://www.jb51.net/article/190592.htm)
 * [深入理解maven及应用（一）：生命周期和插件](https://blog.csdn.net/chaofanwei/article/details/36197183)
 * [Maven介绍，包括作用、核心概念、用法、常用命令、扩展及配置](https://www.trinea.cn/android/maven/)
+* Maven应用实战
 
 ### 简介
 
-* maven是一个项目构建和管理的工具，提供了帮助管理 构建、文档、报告、依赖、scms、发布、分发的方法。可以方便的编译代码、进行依赖管理、管理二进制库等等。
-* maven的好处在于可以将项目过程规范化、自动化、高效化以及强大的可扩展性
+* Maven是一个项目构建和管理的工具，提供了帮助管理 构建、文档、报告、依赖、scms、发布、分发的方法。可以方便的编译代码、进行依赖管理、管理二进制库等等。
+* Maven的好处在于可以将项目过程规范化、自动化、高效化以及强大的可扩展性
 * 利用maven自身及其插件还可以获得代码检查报告、单元测试覆盖率、实现持续集成等等。
 
 #### 核心概念
@@ -202,11 +203,57 @@ highlight_shrink:
   * `mvn test`：该命令调用default生命周期的test阶段。实际调用的是default生命周期的validate、initialize等，直到test的所有阶段。
   * `mvn clean install`：该命令调换用clean生命周期的clean阶段和default生命周期的instal阶段
 
-### Maven仓库配置优先级
+### Maven仓库
+
+* Maven存放构件的仓库分两种: 本地仓库和远程仓库.
+  * Maven寻找构件的时候,先查看本地仓库,如果本地仓库存在坐标对应的构件,就直接使用;
+  * 如果本地仓库不存在需要的构件,或者需要查看是否有更新的构件版本,Maven就回去远程仓库查找,发现需要的构件后,下载到本地仓库后使用;
+  * 如果本地仓库和远程仓库都没有找到需要的构件,Maven就会报错.
+* 远程仓库有可以分为: 中央仓库,私服和其他公共仓库.
+
+#### 本地仓库
+
+* 默认路径为`~/.m2/repository/`
+* 若要自定义本地仓库的目录.可以编辑`~/.m2/settings.xml`文件,设置其中的`localRepository`元素的值来改变Maven本地仓库的默认位置.
+* 默认情况下`~/.m2/settings.xml`文件是不存在的,需要从Maven的安装目录中复制`$M2_HOME/conf/settings.xml`文件到`~/.m2/`目录下,在进行编辑.
+* 也可以直接修改`$M2_HOME/conf/settings.xml`文件,但是该文件是全局的,`~/.m2/settings.xml`文件则只是对当前用户作用,修改后不会影响其他用户.
+
+#### 远程仓库
+
+* 发布到远程仓库中需要在`pom.xml`中添加`distributionManagement`,然后使用`mvn deploy`
+
+  ```xml
+      <distributionManagement>
+          <repository>
+              <id>archive</id>
+              <name>Archiva Releases</name>
+              <url>http://localhost:8080/repository/internal</url>
+          </repository>
+          <snapshotRepository>
+              <id>archive</id>
+              <name>Archiva Releases</name>
+              <url>http://localhost:8080/repository/snapshots</url>
+          </snapshotRepository>
+      </distributionManagement>
+  ```
+
+* 配置认证信息
+
+  * 需要在`settings.xml`中进行配置.因为`pom`是被提交到代码仓库中供所有成员访问的,而`settings.xml`一般只放在本地机器,因此在`settings.xml`中配置认证信息更安全.
+
+    ```xml
+        <server>
+            <id></id>
+            <username></username>
+            <passsword></passsword>
+        </server>
+    ```
+
+#### 配置优先级
 
 * 仓库优先级为：本地仓库(localRepositories) > profile中的repositories仓库 > POM > mirrors全局仓库
 
-#### 通过mirror配置
+##### 通过`mirror`配置
 
 ```xml
     <mirrors>
@@ -244,12 +291,18 @@ highlight_shrink:
 ```
 
 * maven是从aliyun仓库下载的jar包，不配置的时候，默认从apache的maven中央仓库下载的jar包。
-* `<mirrorOf></mirrorOf>`的设置很重要，比如上面我设置的mirrorOf为`<mirrorOf>central</mirrorOf>`，如果`<mirrorOf></mirrorOf>`我随便设置一个参数，如`<mirrorOf>abc</mirrorOf>`，这时候我们配置的仓库就不起作用了，这是因为maven默认内置了如下一个仓库，这个默认仓库的id为central，当我们把mirrorOf设置为`<mirrorOf>central</mirrorOf>`时，maven就会查找有没有id为central的仓库，然后把id为central的仓库地址换成我们`<mirror>`标签配置的那个url，这样我们配置的mirror才会起作用。当然我们也可以把mirrorOf设置为`<mirrorOf>*</mirrorOf>`，表示所有仓库都使用我们配置的这个mirror作为jar包下载地址。
+* `<mirrorOf></mirrorOf>`的设置很重要，比如上面我设置的`mirrorOf`为`<mirrorOf>central</mirrorOf>`，如果`<mirrorOf></mirrorOf>`我随便设置一个参数，如`<mirrorOf>abc</mirrorOf>`，这时候我们配置的仓库就不起作用了，这是因为maven默认内置了如下一个仓库，这个默认仓库的id为central，当我们把mirrorOf设置为`<mirrorOf>central</mirrorOf>`时，maven就会查找有没有id为central的仓库，然后把id为central的仓库地址换成我们`<mirror>`标签配置的那个url，这样我们配置的mirror才会起作用。当然我们也可以把mirrorOf设置为`<mirrorOf>*</mirrorOf>`，表示所有仓库都使用我们配置的这个mirror作为jar包下载地址。
+* 关于`mirrorOf`一些特别的配置方式:
+  * `<mirrorOf>*</mirrorOf>`:匹配所有的远程仓库;
+  * `<mirrorOf>external:*</mirrorOf>`: 匹配所有的远程仓库,使用`localhost`,`file://协议`的除外,也就说匹配所有非本地的远程仓库.
+  * `<mirrorOf>r1,r2</mirrorOf>`:匹配指定的几个远程仓库,每个仓库之间用逗号隔开.
+  * `<mirrorOf>*,!r1,r2</mirrorOf>`:匹配除了指定仓库外的所有仓库,"!"后面的仓库是被排除外的.
 
-#### 通过`<repositories>`配置
+
+##### 通过`<repositories>`配置
 
 * 通过setting.xml方式配置会对所有maven项目生效，如果只想在本项目中配置一个maven仓库，可以通过在pom.xml中配置`<repositories>`标签来实现。在自己的maven项目的pom.xml中添加如下配置，就配置好了一个仓库。这时候，maven会优先采用这个配置，而不会去读setting.xml中的配置了。这样配置好后，maven就会自动从aliyun下载jar包了.
-* repositories标签下可以配置多个repository,如果我们配置了多个repository，是按出现顺序使用，如果第1个可用，就用第一个，如果不可用，就依次往下找.
+* `repositories`标签下可以配置多个`repository`,如果我们配置了多个`repository`，是按出现顺序使用，如果第1个可用，就用第一个，如果不可用，就依次往下找.
 
 ```xml
 <!--releases和snapshots中有个enabled属性，是个boolean值，默认为true，
@@ -260,14 +313,39 @@ highlight_shrink:
   <url>https://maven.aliyun.com/repository/public</url>
   <releases>
     <enabled>true</enabled>
+    <!-- updatePolicy配置Maven从远程仓库检测更新的频率,默认值为daily,表示每天检测一次-->
+    <!-- 还可以配置 never表示从不检测更新;always表示每次构建都检测更新;interfal:X表示每隔X分钟检测一次-->
+    <updatePolicy>daily</updatePolicy>
+    <!-- checksumPolicy配置检测校验和文件的策略.当构建被部署到Maven仓库的时候,自动会部署对应的校验和文件.-->
+    <!-- warn:表示Maven执行构建时输出警告信息 默认值为warn-->
+    <!-- fail:表示Maven会直接终止,提示失败-->
+    <!-- ignore:表示Maven会忽略校验的错误,继续构建Maven项目-->
+    <checksumPolicy>ignore</checksumPolicy>
   </releases>
   <snapshots>
     <enabled>false</enabled>
   </snapshots>
+  <!-- layout,值为default,表示仓库布局是Maven2和Maven3的默认布局,而不是Maven1的布局-->
+  <layout>default</layout>
 </repository>
 ```
 
+#### 解析依赖的机制
+
+* Maven在寻找项目需要的依赖的顺序是:先在本地仓库中查找,如果没有找到,在找远程仓库,找到后下载;如果依赖的版本为快照版本,Maven除了找到对应的构件外,还会自动查找最新的快照.
+* 依赖查找过程如下:
+  * 当依赖的范围是`system`的时候Maven直接从本地文件系统中解析构件.
+  * 根据依赖坐标计算仓库路径,尝试直接从本地仓库寻找构件,如果发现对应的构件,就解析成功.
+  * 如果在本地仓库不存在响应的构件,就遍历所有的远程仓库,发现后,下载并解析使用.
+  * 如果依赖的版本是`RELEASE`或`LATEST`,就基于更新策略读取所有远程仓库的元数据文件(`goupId/artifactId/maven-metadata.xml`),将其与本地仓库的对应源数据文件合并,计算出`RELEASE`或`LATEST`的真实值,然后各级该值检查本地仓库,或者从远程仓库下载.
+  * 如果依赖的版本是`SNAPSHOT`,就基于更新策略读取所有远程仓库的元数据文件,将它与本地对应的元数据合并,得到最新快照的值,然后根据该值检查本地仓库,或远程仓库下载.
+  * 如果最后解析得到的构件包含有时间戳,先将该文件下载下来,再讲文件名中时间戳信息删除,剩下`SNAPSHOT`并使用(以非时间戳的形式使用).
+
 ### Maven常用参数和命令
+
+#### Maven 插件相关网站
+
+* https://maven.apache.org/plugins/index.html
 
 ####  **mvn常用参数**
 
@@ -278,7 +356,7 @@ highlight_shrink:
 * `mvn -pl module_name`在指定模块上执行命令
 * `mvn -ff `在递归执行命令过程中，一旦发生错误就直接退出
 * `mvn -Dxxx=yyy`指定java全局属性
-* `mvn -Pxxx`引用profile xxx
+* `mvn -Pxxx`引用profile,支持多个,可以用逗号分开
 
 #### **Build Lifecycle**命令
 
@@ -312,6 +390,66 @@ highlight_shrink:
 * `set MAVEN_OPTS=-Xmx512m -XX:MaxPermSize=256m` 调大jvm内存和持久代
 * `mvn -X maven log level`设定为debug在运行
 * `mvn debug` 运行jpda允许remote debug
+
+### Maven版本管理
+
+* 版本号的预定
+
+  ```tcl
+   <主版本>.<次版本>.<增量版本>-<里程碑版本>
+  ```
+
+  * 主版本: 表示项目重大架构的变更.
+  * 次版本: 表示有较大的功能增加和变化,或者全面地修复漏洞.
+  * 增量版本: 表示有重大漏洞的修复.
+  * 里程碑版本: 表示一个版本的里程碑(版本内部).这样的版本同下一个正式版本相比,相对来说是不是很稳定,有待更多的测试.
+
+### 依赖
+
+#### 依赖的配置
+
+```xml
+ <dependencies>   
+    <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>2.0.0</version>
+      			<type>...</type>
+            <scope>compile</scope>
+      			<optional>...</optional>
+      			<exclusions>
+              <exclusion>...</exclusion>
+      			</exclusions>
+        </dependency>
+ </dependencies>        
+```
+
+* `type`: 依赖的类型,同项目中的`packaging`对应,大部分情况不需要声明,默认是`jar`.
+* `scope`: 依赖的范围.
+* `optional`: 标记依赖是否可选.
+* `exclusions`: 排除传递性依赖.
+
+#### 依赖的范围
+
+* 依赖的范围主要有: **编译classpath,测试classpath,运行classpath**
+  * `complile`: 编译依赖范围.如果在配置的时候没有指定,就默认使用这个范围.使用该范围的依赖,对编译,测试,运行三种classpath都有效.
+  * `test`:测试依赖范围.使用该范围的依赖只对测试classpath有效,在编译主代码或运行项目的时候,这种依赖的无效的.
+  * `provided`: 已提供依赖范围.使用此范围的依赖,只在编译和测试classpath的时候有效,运行项目的时候是无效的.如Web应用中的`servlet-api`
+  * `runtime`:运行时依赖范围.使用此范围的依赖,只对测试和运行的classpath有效,但在编译主代码时是无效的.如JDBC驱动实现类,只需要在测试与运行主代码时候使用,编译的时候,只需要JDBC接口就行.
+  * `system`:系统依赖范围.该范围与classpath的关系,同`provided`一样.但是,使用`system`访问时,必须通过`systemPath`元素指定依赖文件的路径.因为该依赖不是通过Maven仓库解析的,建议谨慎使用.
+  * `import`:导入依赖范围.该已依赖范围不会对三种classpath产生实际的影响.它的作用是将其他模块定义好的`dependencyManagement`导入当前Maven项目pom的`dependencyManagement`中.
+* 查看依赖的相关命令
+  * https://maven.apache.org/plugins/maven-dependency-plugin/
+  * `mvn dependency:list` 列出所有的依赖列表;
+  * `mvn dependency:tree`  以树形结构方式,列出依赖和层次关系.
+  * `mvn dependency:analyze`  分析主代码,测试代码编译的依赖.
+
+#### 测试
+
+* 跳过测试:`mvn package -DskipTests`/`mvn package -Dmavne.test.skip=true`
+* 
+
+
 
 
 
