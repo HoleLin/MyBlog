@@ -19,11 +19,41 @@ aplayer:
 highlight_shrink:
 ---
 
-#### 客户端操作
+### 参考文献
+
+* [你真的知道如何设置数据库连接池的大小吗](https://zhuanlan.zhihu.com/p/105845455)
+
+### 客户端操作
 
 * 展示告警信息`SHOW  WARNINGS\G`
 
-* 展示当前进程列表`SHOW PROCESSLIST;`或者`SELECT *  FROM information_schema.PROCESSLIST;`
+#### 连接相关
+
+* MySQL的最大连接数在5.7版本中默认是151， 最大可以达到16384($2^{14}$)。如何设置最大连接数在于你的服务器性能
+
+  * 查看 MYSQL连接数信息命令
+
+    ```mysql
+    mysql> show variables like '%max_connections%';
+    ```
+
+  * 查询当前数据库已建立连接数
+
+    ```mysql
+    mysql> show status like 'Threads_connected';
+    ```
+
+| 配置                | 含义                                                   |
+| ------------------- | ------------------------------------------------------ |
+| Connections         | 尝试连接mysql的连接数，不管连接成功与否，该值都会+1    |
+| Threads_connected   | 已经建立的连接数，单节点下一般小于最大连接池最大连接数 |
+| max_connections     | MySQL限制的最大的可连接的数量                          |
+| wait_timeout        | 即MySQL长连接（非交互式）的最大生命时长，默认为8小时   |
+| interactive_timeout | 长连接（交互式）的最大生命时长，默认是8小时            |
+
+
+
+* 展示当前进程列表`SHOW PROCESSLIST;/SHOW FULL PROCESSLIST`或者`SELECT *  FROM information_schema.PROCESSLIST;`
 
   ```mysql
   mysql> SHOW PROCESSLIST;
@@ -57,6 +87,16 @@ highlight_shrink:
   +----+-----------------+--------------------+------+---------+------+------------------------+----------------------------------------------+
   8 rows in set (0.06 sec)
   ```
+
+  * Id列，用户登录mysql时，系统分配的"connection_id"，可以使用函数connection_id()查看
+  * User列，显示当前用户。如果不是root，这个命令就只显示用户权限范围的sql语句
+  * Host列，显示这个语句是从哪个ip的哪个端口上发的，可以用来跟踪出现问题语句的用户
+  * Db列，显示这个进程目前连接的是哪个数据库
+  * Command列，显示当前连接的执行的命令，一般取值为休眠（sleep），查询（query），连接（connect）等
+  * Time列，显示这个状态持续的时间，单位是秒
+  * State列，显示使用当前连接的sql语句的状态，很重要的列。state描述的是语句执行中的某一个状态。一个sql语句，以查询为例，可能需要经过copying to tmp table、sorting result、sending data等状态才可以完成
+  * Info列，显示这个sql语句，是判断问题语句的一个重要依据
+
 
 * 展示MySQL服务器启动了多长时间,单位秒
 
@@ -212,13 +252,13 @@ highlight_shrink:
   * **innodb_locks表在8.0.13版本中由performance_schema.data_locks表所代替,innodb_lock_waits表则由performance_schema.data_lock_waits表代替。(保存以获取的锁和等待的锁的信息)**
   * Innodb_trx(保存正在执行的事务的信息)
 
-#### `information_schema`中的表
+### `information_schema`中的表
 
 | 表名         | 作用                         |
 | ------------ | ---------------------------- |
 | `INNODB_TRX` | 包含当前运行的所有事务的列表 |
 
-#### `performance_schema`中的表
+### `performance_schema`中的表
 
 | 表名                | 作用                                                     |
 | ------------------- | -------------------------------------------------------- |
@@ -269,7 +309,7 @@ highlight_shrink:
     WHERE PROCESSLIST_ID
     ```
 
-#### 设置变量
+### 设置变量
 
 * MySQL支持两种形式的变量:`SESSION`以及`GLOBAL`
 
@@ -289,7 +329,7 @@ highlight_shrink:
 
   * 变量值还原为默认值:`set [session] var_name = DEFAULT`
 
-#### 导出数据
+### 导出数据
 
 ```mysql
 -- 导出表数据
@@ -315,7 +355,7 @@ lines   控制行格式
     terminated by 'string'  -- 终止
 ```
 
-#### 备份与还原
+### 备份与还原
 
 ```mysql
 备份，将数据的结构与表内数据保存起来。
@@ -340,7 +380,7 @@ mysqldump [options] --all--database
 　　mysql -u用户名 -p密码 库名 < 备份文件
 ```
 
-#### 用户和权限管理
+### 用户和权限管理
 
 ```mysql
 -- root密码重置
@@ -427,7 +467,7 @@ USAGE   -- “无权限”的同义词
 GRANT OPTION    -- 允许授予权限
 ```
 
-##### **MySQL有关权限的表**
+### **MySQL有关权限的表**
 
 >  MySQL服务器通过权限表来控制用户对数据库的访问，权限表存放在mysql数据库里，由`mysql_install_db`脚本初始化。这些权限表分别`user，db，table_priv，columns_priv和host`。
 
