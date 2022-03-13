@@ -7,6 +7,7 @@ tags:
 - Bean生命周期
 categories: 
 - Spring
+- Spring Framework
 ---
 
 ### SpringBean生命周期

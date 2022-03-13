@@ -6,6 +6,7 @@ index_img: /img/cover/Spring.jpg
 cover: /img/cover/Spring.jpg
 tags:
 - Configuration Metadata
+- Spring Framework
 categories:
 - Spring
 updated:

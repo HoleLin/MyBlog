@@ -8,6 +8,7 @@ tags:
 - BeanDefinition
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

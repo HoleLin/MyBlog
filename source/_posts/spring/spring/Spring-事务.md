@@ -6,6 +6,7 @@ tags:
 - 事务
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:
@@ -23,6 +24,31 @@ highlight_shrink:
 
 * [Spring 事务失效的 8 大场景，看看你都遇到过几个？](https://mp.weixin.qq.com/s/W5uyWZ33CqL2SBgIMr5vdg)
 * [Spring官方推荐的@Transactional还能导致生产事故？原来姿势完全错了](https://mp.weixin.qq.com/s/7F3ohsHr9u-IpNBrV3KQlA)
+
+### Spring事务隔离级别
+
+* Spring提供事5种务隔离级别
+  * `@Transaction(isolation=Isolation.DEFAULT)`: 默认的事务隔离级别,即使用数据库的事务隔离级别.
+  * `@Transaction(isolation=Isolation.READ_UNCOMMITTED)`: 读未提交,这是最低的事务隔离级别,允许其他事务读取未提交的数据,这种级别的事务隔离会产生脏读,不可重复读和幻读.
+  * `@Transaction(isolation=Isolation.READ_COMMITTED)`: 读已提交,这种级别的事务隔离能读取其他事务已修改的数据,不能读取未提交的数据,会产生不可重复读和幻读.
+  * `@Transaction(isolation=Isolation.REPEATABLE_READ)`: 可重复读,这种级别的事务隔离可以防止不可重复读和脏读,但是会产生幻读.
+  * `@Transaction(isolation=Isolation.SERIALIZABLE)`: 串行化,这是最高级别的事务隔离,会避免脏读,不可重复读和幻读.在这种隔离级别下,事务会按顺序进行.
+
+### Spring事务传播行为
+
+* 事务传播行为是指如果多个事务同事存在,Spring就会处理这些事务的行为.
+* 事务传播行为分为7种:
+  * `REQUIRED`: 如果当前存在事务,就加入该事务;如果当前没有事务,就创建一个新的事务,这是Spring默认的事务传播行为.
+  * `SUPPORTS`: 如果当前存在事务,就加入该事务;如果当前没有事务,就以非事务的方式继续运行.
+  * `MANDATORY`: 如果当前事务存在事务,就加入该事务;如果当前事务,就抛出异常.
+  * `REQUIRES_NEW`: 创建一个新的事务,如果当前存在事务,就把当前事务挂起.新建事务和被挂起的事务没有任何关系,是两个独立的事务.外层事务回滚失败时,不能回滚内层事务执行结果,外层事务不能相互干扰.
+  * `NOT_SUPPORTED`: 以非事务方式运行,如果当前存在事务,就把当前事务挂起.
+  * `NEVER`: 以非事务方式运行,如果当前存在事务,就抛出异常.
+  * `NESTED`: 如果当前存在事务,就创建一个事务作为当前事务的嵌套事务来运行;如果当前没有事务,该取值就等价于`REQUIRED`
+
+### 声明式事务属性
+
+
 
 ### Spring的@Transactional注解控制事务哪些场景下不生效？
 

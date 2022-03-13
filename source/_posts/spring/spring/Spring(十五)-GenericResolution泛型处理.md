@@ -8,6 +8,7 @@ tags:
 - GenericResolution
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

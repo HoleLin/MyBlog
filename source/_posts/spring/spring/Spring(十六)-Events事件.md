@@ -8,6 +8,7 @@ tags:
 - Events
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

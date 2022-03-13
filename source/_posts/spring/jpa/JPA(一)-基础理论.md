@@ -531,3 +531,15 @@ List<User> findTop10ByLastname(String lastname, Pageable pageable);
     ```
 
     ![img](https://www.holelin.cn/img/spring/jpa/QueryStructure2.png)
+
+#### SpringBoot Data JPA配置说明
+
+```properties
+spring.jpa.hibernate.ddl-auto:
+	* validate: 在加载Hibernate时,验证创建数据表结构
+	* create: 每次加载Hibernate,重新创建数据表结构,设置是要注意,如果设置错误的话,就会造成数据的丢失.
+	* create-drop: 在加载的时候创建表,在关闭项目时删除表结构.
+	* update: 加载时更新表结构
+	* none: 加载时不做任何操作
+```
+

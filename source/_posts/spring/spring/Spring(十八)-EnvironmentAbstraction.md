@@ -8,6 +8,7 @@ tags:
 - EnvironmentAbstraction
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

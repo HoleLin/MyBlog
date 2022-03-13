@@ -8,6 +8,7 @@ tags:
 - DataBanding
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

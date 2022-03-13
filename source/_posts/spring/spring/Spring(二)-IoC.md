@@ -7,6 +7,7 @@ tags:
 - IoC 
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

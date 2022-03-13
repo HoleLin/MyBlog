@@ -7,6 +7,7 @@ tags:
 - Resource
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:

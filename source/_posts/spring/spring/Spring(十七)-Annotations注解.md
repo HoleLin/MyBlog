@@ -8,6 +8,7 @@ tags:
 - Annotations
 categories:
 - Spring
+- Spring Framework
 updated:
 type:
 comments:
