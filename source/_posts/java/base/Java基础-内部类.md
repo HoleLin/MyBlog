@@ -7,6 +7,7 @@ tags:
 - 内部类
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

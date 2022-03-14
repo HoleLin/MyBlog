@@ -5,6 +5,7 @@ cover: /img/cover/Java.jpg
 tags:
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

@@ -8,6 +8,7 @@ tags:
 - 动态代理
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

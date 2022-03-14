@@ -6,6 +6,7 @@ tags:
 - BigDecimal
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

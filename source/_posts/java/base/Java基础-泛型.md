@@ -7,6 +7,7 @@ tags:
 - 泛型
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

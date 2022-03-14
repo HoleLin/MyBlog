@@ -5,9 +5,9 @@ index_img: /img/cover/Java.jpg
 cover: /img/cover/Java.jpg
 tags:
 - 内存结构
-- JVM
 categories:
 - Java
+- JVM
 ---
 
 ### 参考文献

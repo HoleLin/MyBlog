@@ -5,9 +5,9 @@ index_img: /img/cover/Java.jpg
 cover: /img/cover/Java.jpg
 tags:
 - 垃圾收集器日志
-- JVM
 categories:
 - Java
+- JVM
 updated:
 type:
 comments:

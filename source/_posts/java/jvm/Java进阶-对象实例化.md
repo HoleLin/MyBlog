@@ -6,6 +6,7 @@ tags:
 - 对象实例化
 categories:
 - Java
+- JVM
 updated:
 type:
 comments:

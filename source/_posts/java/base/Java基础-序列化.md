@@ -6,6 +6,7 @@ tags:
 - 序列化
 categories:
 - Java
+- Base
 updated:
 type:
 comments:

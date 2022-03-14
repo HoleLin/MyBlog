@@ -48,7 +48,19 @@ highlight_shrink:
 
 ### 声明式事务属性
 
+* `value`: 存放String类型的值,主要用来指定不同的事务管理器,满足在同一个系统中存在不同的事务管理器.
+* `transactionManager`: 与`value`类似,也是用来选择事务管理器.
+* `propagation`: 事务传播行为,默认为`Propagation.REQUIRED`
+* `isolation`: 事务的隔离级别,默认为`Isolation.DEFAULT`
+* `timeout`: 事务的超时时间,默认为-1,如果超过了设置的时间还没有执行完成,就会自动回滚当前事务.
+* `readOnly`: 当前事务是不是自读事务,默认值是false.通常可以设置读取数据的事务的属性值为true.
+* `rollbackFor`: 可以设置触发事务的指定异常,允许指定多个类型的异常.
+* `noRollbackFor`: 与`rollbackFor`相反,可以设置不触发事务的指定异常,允许指定多个类型的异常.
 
+### 事务回滚规则
+
+* Spring的事务回滚通常是根据当前事务抛出异常的时候,Spring事务管理器捕捉到未经处理的异常,然后根据规则来决定当前事务是否回滚.
+* 若捕获的异常正好是`noRollbackFor`属性的异常,那么将不会被捕获.在默认配置下,Spring只有捕获运行时异常(RuntimeException)的子类才会进行回滚.
 
 ### Spring的@Transactional注解控制事务哪些场景下不生效？
 

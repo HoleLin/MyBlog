@@ -6,6 +6,7 @@ cover: /img/cover/Java.jpg
 tags:
 - 类加载
 categories:
+- Java
 - JVM
 updated:
 type:

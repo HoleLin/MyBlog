@@ -6,9 +6,9 @@ cover: /img/cover/Java.jpg
 tags:
 - 垃圾收集器
 - 内存分配策略
-- JVM
 categories:
 - Java
+- JVM
 updated:
 type:
 comments:
