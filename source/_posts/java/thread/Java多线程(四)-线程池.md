@@ -6,7 +6,8 @@ tags:
 - 多线程
 - 线程池
 categories:
-- Java  
+- Java
+- Thread
 updated:
 type:
 comments:

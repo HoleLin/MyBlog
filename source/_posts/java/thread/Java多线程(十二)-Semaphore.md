@@ -7,6 +7,7 @@ tags:
 - 多线程
 categories:
 - Java
+- Thread
 updated:
 type:
 comments:

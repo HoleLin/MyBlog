@@ -8,6 +8,7 @@ tags:
 - ReentrantLock
 categories:
 - Java
+- Thread
 updated:
 type:
 comments:

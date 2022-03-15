@@ -15,11 +15,33 @@ description:
 keywords:
 top_img:
 mathjax:
-katex:
 aside:
 aplayer:
 highlight_shrink:
+katex:
+  enable: true
 ---
+
+#### 数据类型
+
+##### 基本数据类型
+
+* `boolean,byte,char,short,int,float,double,long`(8种)
+
+##### 引用数据类型
+
+* 类,接口,数组
+
+| 数据类型  | 大小/位 | 可表示范围                 | 存储需求 |
+| --------- | ------- | -------------------------- | -------- |
+| `boolean` | 1       |                            | 1Byte    |
+| `byte`    | 8       | $$-2^{7} $$~$$2^{7} -1$$   | 1Byte    |
+| `char`    | 16      | 0~255                      | 2Byte    |
+| `short`   | 16      | $$-2^{15} $$~$$2^{15} -1$$ | 2Byte    |
+| `int`     | 32      | $$-2^{31}$$~$$2^{31}-1$$   | 4Byte    |
+| `float`   | 32      |                            | 4Byte    |
+| `double`  | 64      |                            | 8Byte    |
+| `long`    | 64      | $$-2^{63}$$~$$2^{63}-1$$   | 8Byte    |
 
 #### 字符型常量和字符串常量的区别?
 

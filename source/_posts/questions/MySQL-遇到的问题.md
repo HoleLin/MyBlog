@@ -21,7 +21,9 @@ highlight_shrink:
 
 ### 参考文献
 
-#### 数据库大小敏感问题
+* [8.2.1.19 LIMIT Query Optimization](https://dev.mysql.com/doc/refman/8.0/en/limit-optimization.html)
+
+### 数据库大小敏感问题
 
 * `Oracle`
   * 默认是**大小写不敏感**,表名,字段名等不区分大小写,小写字母会自动转换为大写字母;
@@ -42,11 +44,11 @@ highlight_shrink:
   * `0`: 区分大小写;
   * `1`: 不区分大小写;
 
-#### 数据库编码和字符集引发的乱码问题
+### 数据库编码和字符集引发的乱码问题
 
 * 乱码的本质原因是:**数据编码和数据解码所使用的编码方式一致**.
 
-##### 问题现象
+#### 问题现象
 
 * MySQL版本8.0.25
 
@@ -132,13 +134,74 @@ highlight_shrink:
   
   <img src="https://www.holelin.cn/img/mysql/questions/MySQL%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98.png" alt="img" style="zoom:50%;" />
 
-##### 问题原因
+#### 问题原因
 
 * 因为mysql服务配置项`character_set_client `和`character_set_connection`都为`latin1`编码方式,使用`mysql -u $USER -p`并为指定字符集故而登录成功后使用系统默认的字符集(即`latin1`),而程序使用到的编码为`UTF-8`,故而编码和解码所使用的方式不一致,最终导致乱码的出现.
 
-##### 处理方法
+#### 处理方法
 
 * 治标
   * 在登录mysql的使用指定字符集`mysql -u $USER --default-character-set=utf8mb4 -p`
 * 治本
   * 修改mysql服务的客户端编码和连接编码改为`utf8mb4`
+
+#### MySQL `datetime`类型长度问题
+
+* 示例
+
+  ```
+  // create_time字段 类型为datetime 长度为6
+  created_time  datetime 6
+  ```
+
+* 以`2022-03-14 18:32:33.000000`为例`datetime`长度为6,6为这个时间格式"."后面数字的长度.
+
+* 若不指定`datetime`的长度,则数据格式为`2022-03-14 18:32:33`
+
+### MySQL `order by` 排序使用的字段有重复值导致排序随机的情况
+
+#### 问题描述
+
+* 有一张数据表,其中有部分数据支付时间是一样的,通过SQL对创建时间排序以及分页(`pageNo`,`pageSize`)  发现调整`pageSize`的值 如5,10,400第一条的数据会变化，即数据的顺序不固定
+
+#### 官方说明
+
+> If multiple rows have identical values in the `ORDER BY` columns, the server is free to return those rows in any order, and may do so differently depending on the overall execution plan. In other words, the sort order of those rows is nondeterministic with respect to the nonordered columns.
+>
+> 如果ORDER BY列中的多行具有相同的值，服务器可以**自由地以任何顺序**返回这些行，而且根据总体执行计划的不同，返回顺序也可能不同。换句话说，与无序列相比，这些行的排序顺序是不确定的。
+
+#### 解决方案
+
+##### 官方给的解决方案
+
+> If it is important to ensure the same row order with and without `LIMIT`, include additional columns in the `ORDER BY` clause to make the order deterministic. For example, if `id` values are unique, you can make rows for a given `category` value appear in `id` order by sorting like this:
+>
+> 如果确保使用和不使用“LIMIT”的行顺序很重要，那么在“order BY”子句中包括额外的列，以使顺序具有确定性。例如，如果' id '值是唯一的，你可以让一个给定的' category '值的行出现在' id '顺序，排序如下:
+
+```mysql
+mysql> SELECT * FROM ratings ORDER BY category, id;
++----+----------+--------+
+| id | category | rating |
++----+----------+--------+
+|  1 |        1 |    4.5 |
+|  5 |        1 |    3.2 |
+|  3 |        2 |    3.7 |
+|  4 |        2 |    3.5 |
+|  6 |        2 |    3.5 |
+|  2 |        3 |    5.0 |
+|  7 |        3 |    2.7 |
++----+----------+--------+
+
+mysql> SELECT * FROM ratings ORDER BY category, id LIMIT 5;
++----+----------+--------+
+| id | category | rating |
++----+----------+--------+
+|  1 |        1 |    4.5 |
+|  5 |        1 |    3.2 |
+|  3 |        2 |    3.7 |
+|  4 |        2 |    3.5 |
+|  6 |        2 |    3.5 |
++----+----------+--------+
+```
+
+* 即加上额外的列,保证顺序确定.
