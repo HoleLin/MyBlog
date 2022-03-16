@@ -218,5 +218,236 @@ highlight_shrink:
 | --------------------------------------------------------- | ------------------- |
 | `<R, A> R collect(Collector<? super T, A, R> collector);` | 将流转换为其他形式. |
 
-* `java.util.stream.Collectors`
+* `java.util.stream.Collectors`,使用工具类的`toList`,`toSet`,`toCollection`,`toMap`
+* `Function.identity()`
+
+##### 分区和分组
+
+* `Collectors.partitioningBy`方法将元素拆分为满足`Predicate`与不满足`Predicate`的两类
+* `Collectors.groupingBy`方法生成一个由类别构成的Map,其中值为每个类别中的元素.
+
+### 比较器和收集器
+
+#### 使用比较器实现排序
+
+```java
+@FunctionalInterface
+public interface Comparator<T> {
+    int compare(T var1, T var2);
+
+    boolean equals(Object var1);
+
+    default Comparator<T> reversed() {
+        return Collections.reverseOrder(this);
+    }
+
+    default Comparator<T> thenComparing(Comparator<? super T> other) {
+        Objects.requireNonNull(other);
+        return (Comparator)((Serializable)((c1, c2) -> {
+            int res = this.compare(c1, c2);
+            return res != 0 ? res : other.compare(c1, c2);
+        }));
+    }
+    // ...略
+}    
+```
+
+* 使用传入`Comparator`的`Stream.sorted`方法,`Comparator`既可以通过lambda表达式实现,也可以使用`Comparator`接口定义的某种`comparing`方法生成.
+* `Stream.sorted`方法根据类的自然熟悉怒生成一个新的排序流,自然熟悉怒是通过实现`java.util.Comparable`接口来指定的.
+* 从Java1.2引入集合框架开始,工具类`Collections`就已存在.`Collections`类定义的静态方法`sort`传入List作为参数,但返回是void.这种排序是破坏性的,会修改锁提供的集合.即`Collection.sort`方法不符合Java8所倡导的不可变性(immutability)置于首要位置的函数式编程原则.
+* Java8采用`Stream.sorted`方法实现相同的排序,但不对原始集合进行修改,而是生成一个新的流.
+* 若希望以其他方式排序,可以使用`sorted`方法的重载形式,传入`Comparator`作为参数.
+
+#### 对Map排序
+
+* Map接口始终包含一个称为`Map.Entry`的公共静态内部接口,它表示一个键值对.Map接口定义的entrySet方法返回`Map.Entry`元素的Set.在Java8之前,getKey和getValue是`Map.Entry`接口两种最常用的方法,二者分别返回与某个条目的对应的键和值.
+
+| 方法                                          | 描述                                                         |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `comparingByKey`                              | 返回一个比较器,它根据键的自然顺序比较`Map.Entry`             |
+| `comparingByValue`                            | 返回一个比较器,它根据值的自然顺序比较`Map.Entry`             |
+| `comparingByKey(Comparator<? super K> cmp) `  | 返回一个比较器,它使用给定的`Comparator`并根据键比较`Map.Entry` |
+| `comparingByValue(Comparator<? super V> cmp)` | 返回一个比较器,它使用给定的`Comparator`并根据值比较`Map.Entry` |
+
+### 实现`Collector`接口
+
+```java
+package java.util.stream;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+
+public interface Collector<T, A, R> {
+    /**
+     * A function that creates and returns a new mutable result container.
+     *
+     * @return a function which returns a new, mutable result container
+     */
+    Supplier<A> supplier();
+
+    /**
+     * A function that folds a value into a mutable result container.
+     *
+     * @return a function which folds a value into a mutable result container
+     */
+    BiConsumer<A, T> accumulator();
+
+    /**
+     * A function that accepts two partial results and merges them.  The
+     * combiner function may fold state from one argument into the other and
+     * return that, or may return a new result container.
+     *
+     * @return a function which combines two partial results into a combined
+     * result
+     */
+    BinaryOperator<A> combiner();
+
+    /**
+     * Perform the final transformation from the intermediate accumulation type
+     * {@code A} to the final result type {@code R}.
+     *
+     * <p>If the characteristic {@code IDENTITY_FINISH} is
+     * set, this function may be presumed to be an identity transform with an
+     * unchecked cast from {@code A} to {@code R}.
+     *
+     * @return a function which transforms the intermediate result to the final
+     * result
+     */
+    Function<A, R> finisher();
+
+    /**
+     * Returns a {@code Set} of {@code Collector.Characteristics} indicating
+     * the characteristics of this Collector.  This set should be immutable.
+     *
+     * @return an immutable set of collector characteristics
+     */
+    Set<Characteristics> characteristics();
+	// ...略
+}
+```
+
+* `Supplier<A> supplier()` : 使用`Supplier<A>`创建累加容器(accumulator container)
+  * 用于创建累加器临时结果所用的容器
+* `BiConsumer<A, T> accumulator()`: 使用`BiConsumer<A, T>`为累加器容器添加一个新的数据元素
+  * 用于将一个元素添加到累加器
+* `BinaryOperator<A> combiner()`: 使用`BinaryOperator<A>`合并两个累加容器
+  * `BinaryOperator`表示输入类型和输出类型相同,因此可以将两个累加器合二为一.
+* `Function<A, R> finisher()`: 使用`Function<A, R>`将累加器容器转换为结果容器.
+  * `Function`将累加器转换为所需的结果容器.
+
+```java
+    /**
+     * Characteristics indicating properties of a {@code Collector}, which can
+     * be used to optimize reduction implementations.
+     */
+    enum Characteristics {
+        /**
+         * Indicates that this collector is <em>concurrent</em>, meaning that
+         * the result container can support the accumulator function being
+         * called concurrently with the same result container from multiple
+         * threads.
+         *
+         * <p>If a {@code CONCURRENT} collector is not also {@code UNORDERED},
+         * then it should only be evaluated concurrently if applied to an
+         * unordered data source.
+         */
+        CONCURRENT,
+
+        /**
+         * Indicates that the collection operation does not commit to preserving
+         * the encounter order of input elements.  (This might be true if the
+         * result container has no intrinsic order, such as a {@link Set}.)
+         */
+        UNORDERED,
+
+        /**
+         * Indicates that the finisher function is the identity function and
+         * can be elided.  If set, it must be the case that an unchecked cast
+         * from A to R will succeed.
+         */
+        IDENTITY_FINISH
+    }
+```
+
+* `CONCURRENT`: 表示结果容器支持多线程在结果容器上并发地调用累加器;
+* `UNORDERED`:  表示集合操作无须保留元素的出现顺序(encounter order);
+* `IDENTITY_FINISH`: 表示终止器函数返回其参数而不做任何修改.
+
+```java
+ollector.of(TreeSet::new,
+                SortedSet<String>::add,
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                },
+                Collections::unmodifiableNavigableSet);
+```
+
+### 闭包复合
+
+* 使用`Function`,`Consumer`与`Predicate`接口中定义的默认的复合方法.
+
+#### `Function`
+
+```java
+
+default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {
+        Objects.requireNonNull(before);
+        return (V v) -> apply(before.apply(v));
+    }
+
+    default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (T t) -> after.apply(apply(t));
+    }
+```
+
+* `compose`方法在原始函数**之前**应用参数
+* `andThen`方法在原始函数**之后**应用参数
+
+```java
+ 				Function<Integer, Integer> add = x -> x + 2;
+        Function<Integer, Integer> mult = x -> x * 3;
+        final Function<Integer, Integer> multadd = add.compose(mult);
+        final Function<Integer, Integer> addmult = add.andThen(mult);
+        System.out.println("multadd(1): " + multadd.apply(1));
+        System.out.println("addmult(1): " + addmult.apply(1));
+
+// multadd(1): 5
+// addmult(1): 9
+```
+
+#### `Consumer`
+
+```java
+    default Consumer<T> andThen(Consumer<? super T> after) {
+        Objects.requireNonNull(after);
+        return (T t) -> { accept(t); after.accept(t); };
+    }
+```
+
+#### `Predicate`
+
+```java
+   default Predicate<T> and(Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return (t) -> test(t) && other.test(t);
+    }
+
+    default Predicate<T> negate() {
+        return (t) -> !test(t);
+    }
+
+    default Predicate<T> or(Predicate<? super T> other) {
+        Objects.requireNonNull(other);
+        return (t) -> test(t) || other.test(t);
+    }
+```
 
