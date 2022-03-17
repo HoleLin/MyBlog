@@ -7,6 +7,7 @@ tags:
 - Jenkins
 categories:
 - 工具
+- Jenkins
 updated:
 type:
 comments:

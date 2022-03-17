@@ -7,6 +7,7 @@ tags:
 - Gradle Plugin
 categories:
 - 工具
+- Gradle
 updated:
 type:
 comments:

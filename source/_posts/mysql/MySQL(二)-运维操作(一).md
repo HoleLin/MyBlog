@@ -355,6 +355,12 @@ lines   控制行格式
     terminated by 'string'  -- 终止
 ```
 
+* 将MySQL数据导出成Excel格式
+
+  ```sh
+   mysql db_name -u user_name -p  -e "需要到的数据的SQL语句" > 文件名.xls
+  ```
+
 ### 备份与还原
 
 ```mysql
