@@ -254,9 +254,11 @@ DESCRIBE table_name;
 
 EXPLAIN table_name; 
 
-SHOW COLUMNS FROM table_name [LIKE 'PATTERN']
+SHOW COLUMNS FROM table_name [LIKE 'PATTERN'];
 
-SHOW TABLE STATUS [FROM db_name] [LIKE 'pattern']
+SHOW TABLE STATUS [FROM db_name] [LIKE 'pattern'];
+
+SHOW CREATE TABLE table_name;
 
 mysql> show columns from innodb1;
 +-------------+-------------+------+-----+---------+----------------+
