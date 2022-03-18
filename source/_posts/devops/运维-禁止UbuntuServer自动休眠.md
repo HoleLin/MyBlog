@@ -1,6 +1,8 @@
 ---
 title: 运维-禁止UbuntuServer自动休眠
 date: 2022-03-18 16:36:56
+index_img: /img/cover/DevOps.png
+cover: /img/cover/DevOps.png
 tags:
 - Ubuntu
 categories:
