@@ -1,6 +1,8 @@
 ---
 title: 网络基础(五)-IP协议
 date: 2022-03-26 15:58:17
+index_img: /img/cover/Network.jpg
+cover: /img/cover/Network.jpg
 tags:
 - 网络层
 categories:

@@ -1,6 +1,8 @@
 ---
 title: 网络基础(四)-UDP协议
 date: 2022-03-26 15:58:12
+index_img: /img/cover/Network.jpg
+cover: /img/cover/Network.jpg
 tags:
 - 传输层
 categories:
