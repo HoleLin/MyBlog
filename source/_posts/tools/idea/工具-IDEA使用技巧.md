@@ -7,6 +7,7 @@ tags:
 - IDEA
 categories: 
 - 工具
+- IDEA
 ---
 
 #### idea 方法模板

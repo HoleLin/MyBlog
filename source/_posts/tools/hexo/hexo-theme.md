@@ -1,10 +1,11 @@
 ---
-title: hexo主题
+title: Hexo
 date: 2021-06-09 23:29:30
 tags:
 - 主题
 categories:
-- hexo
+- 工具
+- Hexo
 updated:
 type:
 comments:
@@ -17,6 +18,12 @@ aside:
 aplayer:
 highlight_shrink:
 ---
+
+### 参考文献
+
+### Hexo升级
+
+* https://leimingshan.com/posts/d9017f30/
 
 #### Hexo主题
 

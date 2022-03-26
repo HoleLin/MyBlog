@@ -5,9 +5,10 @@ date: 2021-07-09 21:04:42
 index_img: /img/cover/Tools.jpg
 cover: /img/cover/Tools.jpg
 tags:
-- IDEA
+- questions
 categories:
 - 工具
+- IDEA
 updated:
 type:
 comments:
