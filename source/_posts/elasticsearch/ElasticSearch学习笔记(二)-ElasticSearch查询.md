@@ -1,5 +1,5 @@
 ---
-title: Elasticsearch结构化搜索Search
+title: ElasticSearch(二)-结构化搜索
 date: 2021-05-24 22:25:50
 index_img: /img/cover/Elasticsearch.jpg
 cover: /img/cover/Elasticsearch.jpg
@@ -209,7 +209,10 @@ curl 'localhost:9200/get-together/_search' -d
           }
         }
       }
-      JavaAPI:
+      ```
+
+      ```java
+      // JavaAPI:
       searchSourceBuilder.query(QueryBuilders.termQuery(“text.keyword”, “xxx”));
       ```
 
