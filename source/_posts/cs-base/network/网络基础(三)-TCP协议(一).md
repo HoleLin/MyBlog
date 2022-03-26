@@ -4,9 +4,10 @@ date: 2021-10-20 14:27:32
 index_img: /img/cover/Network.jpg
 cover: /img/cover/Network.jpg
 tags:
-- TCP
+- 传输层
 categories:
 - 网络
+- TCP
 updated:
 type:
 comments:
@@ -31,7 +32,7 @@ highlight_shrink:
 
 ### `TCP`协议
 
-#### 为什么需要TCP协议?TCP工作在哪一层?
+### 为什么需要TCP协议?TCP工作在哪一层?
 
 * IP层是[不可靠],它不保证网络包的交付,不保证网络包的按序交付,也不保证网络中的数据完整性.
   * 如果需要保证网络数据包的可靠性,那么就需要由上层(传输层)的TCP协议来负责.
@@ -42,14 +43,14 @@ highlight_shrink:
   * 可靠的:无论网络链路中出现了怎样的链路变化,TCP都可以保证一个报文一定能够到达接收端.
   * 字节流:消息是没有边界的,所以无论消息有多大都可以进行传输,并且消息是有序的,当前一个消息没有收到的时候,即使它先收到了后面的字节,那么也不能扔给应用层去处理,同时对**重复**的报文会自动放弃.
 
-#### `TCP`连接
+### `TCP`连接
 
 * 用于保证可靠性和流量控制维护的某些状态信息,这些信息的组合,包括**Socket,序列号和窗口大小**称为连接.
   * Socket: 由IP地址和端口号组成
   * 序列号(Sequence number): 用来解决乱序问题等
   * 窗口大小(Windows sizes): 用来做流量控制
 
-##### `TCP`连接的确定--`TCP`四元组
+#### `TCP`连接的确定--`TCP`四元组
 
 * 源地址
 * 源端口
@@ -58,7 +59,7 @@ highlight_shrink:
 * 源地址和目的地址的字段(32位)是在IP头部中,作用是通过IP协议发送报文给对方主机.
 * 源端口和目的端口的字段(16位)是在TCP头部中,作用是告诉TCP协议应该把报文给哪个进程.
 
-##### `TCP`最大连接数
+#### `TCP`最大连接数
 
 * 服务器通常固定在某个端口上监听,等待客户端的连接请求.
 
@@ -73,44 +74,44 @@ highlight_shrink:
     * 首先主要是**文件描述符限制**,Socket都是文件,所以首先要通过`ulimit`配置文件描述符的数目;
     * 另一个是**内存限制**,每个TCP连接都要占用一定内存,操作系统的内存是有限的.
 
-##### `TCP`和`UDP`的区别
+#### `TCP`和`UDP`的区别
 
-###### 连接
+##### 连接
 
 * TCP是面向连接的传输层协议,传输数据前先要建立连接.
 * UDP是不需要连接,即刻传输数据.
 
-###### 服务对象
+##### 服务对象
 
 * TCP是一对一的两点服务,即一条连接只有两个端点.
 * UDP支持一对一,一对多,多对多的交互通信.
 
-###### 可靠性
+##### 可靠性
 
 * TCP是可靠交付数据的,数据可以无差错,不丢失,不重复,按需到达.
 * UDP是尽最大努力交付,不保证可靠交互数据.
 
-###### 拥塞控制,流量控制
+##### 拥塞控制,流量控制
 
 * TCP有拥塞控制和流量控制机制,保证数据传输的安全性.
 * UDP则没有,即使网络非常拥堵了,也不会影响UDP的发送速率.
 
-###### 首部开销
+##### 首部开销
 
 * TCP首部长度较长,会有一定的开销,首部在没有使用选项字段时是20个字节,如果使用了选项字段则会变长的.
 * UDP首部只有8个字节,并且是固定不变的,开销较小.
 
-###### 传输方式
+##### 传输方式
 
 * TCP是流式传输,没有边界,保证顺序和可靠.
 * UDP是一个包一个包的发送,是有边界的,但可能会丢包和乱序.
 
-###### 分片不同
+##### 分片不同
 
 * TCP的数据大小如果大于MSS大小,则会在传输层进行分片,目标主机收到后,也同样在传输层组装TCP数据包,如果中途丢失了一个分片,只需要传输丢失的这个分片.
 * UDP的数据大小如果小于MTU大小,则会在IP层进行分片,目标主机收到后,在IP层组装完数据,接着再传给传输层,但是如果中途丢失了一分片,在实现可靠传输的UDP时则就需要重传所有的数据包,这样传输效率非常差,所有通常UDP的报文应该小于MTU.
 
-`TCP`和`UDP`应用场景:
+#### `TCP`和`UDP`应用场景
 
 * 由于TCP是面向连接,能保证数据的可靠性交付,因此长用于
   * FTP文件传输
@@ -120,7 +121,7 @@ highlight_shrink:
   * 视频,音频等多媒体通信
   * 广播通信
 
-#### `TCP`协议头
+### `TCP`协议头
 
 ```sh
     0                   1                   2                   3   
@@ -185,7 +186,7 @@ highlight_shrink:
 
 * 紧急指针 Urgent Pointer  16bits
 
-#### `TCP`连接运行过程中状态
+### `TCP`连接运行过程中状态
 
 * LISTEN - represents waiting for a connection request from any remote TCP and port.
 * SYN-SENT - represents waiting for a matching connection requestafter having sent a connection request.
@@ -199,7 +200,7 @@ highlight_shrink:
 * TIME-WAIT - represents waiting for enough time to pass to be sure the remote TCP received the acknowledgment of its connection termination request.
 * CLOSED - represents no connection state at all.
 
-#### `TCP`三次握手
+### `TCP`三次握手
 
 <img src="https://www.holelin.cn/img/cs-base/http/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B.png" alt="img" style="zoom:67%;" />
 
@@ -223,7 +224,7 @@ highlight_shrink:
 
 * 使用`TCP`协议进行通信的双方必须先建立连接,然后才能开始传输数据.为了确保连接双方可靠性,在双方建立连接时,`TCP`协议采用了三次握手策略;
 
-###### 握手过程
+#### 握手过程
 
 * 一开始,客户端和服务端都处于`CLOSED`状态.先是服务端主动鉴定某个端口,处于`LISTEN`状态.
 
@@ -274,7 +275,7 @@ highlight_shrink:
 * 两次握手:无法防止历史连接的建立,会造成双方资源的浪费,也无法可靠的同步双方序列号.
 * 四次握手:三次握手就已经理论上最少可靠连接建立,所以不需要使用更多的通信次数.
 
-##### MTU和MSS
+#### MTU和MSS
 
 <img src="https://www.holelin.cn/img/cs-base/http/MTU%E5%92%8CMSS.png" alt="img" style="zoom:50%;" />
 
@@ -330,7 +331,7 @@ highlight_shrink:
     * 服务端收到客户端的应答报文时,服务器会检查这个`ACK`包的合法性.如果合法,直接放入到Accpet队列.
     * 最后应用通过accpet()socket接口,从Accpet队列取出连接
 
-#### `TCP`四次挥手
+### `TCP`四次挥手
 
 ![img](https://www.holelin.cn/img/cs-base/http/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B.png)
 
@@ -366,14 +367,14 @@ highlight_shrink:
 * 主动关闭的一方收到FIN包，协议层回复ACK；此时，主动关闭连接的一方，进入TIME_WAIT状态；而被动关闭的一方，进入CLOSED状态
 * 等待2MSL时间，主动关闭的一方，结束TIME_WAIT，进入CLOSED状态
 
-##### 结论
+#### 结论
 
 * 主动关闭连接的一方 - 也就是主动调用socket的close操作的一方，最终会进入`TIME_WAIT`状态
 * 被动关闭连接的一方，有一个中间状态，即`CLOSE_WAIT`，因为协议层在等待上层的应用程序，主动调用close操作后才主动关闭这条连接
 * `TIME_WAIT`会默认等待`2MSL`时间后，才最终进入`CLOSED`状态；
 * 在一个连接没有进入`CLOSED`状态之前，这个连接是不能被重用的！
 
-#### `TCP`连接状态转换图
+### `TCP`连接状态转换图
 
 ```
                               +---------+ ---------\      active OPEN  
@@ -426,7 +427,7 @@ highlight_shrink:
 
 ![img](https://www.holelin.cn/img/cs-base/http/TCP%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2%E5%9B%BE.png)
 
-##### `TIME_WAIT`状态
+#### `TIME_WAIT`状态
 
 * `TIME_WAIT`状态也被称为`2MSL`等待状态.在该状态将会等待两倍于最大段生存期(Maximum Segment Lifetime,MSL)的时间
 
@@ -464,7 +465,7 @@ highlight_shrink:
 
 * 使用`ss -tan state time-wait | wc -l ` 查看`TIME_WAIT`的连接数量
 
-##### 为什么需要`TIME_WAIT`状态
+#### 为什么需要`TIME_WAIT`状态
 
 * 主动发起关闭连接的一方,才会有`TIME_WAIT`状态
 * 需要`TIME_WAIT`状态,主要是两个原因:
@@ -472,7 +473,7 @@ highlight_shrink:
     * 经过`2MSL`这个时间,足以让两个方向的数据包都被丢弃,使得原来连接的数据包在网络中都自然消失,再出现的数据包一定都是新建立连接所产生的.
   * 保证被动关闭的连接的一方被正确关闭,即保证最后的`ACK`能被动关闭接收,从而帮助其正常关闭;
 
-##### `TIME_WAIT`过多的危害
+#### `TIME_WAIT`过多的危害
 
 * 第一是内存资源占用
 * 第二是对端口资源的占用,一个TCP连接至少消耗一个本地端口
@@ -483,14 +484,14 @@ highlight_shrink:
   * 服务端受系统资源限制:
     * 由于一个四元组标志TCP连接,理论上服务端可以建立很多连接,服务端确实只监听一个端口,但是会把连接扔给线程,所以理论上监听的端口可以继续监听.但是线程池处理不了那么多一直不断的连接了.所以当服务端出现大量`TIME_WAIT`时,系统资源被占满时,会导致不过来新的连接.
 
-##### 优化`TIME_WAIT`
+#### 优化`TIME_WAIT`
 
 * 打开`net.ipv4.tcp_tw_reuse`和`net.ipv4_tcp_timestamps`选项;
 * `net.ipv4.tcp_max_tw_buckets`
   * 这个值默认为18000,当系统中处于`TIME_WAIT`的连接一旦超过这个值时,系统就会将后面的`TIME_WAIT`连接重置.
 * 程序中使用`SO_LINGER`,应用强制使用`RST`关闭
 
-###### `net.ipv4.tcp_tw_reuse`和`net.ipv4.tcp_timestamps`
+#### `net.ipv4.tcp_tw_reuse`和`net.ipv4.tcp_timestamps`
 
 * 开启`net.ipv4.tcp_tw_reuse = 1 `,可以复用处于`TIME_WAIT`的socket为新的连接所用
   * 注: `tcp_tw_reuse`功能只**能用于客户端(连接发起方)**,因为开启了该功能,在调用connect()函数时,内核会随机找一个`time_wait`状态超过1秒的连接给新的连接复用;**解决的是accpet后的问题.**
@@ -519,7 +520,7 @@ highlight_shrink:
 
   * 也就是说在Linux中,最少需要经过2小时11分15秒才能发现一个死亡连接`tcp_keepalive_time + (tcp_keepalive_intvl * tcp_keepalive_probes)`
 
-#### `Socket`编程
+### `Socket`编程
 
 <img src="https://www.holelin.cn/img/cs-base/http/socket%E7%BC%96%E7%A8%8B.png" alt="img" style="zoom:67%;" />
 
@@ -532,7 +533,7 @@ highlight_shrink:
 * 客户端断开连接时会调用close,服务端read读取数据的时候,就会读取到了EOF,待处理完数数据后,服务端调用close,表示连接关闭.
 * 注: 当服务端调用accept时,连接成功了会返回一个已完成连接的socket,后续用来传输数据.所以,监听的socket和真正用来传送数据的socket,是两个socket,一个叫做**监听socket**,一个叫做**已完成连接socket**,成功建立连接之后,双方开始通过read和write函数来读写数据,就像往一个文件流里面写东西.
 
-##### `listen`时候参数`backlog`的意义
+#### `listen`时候参数`backlog`的意义
 
 * Linux内核中会维护两个队列
 
@@ -545,7 +546,7 @@ highlight_shrink:
     *  在早期Linux内核backlog是SYN队列大小,也就是未完成的队列大小.
     * 在Linux内核2.2之后,backlog编程accpet队列,也就是已完成连接建立的队列长度,所以通常认为backlog是accpet队列,但是**上限值是内核参数somaxconn的大小**,也就是说**accpet队列长度=min(backlog,somaxconn)**
 
-##### accpet发生在三次握手哪一步?
+#### accpet发生在三次握手哪一步?
 
 <img src="https://www.holelin.cn/img/cs-base/http/TCP%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8BSocket%E5%BD%A2%E5%BC%8F.png" alt="img" style="zoom:67%;" />
 
@@ -555,7 +556,7 @@ highlight_shrink:
 * 应答包达到服务器端后,服务器端协议栈使得`accpet`阻塞调用返回,这个时候服务端到客户端的单向连接也建立成功,服务器端也进入`ESTABLISHED`状态.
 * **客户端connect成功返回是第二次握手,服务端accpet成功返回在三次握手成功后.**
 
-##### 客户端调用了close了,连接断开的流程是什么?
+#### 客户端调用了close了,连接断开的流程是什么?
 
 <img src="https://www.holelin.cn/img/cs-base/http/TCP%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8BSocket%E5%BD%A2%E5%BC%8F.png" alt="img" style="zoom:67%;" />
 
