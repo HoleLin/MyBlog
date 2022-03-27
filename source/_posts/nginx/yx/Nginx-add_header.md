@@ -1,7 +1,7 @@
 ---
 title: Nginx-add header
 mermaid: true
-date: 2022-03-23 17:34:11
+date: 2022-03-26 17:34:11
 index_img: /img/cover/Nginx.jpg
 cover: /img/cover/Nginx.jpg
 tags:
