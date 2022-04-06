@@ -4,9 +4,9 @@ mermaid: true
 date: 2021-07-12 19:43:29
 cover: /img/cover/MySQL.jpg
 tags:
-- 事务
 categories:
 - MySQL
+- 事务
 updated: 2021-08-20 15:43:29
 type:
 comments:
@@ -220,56 +220,6 @@ LOCK TABLE ...WRITE
 ###### 两阶段锁协议
 
 * **在InnoDB事务中,行锁是在需要的时候才加上的,但并不是不需要了就立刻释放,而是要等到事务结束时才释放.这就是两阶段锁协议.**
-
-##### 死锁和死锁检测
-
-* 当并发系统在不同现场出现循环资源依赖,涉及的线程都在等待别的线程释放资源时,就会导致这几个线程都进入无线等待状态,称为死锁.
-
-* 出现死锁后,有两种策略:
-
-  * 第一种:直接进入等待,直到超时,这个超时时间可以通过参数`innodb_lock_wait_timeout`来设置.
-  * 第二种:发起死锁检测后,发现死锁后,主动回滚死锁链条中的某个事务,让其他事务得以继续执行.将参数`innodb_deadlock_detect`设置`on`,表示开启这个逻辑.
-
-* 在InnoDB中,`innodb_lock_wait_timeout`的默认值为50s,意味着若采用第一种策略,当出现死锁以后,第一个被锁住的线程要过50s才超时退出,然后其他线程才有可能继续执行.对于在线服务来说,这个等待时间往往是无法接受的.因此大部分情况都采用第二种,在MySQL中`innodb_deadlock_detect`默认为`on`.
-
-  ```mysql
-  1213 - Deadlock found when trying to get lock; try restarting transaction, Time: 0.172000s
-  ```
-
-  * 主动死锁检测在发生死锁的时候,是能够快速发现并进行处理的,但是它也有额外负担的.每当一个事务被锁的时候,就要看看它所依赖的线程有没有被别人锁住,如此循环,最后判断是否出现了循环等待,也就是死锁.
-  * 若所有的事务都要更新同一行的数据,每个新来的被堵住的线程,都要判断会不会由于自己的加入导致死锁,这个是一个时间复杂度是O(n)的操作.若有1000个并发线程要同时更新同一行,那么死锁检测操作就是100万的数量级.虽然最终检测的结果是没有死锁的,但是这期间要消耗大量的CPU资源.因此就会看到CPU利用率很高,但是每秒却执行不了几个事务.
-
-* **怎么解决由这种热点行更新的性能问题呢?**
-
-  * 直接的方法:若确保这个业务一定不会出现死锁,可以临时吧死锁检测关掉.
-  * 控制并发度来降低死锁检测的成本.
-    * 这个并发度控制要做在数据库服务端.可以选择修改MySQL源码.基本思路就是,对于相同行的更新,在进入引擎之前排队.
-
-* **死锁排查步骤**
-
-  * 关注`SHOW ENGINE INNODB STATUS`命令`TRANSACTIONS`部分;
-
-  * 若无异常信息则需要检查`performance_schema.mutex_instances`表,该表会列出自服务器启动以来所有的冲突.
-
-    ```mysql
-    SELECT * FROM mutex_instances WHERE LOCKED_BY_THREAD_ID IS NOT NULL
-    ```
-
-  * 要找出谁在等待这些冲突,可以查询`performance_schema.events_waits_current`表
-
-    ```mysql
-    SELECT THREAD_ID,EVENT_ID,EVENT_NAME,SOURCE,TIMER_START,OBJECT_INSTANCE_BEGIN,OPERATION
-    FROM events_waits_current
-    WHERE THREAD_id IN(SELECT LOCKED_BY_THREAD_ID FROM mutex_instances WHERE LOCKED_BY_THREAD_ID IS NOT NULL);
-    ```
-
-  * 输出中的`THREAD_ID`,是内部`mysqld`分配给线程的实际编号,而不是帮助找到产生死锁原因的连接线程的编号.要找到连接线程的编号,可以查询`performance_schema.threads`表.
-
-    ```mysql
-    SELECT * FROM threads;
-    ```
-
-  * 选择一个连接终止来解决死锁.
 
 #### 事务应该具有4个属性: ACID
 

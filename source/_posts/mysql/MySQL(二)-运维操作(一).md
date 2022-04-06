@@ -287,8 +287,8 @@ highlight_shrink:
     | INNODB | 140506252928872:1092:140506164198896   |                  4395 |       712 |       38 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164198896 | TABLE     | IX            | GRANTED     | NULL      |
     | INNODB | 140506252933960:1092:140506164235296   |                  4394 |       716 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164235296 | TABLE     | IX            | GRANTED     | NULL      |
     | INNODB | 140506252932264:1092:140506164223232   |                  4393 |       715 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164223232 | TABLE     | IX            | GRANTED     | NULL      |
-    | INNODB | 140506252933112:1092:140506164229264   |                  4392 |       714 |       18 | lack          | table_name   | NULL           | NULL              | NULL       |       140506164229264 | TABLE     | IX            | GRANTED     | NULL      |
-    | INNODB | 140506252933112:31:4:2:140506164226352 |                  4392 |       714 |       18 | lack          | table_name   | NULL           | NULL              | PRIMARY    |       140506164226352 | RECORD    | X,REC_NOT_GAP | GRANTED     | 1         |
+    | INNODB | 140506252933112:1092:140506164229264   |                  4392 |       714 |       18 | xxxx          | table_name   | NULL           | NULL              | NULL       |       140506164229264 | TABLE     | IX            | GRANTED     | NULL      |
+    | INNODB | 140506252933112:31:4:2:140506164226352 |                  4392 |       714 |       18 | xxxx          | table_name   | NULL           | NULL              | PRIMARY    |       140506164226352 | RECORD    | X,REC_NOT_GAP | GRANTED     | 1         |
     +--------+----------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+
     6 rows in set (0.02 sec)
     ```

@@ -27,6 +27,7 @@ highlight_shrink:
 * [Springboot整合mybatis实现多数据源所遇到的问题](https://www.codenong.com/cs109706915/)
 * [springboot + mybatis-plus 分包实现多数据源配置](https://houbb.github.io/2020/06/21/hand-write-orm-09-mybatis-multi-datasource-package)
 * [required a bean of type 'org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder' that could not be found](https://stackoverflow.com/questions/67966956/required-a-bean-of-type-org-springframework-boot-orm-jpa-entitymanagerfactorybu)
+* [JPA之EntityManager踩坑及解决:更改PersistenceContext](https://www.jb51.net/article/238676.htm)
 
 ### 背景
 
