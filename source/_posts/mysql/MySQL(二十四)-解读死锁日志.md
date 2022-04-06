@@ -36,7 +36,7 @@ highlight_shrink:
 
 ### 日志解析
 
-* 日志来自于MySQL(二十二)-死锁分析的唯一键死锁 (Delete + Insert)案例
+* 日志来自于[MySQL(二十二)-死锁分析](https://www.holelin.cn/2022/04/04/mysql/MySQL(%E4%BA%8C%E5%8D%81%E4%BA%8C)-%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90/)的唯一键死锁 (Delete + Insert)案例
 
 ```mysql
 ------------------------
@@ -155,3 +155,6 @@ Record lock, heap no 2 PHYSICAL RECORD: n_fields 3; compact format; info bits 32
 > * 间隙锁 - lock_mode X
 > * 邻键锁（Next-key锁） - lock_mode X
 > * 插入意向锁 - lock_mode X insert intention
+
+* InnoDB 首次创建索引时，会在根页面自动设置一条下确界记录和一条上确界记录，并且永远不会删除它们。它们为导航设置了一个有用的障碍，因此“ get-prev ”不会越过开头，“ get-next ”不会越过结尾。此外，infimum 记录可以是临时记录锁定的虚拟目标。
+* 下确界和上确界记录可以被认为是索引页开销的一部分。最初，它们都存在于根页上，但随着索引的增长，下确界记录将存在于第一个或最低叶页上，而上确界记录将存在于最后一个或最大关键页上的最后一条记录。

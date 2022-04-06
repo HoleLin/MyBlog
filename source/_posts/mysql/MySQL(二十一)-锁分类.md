@@ -1,5 +1,5 @@
 ---
-title: MySQL-锁
+title: MySQL(二十一)-锁分类
 date: 2022-04-04 22:14:30
 cover: /img/cover/MySQL.jpg
 tags:
