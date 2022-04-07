@@ -23,6 +23,7 @@ highlight_shrink:
 
 * [解决死锁之路 - 常见 SQL 语句的加锁分析](https://www.aneasystone.com/archives/2017/12/solving-dead-locks-three.html)
 * 何登成--管中窥豹——MySQL(InnoDB)死锁分析之道
+* [MySQL · 引擎特性 · InnoDB隐式锁功能解析](http://mysql.taobao.org/monthly/2020/09/06/)
 
 ### 加锁的目的
 
@@ -46,41 +47,50 @@ highlight_shrink:
 
 #### 常见加锁操作
 
-* INSERT,DELETE,UPDATE
-
-* 显式加锁:
-
-  ```mysql
-  -- 显式加锁
-  SELECT ... LOCK IN SHARE MODE;
-  SELECT ... FOR UPDATE;
-  ```
-
-* 显式加表级锁
-
-  ```mysql
-  LOCK TABLE...READ
-  LOCK TABLE...WRITE
-  ```
-
-* DLL操作引入的加锁
-
-  ```mysql
-  ALTER TABLE ...
-  CREATE INDEX ...
-  ```
-
-* 备份常用
-
-  ```mysql
-  FLUSH TABLES WITH READ LOCK
-  ```
-
+* `SELECT ... `语句正常情况下为快照读，不加锁；
+* `SELECT ... LOCK IN SHARE MODE `语句为当前读，加 S 锁；
+* `SELECT ... FOR UPDATE `语句为当前读，加 X 锁；
+* 常见的 DML 语句（如 `INSERT`、`DELETE`、`UPDATE`）为当前读，加 X 锁；
+* 常见的 DDL 语句（如` ALTER`、`CREATE` 等）加表级锁，且这些语句为隐式提交，不能回滚；
+* 备份常用`FLUSH TABLES WITH READ LOCK`
 * 唯一性约束检查(`PRIMARY KEY/UNIQUE KEY`)
+
+#### 表锁
+
+* 表锁（分 S 锁和 X 锁）
+  * `LOCK TABLE...READ/WRITE`
+* 意向锁（分 IS 锁和 IX 锁）
+* 自增锁（一般见不到，只有在 innodb_autoinc_lock_mode = 0 或者 Bulk inserts 时才可能有）
+
+#### 行锁
+
+* 记录锁（分 S 锁和 X 锁）
+* 间隙锁（分 S 锁和 X 锁）
+* Next-key 锁（分 S 锁和 X 锁）
+* 插入意向锁
+
+##### 行锁分析
+
+* 行锁都是加在索引上的，最终都会落在聚簇索引上；
+* 加行锁的过程是一条一条记录加的；
 
 #### MySQL特有的加锁操作
 
 * Purge操作加锁
+
+#### 不同隔离级别下的锁
+
+* 在`Read Uncommitted`级别下，读取数据不需要加共享锁S，这样就不会跟被修改的数据上的排他锁X冲突
+
+* 在`Read Committed`级别下，读操作需要加共享锁S，但是在语句执行完以后释放共享锁S；
+
+* 在`Repeatable Read`级别下，读操作需要加共享锁S，但是在事务提交之前并不释放共享锁，也就是必须等待事务执行完毕以后才释放共享锁。
+
+* `Serializable`是限制性最强的隔离级别，因为该级别锁定整个范围的键，并一直持有锁，直到事务完成。
+
+----
+
+
 
 ### MySQL锁模式
 
@@ -92,7 +102,7 @@ highlight_shrink:
 #### 锁的属性
 
 * `LOCK_REC_NOT_GAP`(锁记录,1024)
-* `LOCK_GAP`(锁记录前端GAP,512)
+* `LOCK_GAP`(锁记录前的GAP,512)
 * `LOCK_ORDINARY`(同时锁记录+记录前的GAP,Next-Key锁,0)
 * `LOCK_INSERT_INTENTION`(插入意向锁,2048)
 
@@ -101,6 +111,8 @@ highlight_shrink:
 * 锁的属性可以与锁模式任意组合,如`LOCK_REC_NOT_GAP(1023)+LOCK_X(3)`
 
 ### 锁冲突矩阵
+
+* S 锁和 S 锁兼容，X 锁和 X 锁冲突，X 锁和 S 锁冲突；
 
 | 列:存在锁<br>行:待加锁 | S(Not Gap) | S(Gap) | S(Ordinary) | X(Not Gap) | X(Gap) | X(Ordinary) | Insert Intention |
 | ---------------------- | ---------- | ------ | ----------- | ---------- | ------ | ----------- | ---------------- |
@@ -111,6 +123,10 @@ highlight_shrink:
 | X(Gap)                 |            |        |             |            |        |             | ×                |
 | X(Ordinary)            | ×          |        | ×           | ×          |        | ×           | ×                |
 | Insert Intention       |            |        |             |            |        |             |                  |
+
+----
+
+
 
 ### 操作与加锁的对照关系
 

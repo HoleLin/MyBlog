@@ -24,8 +24,9 @@ highlight_shrink:
 
 * 极客时间--MySQL实战45讲(林晓斌)
 * 极客时间--SQL必知必会(陈旸)
+* [解决死锁之路 - 学习事务与隔离级别](https://www.aneasystone.com/archives/2017/10/solving-dead-locks-one.html)
 
-#### 事务
+### 事务
 
 * 事务是一个不可分割的数据库操作序列，也是数据库并发控制的基本单位，其执行的结果必须使数据库从一种一致性状态变到另一种一致性状态。事务是逻辑上的一组操作，要么都执行，要么都不执行(支持连续SQL的集体成功或集体撤销。);
 * 事务支持在引擎层实现的;
@@ -60,13 +61,11 @@ highlight_shrink:
 
 * `SET TRANSACTION`:设置事务的隔离级别
 
-#### MySQL中的锁
+### MySQL中的锁
 
 > 数据库锁设计的初衷是处理并发问题.作为多用户共享的资源,当出现并发访问的时候,数据库需要合理地控制资源的访问规则.而锁就是用来实现这些访问规则的重要数据结构.
 >
 > 根据加锁的范围,MySQL里面的锁大致为**全局锁,表级锁和行锁**.
-
-##### 语句
 
 ```mysql
 -- 显示加读锁
@@ -75,7 +74,7 @@ LOCK TABLE ...READ
 LOCK TABLE ...WRITE
 ```
 
-##### 全局锁
+#### 全局锁
 
 * 全局锁就是对整个数据库实例加锁.MySQL提供了一个加全局读锁的方法,命令是`FLUSH TABLES WITH READ LOCK`(**FTWRL**),使用这个命令后,其他线程的一下语句会被阻塞:
   * **数据更新语句(数据的增删改);**
@@ -155,7 +154,7 @@ LOCK TABLE ...WRITE
     * 在有些系统中,`readonly`的值会被用来做其他逻辑,比如用来判断一个库是主库还是从库.因此,修改`global`变量的方式影响面更大,不建议使用.
     * 在异常处理机制上有差异,如果执行`FTWRL`命令之后由于客户端发生异常断开,那么MySQL会自动释放这个全局锁.整个库回到可以正常更新的状态.而将整个库设置为`readonly`之后,如果客户端发生异常,则数据库就会一直保持`readonly`状态,这样会导致整个库长时间处于不可写状态,风险较高.
 
-##### 表级锁
+#### 表级锁
 
 * 在MySQL里面表级别的锁有两种:一种是**表锁**,一种是**元数据锁(meta data lock,MDL)**;
 
@@ -203,7 +202,7 @@ LOCK TABLE ...WRITE
     alter table table_name WAIT n add column ...
     ```
 
-##### 行锁
+#### 行锁
 
 * MySQL的行锁是在引擎层由各个引擎自己实现的.但并不是所有的引擎都支持行锁,比如MyISAM引擎就不支持行锁.不支持行锁意味着并发控制只能使用表锁,对于这种引擎的表,同一张表上任何时刻只能有一个更新在执行,这样就会影响业务并发度.
 
@@ -217,15 +216,15 @@ LOCK TABLE ...WRITE
     同事顾客C也在影院B买票,语句2就可能会出现冲突,可以调整语句的顺序由[1->2->3]-->[3-->1-->2],减少2这行的锁时间,最大程度地减少事务之间的锁等待,提升并发度.(冲突的行之前有操作,在执行到冲突的行的时间可能会被错开)
     ```
 
-###### 两阶段锁协议
+#### 两阶段锁协议
 
 * **在InnoDB事务中,行锁是在需要的时候才加上的,但并不是不需要了就立刻释放,而是要等到事务结束时才释放.这就是两阶段锁协议.**
 
-#### 事务应该具有4个属性: ACID
+### ACID
 
 * **Atomicity 原子性**
 
-  > 事务是最小的执行单位，不允许分割。事务的原子性确保动作要么全部完成，要么完全不起作用;
+  > 事务是最小的执行单位，不允许分割。事务的原子性确保动作**要么全部完成，要么完全不起作用**;
 
 * **Consistency 一致性**
 
@@ -235,7 +234,7 @@ LOCK TABLE ...WRITE
 
   > 通常来说,一个事务所做的修改在最终提交以前,对其他事务是不可见的.
   >
-  > 并发访问数据库时，一个用户的事务不被其他事务所干扰，各并发事务之间数据库是独立的。
+  > 并发事务之间不会互相影响，设立了不同程度的隔离级别，通过适度的破坏一致性，得以提高性能；
 
 * **Durability 持久性**
 
@@ -243,7 +242,7 @@ LOCK TABLE ...WRITE
 
 * **在这个四个特性中，原子性是基础，隔离性是手段，一致性是约束条件，而持久性是目的。**
 
-#### 事务中常出现3个的问题
+### 事务中常出现3个的问题
 
 * **脏读(Dirty Read)**
 
@@ -266,6 +265,10 @@ LOCK TABLE ...WRITE
   > **当前事务读第一次取到的数据比后来读取到数据条目不一致。**
   >
   > 查询某一个范围的数据行变多了或变少了，重点在与INSERT
+  
+* **丢失更新（lost update）**
+
+  > 又称[**Read-Modify-Write 问题**](https://en.wikipedia.org/wiki/Read-modify-write)
 
 #### SQL标准的事务隔离级别
 
@@ -319,7 +322,7 @@ LOCK TABLE ...WRITE
 
 * 参数设置: `trancsaction-isolation`设置为`READ-COMMITED`
 
-##### 事务的启动: 
+#### 事务的启动
 
 * 显示启动事务,`begin`或`start transaction`配套的提交语句`commit`,回滚语句`rollback`;
   * `begin/start transaction`命令并不是一个事务的起点,在执行到它们之后的第一个操作InnoDB表的语句,事务才真正启动;
@@ -329,7 +332,7 @@ LOCK TABLE ...WRITE
     * `start transaction with consistent snapshot;`意思是从这个语句开始,创建一个持续整个事务的一致性快照.所以在读提交隔离级别下,这个用法就没意义了,等效普通的`start transaction`
 * `set autocommit=0`,这个命令会将线程的自动提交关掉;
 
-##### 查询MySQL全局事务隔离级别
+#### 查询MySQL全局事务隔离级别
 
 ```sql
 -- 5.x
@@ -338,7 +341,7 @@ SELECT @@global.tx_isolation;
 SELECT @@global.transaction_isolation;
 ```
 
-##### 查询当前会话事务隔离级别
+#### 查询当前会话事务隔离级别
 
 ```mysql
  -- 5.x
@@ -348,7 +351,7 @@ SELECT @@global.transaction_isolation;
  SHOW VARIABLES LIKE 'transaction_isolation'
 ```
 
-##### 设置当前会话的隔离级别
+#### 设置当前会话的隔离级别
 
 ```mysql
 SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
@@ -385,7 +388,7 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 * **当前读就是读取最新数据,而不是历史版本的数据**.
 
   * 加锁的SELECT或者对数据进行增删改都会进行当前读.
-  
+
   ```mysql
   -- 读锁/共享锁(S锁)
   SELECT * FROM test LOCK IN SHARE MODE;
@@ -396,8 +399,19 @@ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
   -- 更新数据都是先读后写的
   UPDATE test SET ...;
   ```
-  
+
   * **快照读就是普通的读操作,而当前读包括了加锁的读取和DML操作**
+
+#### 不同隔离级别下的当前读
+
+* `Read Uncommitted`
+* `Read Committed`
+  * 针对当前读,**RC隔离级别保证对读取到的记录加锁(记录锁)**,存在幻读现象;
+* `Repeatable Read`
+  * 针对当前读,**RR隔离级别保证对读取到记录加锁(记录锁),同时保证对读取的范围加锁,新的满足查询条件的 记录不能够插入(间隙锁)**,不存在幻读现象.
+* `Serializable`
+  * 从MVCC并发控制退化为基于锁的并发控制,部分快照读与当前读,所有的读操作均为当前读,读加读锁(S锁),写加写锁(X锁).
+  * `Serializable`隔离级别下,读写冲突,因此并发度急剧下降.
 
 #### 事务的可重复读的能力是怎么实现的?
 

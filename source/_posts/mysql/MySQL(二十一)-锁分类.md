@@ -23,8 +23,18 @@ highlight_shrink:
 
 * [MySQL锁系列（一）之锁的种类和概念](https://keithlan.github.io/2017/06/05/innodb_locks_1/)
 * [15.7.1 InnoDB Locking](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html)
+* [MySQL · 引擎特性 · InnoDB隐式锁功能解析](http://mysql.taobao.org/monthly/2020/09/06/)
 
 ### 锁的种类
+
+> 在数据库中，通常使用**锁机制**来协调多个线程并发访问某一资源。MySQL的**锁类型**分为表锁和行锁，表示对整张表加锁，主要用在DDL场景中，也可以由用户指定，主要由server层负责管理；
+>
+> * 而行锁指的是锁定某一行或几行，或者是行与行之间的间隙，行锁由存储引擎管理，例如最常使用的InnoDB。
+> * 表锁占用系统资源小，实现简单，但锁定粒度大，发生锁冲突概率高，并发度比较低。行锁占用系统资源大，锁定粒度小，发生锁冲突概率低，并发度比较高。
+
+* InnoDB将锁分为**锁类型**和**锁模式**两类。锁类型包括表锁和行锁，而行锁还细分为记录锁、间隙锁、插入意向锁、Next-Key等更细的子类型。锁模式描述的是加什么锁,例如读锁和写锁
+
+#### 锁模式
 
 #### 共享锁和排他锁([Shared and Exclusive Locks](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html#innodb-shared-exclusive-locks))
 
@@ -43,6 +53,8 @@ highlight_shrink:
   ```mysql
   SELECT ... FOR UPDATE
   ```
+
+### 锁类型
 
 #### 意向锁(Intention Locks)
 
@@ -186,9 +198,9 @@ highlight_shrink:
 
   > 当你执行select的时候，如果这时候有ddl语句，那么ddl会被阻塞，因为select语句拥有metadata lock，防止元数据被改掉. 
 
-### 锁的其他分类
+### 显式锁和隐式锁
 
-#### 显式锁和隐式锁
+#### 显式锁(`Explicit Lock`)
 
 * 显式锁(`Explicit Lock`)显式的加锁，在`SHOW ENGINE INNODB STATUS`中能够看到,会在内存中产生对象,占用内存.
 
@@ -197,7 +209,15 @@ highlight_shrink:
   SELECT ... LOCK IN SHARE MODE;
   ```
 
-* 隐式锁(`Implicit Lock`)是在索引中对记录逻辑的加锁，但是实际上不产生锁对象,不占用内存空间 
+#### 隐式锁(`Implicit Lock`)
+
+* 当事务需要加锁的时，如果这个锁不可能发生冲突，InnoDB会跳过加锁环节，这种机制称为隐式锁。隐式锁是InnoDB实现的一种延迟加锁机制，其特点是只有在可能发生冲突时才加锁，从而减少了锁的数量，提高了系统整体性能。另外，隐式锁是针对被修改的`B+ Tree`记录，因此都是记录类型的锁，不可能是间隙锁或Next-Key类型。
+* 隐式锁主要用在插入场景中。在Insert语句执行过程中，必须检查两种情况，
+  * 一种是如果记录之间加有间隙锁，为了避免幻读，此时是不能插入记录的，
+  * 另一种情况如果Insert的记录和已有记录存在唯一键冲突，此时也不能插入记录。
+  * 除此之外，insert语句的锁都是隐式锁，但跟踪代码发现，insert时并没有调用`lock_rec_add_to_queue`函数进行加锁, 其实所谓隐式锁就是在Insert过程中不加锁。
+
+* 隐式锁(`Implicit Lock`)是在索引中对记录逻辑的加锁，但是实际上不产生锁对象(不需要创建锁结构),不占用内存空间 
 
   ```mysql
   INSERT INTO xx VALUES( xx );
@@ -205,16 +225,22 @@ highlight_shrink:
   UPDATE xx SET t = t + 1 WHERE id = 1;
   ```
 
+##### 如何判断隐式锁是否存在
+
+* InnoDB的每条记录中都一个隐含的`trx_id`字段，这个字段存在于聚集索引的`B+Tree`中。假设只有主键索引，则在进行插入时，行数据的`trx_id`被设置为当前事务id；假设存在二级索引，则在对二级索引进行插入时，需要更新所在`page`的`max_trx_id`。
+* 因此对于主键，只需要通过查看记录隐藏列trx_id是否是活跃事务就可以判断隐式锁是否存在。 对于对于二级索引会相对比较麻烦，先通过二级索引页上的max_trx_id进行过滤，如果无法判断是否活跃则需要通过应用undo日志回溯老版本数据，才能进行准确的判断。
+
+#### 隐式锁,显式锁转换
+
+* 只有在特殊情况下，才会将隐式锁转换为显示锁。**这个转换动作并不是加隐式锁的线程自发去做的，而是其他存在行数据冲突的线程去做的**。例如事务1插入记录且未提交，此时事务2尝试对该记录加锁，那么事务2必须先判断记录上保存的事务id是否活跃，如果活跃则帮助事务1建立一个锁对象，而事务2自身进入等待事务1的状态，
+
 * `Implicit Lock `转换成 `Explicit Lock`的时机:
 
   * 只有`Implicit Lock `产生冲突的时候，会自动转换成`Explicit Lock`,这样做的好处就是降低锁的开销.
 
     > 比如：我插入了一条记录10，本身这个记录加上implicit lock，如果这时候有人再去更新这条10的记录，那么就会自动转换成explicit lock
 
-* 数据库怎么知道`Implicit Lock`的存在呢？如何实现锁的转化呢?
-
-  * 对于聚集索引上面的记录，有db_trx_id,如果该事务id在活跃事务列表中，那么说明还没有提交，那么`Implicit Lock`则存在  
-  * 对于非聚集索引：由于上面没有事务id，那么可以通过上面的主键id，再通过主键id上面的事务id来判断，不过算法要非常复杂.
+* 将记录上的隐式锁转换为显示锁是由文件`storage/innobase/lock/lock0lock.cc`中的函数`lock_rec_convert_impl_to_expl`完成的.
 
 ### 锁操作(待补充)
 

@@ -185,6 +185,8 @@ Record lock, heap no 2 PHYSICAL RECORD: n_fields 4; compact format; info bits 0
 
 * 死锁路径: [sessionA->sessionB, sessionB->sessionA]
 
+  >  **死锁,永远跟加锁顺序相关.事务以相反的顺序操作数据,才会产生死锁.分析死锁就是挖掘出这个相反的顺序在哪.**
+
 #### 同一个事务中，S-lock 升级为 X-lock 不能直接继承
 
 * 前置准备
@@ -409,6 +411,8 @@ mysql> select * from index_test;
 > session 1 加锁2的时候 session 3 要加锁3.
 >
 > 这样就产生了 AB-BA 死锁
+>
+> **在MySQL中,以不同索引的过滤条件,来操作相同的记录(Delete/Update),很容易产生死锁**.
 
 #### purge + unique key 引发的死锁
 
@@ -437,9 +441,12 @@ mysql> select * from index_test;
 
 * Replace into操作可以算是比较常用的操作类型之一，当我们不确定即将插入的记录是否存在唯一性冲突时，可以通过Replace into的方式让MySQL自动处理：当存在冲突时，会把旧记录替换成新的记录。
 
-### 如何避免死锁
+### 总结
 
-* 降低隔离级别，修改 RR -> RC , 如果这个调整了，可以避免掉60%的死锁场景和奇怪的锁等待
-* 调整业务逻辑和SQL，让其都按照顺序执行操作
-* 减少unique索引，大部分死锁的场景都是由于unique索引导致
-* 尽量不用`replace into`，用`insert into ... on duplicate key update `代替
+> * 要分析一个死锁,必须深入业务,了解整个事务的逻辑.
+> * GAP锁很复杂,为了减少GAP锁,减少GAP导致的死锁,尽量选择`READ COMMITTED`隔离级别.
+> * 适当的减少`UNIQUE`索引,能够减少GAP锁导致的死锁.
+> * 在MySQL中,以不同索引的过滤条件,来操作相同的记录(Delete/Update),很容易产生死锁.
+> * RC隔离级别下,如果死锁中出现Next-Key(Gap锁),说明表中一定存在`UNIQUE`索引.
+> * 多语句事务产生的死锁,确保每条语句操作记录的顺序性,能够极大减少死锁.
+> * 尽量不用`replace into`，用`insert into ... on duplicate key update `代替
